@@ -1,0 +1,29 @@
+.ads-carousel .carousel-item img {
+  height: 150px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.ads-carousel .carousel-control-prev,
+.ads-carousel .carousel-control-next {
+  width: 10%;
+  filter: invert(1) brightness(0);
+}
+
+.mobile-ads-carousel .carousel-item img {
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+.mobile-ads-carousel .carousel-control-prev,
+.mobile-ads-carousel .carousel-control-next {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .ads-carousel .carousel-item img {
+    height: auto;
+    aspect-ratio: 16 / 9;
+  }
+}

@@ -1,0 +1,110 @@
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+  border-radius: 4px;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.skeleton-image {
+  height: 160px;
+  width: 100%;
+}
+
+.skeleton-price {
+  width: 60%;
+  height: 20px;
+  margin-bottom: 4px;
+}
+
+.skeleton-title {
+  width: 80%;
+  height: 16px;
+  margin-bottom: 8px;
+}
+
+.skeleton-desc {
+  width: 100%;
+  height: 10px;
+  margin-bottom: 8px;
+}
+
+.skeleton-location {
+  width: 70%;
+  height: 10px;
+}
+
+.card-title-skeleton {
+  font-size: clamp(0.8rem, 1.5vw, 0.875rem);
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.skeleton-description {
+  height: 80px;
+  margin-bottom: 24px;
+}
+
+.skeleton-button {
+  height: 48px;
+  margin-right: 8px;
+}
+
+.skeleton-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  margin-right: 16px;
+}
+
+.skeleton-seller-name {
+  width: 70%;
+  height: 20px;
+  margin-bottom: 4px;
+}
+
+.skeleton-seller-location {
+  width: 50%;
+  height: 16px;
+}
+
+.skeleton-rating {
+  width: 100px;
+  height: 16px;
+  margin-bottom: 16px;
+}
+
+.skeleton-phone {
+  height: 40px;
+}
+
+.ads-skeleton-image {
+  height: 150px;
+  width: 100%;
+  border-radius: 8px;
+}
+
+@media (max-width: 768px) {
+  .skeleton-image {
+    height: 130px;
+  }
+
+  .ads-skeleton-image {
+    height: auto;
+    aspect-ratio: 16 / 9;
+  }
+}
+
+@media (max-width: 576px) {
+  .skeleton-image {
+    height: 110px;
+  }
+}
