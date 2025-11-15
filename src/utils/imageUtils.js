@@ -1,6 +1,3 @@
-// ==========================================
-// FILE: src/utils/imageUtils.js
-// ==========================================
 import { supabase } from "./supabaseClient";
 
 export const getPublicUrlFromPath = (imgPath) => {

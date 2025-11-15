@@ -1,6 +1,3 @@
-// ==========================================
-// FILE: src/utils/categories.js
-// ==========================================
 export const CATEGORIES = [
   { id: 1, name: "Electronics", icon: "tv" },
   { id: 2, name: "Fashion", icon: "person" },

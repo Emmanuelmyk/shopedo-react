@@ -15,11 +15,14 @@ dist
 dist-ssr
 *.local
 
-# Environment variables
+# Environment variables - CRITICAL: Never commit these!
 .env
 .env.local
 .env.production
+.env.production.local
 .env.*.local
+.env.development
+.env.development.local
 
 # Editor directories and files
 .vscode/*
@@ -31,3 +34,14 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Build files
+build/
+.cache/
+
+# Testing
+coverage/
+
+# Misc
+.vercel
+.netlify

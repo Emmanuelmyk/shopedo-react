@@ -1,6 +1,3 @@
-// ==========================================
-// FILE: src/utils/formatUtils.js
-// ==========================================
 export const escapeHtml = (str) => {
   if (str == null) return "";
   return String(str)

@@ -1,6 +1,3 @@
-// ==========================================
-// FILE: src/utils/wishlistUtils.js
-// ==========================================
 export const getWishlistItems = () => {
   return JSON.parse(localStorage.getItem("wishlistItems") || "[]");
 };
