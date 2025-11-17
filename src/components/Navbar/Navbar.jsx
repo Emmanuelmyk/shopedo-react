@@ -13,23 +13,37 @@ const Navbar = ({ wishlistCount, onWishlistClick, onMenuToggle, menuActive }) =>
           <img src="/assets/logo.png" alt="EDOFINDS" />
         </Link>
         <div className="d-flex align-items-center ms-auto">
+          {/* Wishlist Button */}
           <button 
             className="nav-link position-relative me-2 p-0 border-0 bg-transparent" 
             type="button"
-            onClick={onWishlistClick}
+            onClick={(e) => {
+              e.preventDefault(); // Prevent default anchor behavior
+              onWishlistClick();  // Trigger parent handler to show Wishlist
+            }}
+            aria-label="Open Wishlist"
           >
             <i className="bi bi-bookmark fs-5"></i>
-            <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-dark">
-              {wishlistCount}
-            </span>
+            {wishlistCount > 0 && (
+              <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-dark">
+                {wishlistCount}
+              </span>
+            )}
           </button>
+
+          {/* Sell Button */}
           <a href="/admin/login.html" className="nav-link position-relative me-2">
             <button className="btn">Sell</button>
           </a>
-          {/* <button 
-            id="menuToggleBtn" 
+
+          {/* Mobile Hamburger Menu */}
+          <button 
+            id="menuToggleBtn"
             className="btn d-lg-none p-0 border-0 bg-transparent" 
             type="button"
+            data-bs-toggle="offcanvas"
+            data-bs-target="#offcanvasMenu"
+            aria-controls="offcanvasMenu"
             onClick={onMenuToggle}
           >
             <div className={`hamburger ${menuActive ? 'active' : ''}`} style={{ color: 'var(--primary-text)' }}>
@@ -37,21 +51,7 @@ const Navbar = ({ wishlistCount, onWishlistClick, onMenuToggle, menuActive }) =>
               <span></span>
               <span></span>
             </div>
-          </button> */}
-          <button 
-  id="menuToggleBtn" 
-  className="btn d-lg-none p-0 border-0 bg-transparent" 
-  type="button"
-  data-bs-toggle="offcanvas"
-  data-bs-target="#offcanvasMenu"
-  aria-controls="offcanvasMenu"
->
-  <div className={`hamburger ${menuActive ? 'active' : ''}`} style={{ color: 'var(--primary-text)' }}>
-    <span></span>
-    <span></span>
-    <span></span>
-  </div>
-</button>
+          </button>
         </div>
       </div>
     </nav>
