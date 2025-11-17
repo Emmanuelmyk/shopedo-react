@@ -1,5 +1,6 @@
 .app-footer {
-  margin-top: auto;
+  /* padding-top: 120px; */
+  margin-top: 30px;
   background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
   color: #e5e7eb;
   font-size: clamp(0.85rem, 1.5vw, 0.9rem);

@@ -26,7 +26,7 @@ const Navbar = ({ wishlistCount, onWishlistClick, onMenuToggle, menuActive }) =>
           <a href="/admin/login.html" className="nav-link position-relative me-2">
             <button className="btn">Sell</button>
           </a>
-          <button 
+          {/* <button 
             id="menuToggleBtn" 
             className="btn d-lg-none p-0 border-0 bg-transparent" 
             type="button"
@@ -37,7 +37,21 @@ const Navbar = ({ wishlistCount, onWishlistClick, onMenuToggle, menuActive }) =>
               <span></span>
               <span></span>
             </div>
-          </button>
+          </button> */}
+          <button 
+  id="menuToggleBtn" 
+  className="btn d-lg-none p-0 border-0 bg-transparent" 
+  type="button"
+  data-bs-toggle="offcanvas"
+  data-bs-target="#offcanvasMenu"
+  aria-controls="offcanvasMenu"
+>
+  <div className={`hamburger ${menuActive ? 'active' : ''}`} style={{ color: 'var(--primary-text)' }}>
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</button>
         </div>
       </div>
     </nav>

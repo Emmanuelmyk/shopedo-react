@@ -1,0 +1,405 @@
+/* Base Font Settings */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  font-size: clamp(14px, 2.5vw, 16px);
+  line-height: 1.5;
+  font-weight: 400;
+  letter-spacing: normal;
+}
+
+/* Headings */
+h1,
+.h1 {
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+h2,
+.h2 {
+  font-size: clamp(1.5rem, 3.5vw, 2rem);
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+h3,
+.h3 {
+  font-size: clamp(1.25rem, 3vw, 1.75rem);
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+h4,
+.h4 {
+  font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+h5,
+.h5 {
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+h6,
+.h6 {
+  font-size: clamp(0.9rem, 1.8vw, 1.1rem);
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+/* Paragraph & Body Text */
+p,
+.text-body {
+  font-size: clamp(0.875rem, 1.8vw, 1rem);
+  font-weight: 400;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+/* Small Text */
+.small,
+small {
+  font-size: clamp(0.75rem, 1.5vw, 0.875rem);
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+/* Extra Small Text */
+.text-xs {
+  font-size: clamp(0.7rem, 1.3vw, 0.8rem);
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+/* Large Text */
+.text-lg {
+  font-size: clamp(1rem, 2.2vw, 1.125rem);
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+/* Font Weights */
+.font-light {
+  font-weight: 300;
+}
+
+.font-normal {
+  font-weight: 400;
+}
+
+.font-medium {
+  font-weight: 500;
+}
+
+.font-semibold {
+  font-weight: 600;
+}
+
+.font-bold {
+  font-weight: 700;
+}
+
+.font-extrabold {
+  font-weight: 800;
+}
+
+/* Letter Spacing */
+.tracking-tight {
+  letter-spacing: -0.02em;
+}
+
+.tracking-normal {
+  letter-spacing: normal;
+}
+
+.tracking-wide {
+  letter-spacing: 0.025em;
+}
+
+/* Line Heights */
+.leading-none {
+  line-height: 1;
+}
+
+.leading-tight {
+  line-height: 1.25;
+}
+
+.leading-snug {
+  line-height: 1.375;
+}
+
+.leading-normal {
+  line-height: 1.5;
+}
+
+.leading-relaxed {
+  line-height: 1.625;
+}
+
+.leading-loose {
+  line-height: 2;
+}
+
+/* Component-Specific Typography */
+
+/* Navbar */
+.navbar-brand {
+  font-size: clamp(1.1rem, 2.5vw, 1.25rem);
+  font-weight: 600;
+}
+
+/* Product Card */
+.product-card .card-title {
+  font-size: clamp(0.8rem, 1.5vw, 0.875rem);
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.product-card .product-price {
+  font-size: clamp(0.8rem, 1.5vw, 0.875rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.product-card .condition {
+  font-size: clamp(0.75rem, 1.5vw, 0.8rem);
+  font-weight: 600;
+}
+
+.product-card .small {
+  font-size: clamp(0.8rem, 1.5vw, 0.875rem);
+}
+
+/* Product Detail Page */
+.product-title {
+  font-size: clamp(1.4rem, 3vw, 1.75rem);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.product-price {
+  font-size: clamp(1.6rem, 4vw, 2rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.product-location {
+  font-size: clamp(0.85rem, 1.8vw, 0.95rem);
+  font-weight: 400;
+}
+
+.product-condition {
+  font-size: clamp(0.75rem, 1.5vw, 0.85rem);
+  font-weight: 600;
+}
+
+.description-section h6 {
+  font-size: clamp(0.8rem, 1.5vw, 0.9rem);
+  font-weight: 600;
+}
+
+.description-section p {
+  font-size: clamp(0.9rem, 2vw, 1rem);
+  line-height: 1.6;
+}
+
+.product-details h6 {
+  font-size: clamp(0.8rem, 1.5vw, 0.9rem);
+  font-weight: 600;
+}
+
+.product-details .detail-row {
+  font-size: clamp(0.75rem, 1.5vw, 0.85rem);
+}
+
+.seller-name {
+  font-size: clamp(0.95rem, 2vw, 1.1rem);
+  font-weight: 600;
+}
+
+.seller-location {
+  font-size: clamp(0.8rem, 1.5vw, 0.9rem);
+}
+
+.seller-rating {
+  font-size: clamp(0.8rem, 1.5vw, 0.9rem);
+}
+
+.seller-phone {
+  font-size: clamp(0.9rem, 2vw, 1rem);
+}
+
+.verified-badge {
+  font-size: clamp(0.65rem, 1.2vw, 0.75rem);
+  font-weight: 500;
+}
+
+/* Buttons */
+.custom-btn {
+  font-size: clamp(0.9rem, 2vw, 1rem);
+  font-weight: 500;
+}
+
+/* Footer */
+.footer-description {
+  font-size: clamp(0.85rem, 1.5vw, 0.9rem);
+  line-height: 1.6;
+}
+
+.footer-title {
+  font-size: clamp(1rem, 2vw, 1.1rem);
+  font-weight: 700;
+}
+
+.footer-links a {
+  font-size: clamp(0.85rem, 1.5vw, 0.9rem);
+}
+
+.footer-contact p {
+  font-size: clamp(0.85rem, 1.5vw, 0.9rem);
+}
+
+.footer-social-text {
+  font-size: clamp(0.85rem, 1.5vw, 0.9rem);
+  line-height: 1.5;
+}
+
+.footer-made-in {
+  font-size: clamp(0.85rem, 1.5vw, 0.9rem);
+}
+
+.footer-copyright {
+  font-size: clamp(0.8rem, 1.4vw, 0.85rem);
+}
+
+.footer-powered {
+  font-size: clamp(0.8rem, 1.4vw, 0.85rem);
+}
+
+/* Breadcrumb */
+.breadcrumb {
+  font-size: clamp(0.8rem, 1.5vw, 0.9rem);
+  font-weight: 500;
+}
+
+/* Category List */
+.category-list .list-group-item {
+  font-size: clamp(0.8rem, 1.2vw, 0.875rem);
+  font-weight: 600;
+}
+
+/* Wishlist */
+.wishlist-item-info h6 {
+  font-size: clamp(0.9rem, 1.8vw, 1rem);
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.wishlist-item-info .price {
+  font-size: clamp(1rem, 2vw, 1.1rem);
+  font-weight: 700;
+}
+
+.wishlist-item-info .description {
+  font-size: clamp(0.8rem, 1.5vw, 0.875rem);
+  line-height: 1.4;
+}
+
+.wishlist-item-info .location {
+  font-size: clamp(0.75rem, 1.2vw, 0.8rem);
+}
+
+/* Offcanvas */
+.offcanvas-title {
+  font-size: clamp(1.1rem, 2vw, 1.25rem);
+  font-weight: 600;
+}
+
+/* Empty State */
+.empty-state-icon {
+  font-size: clamp(2rem, 5vw, 3rem);
+}
+
+.empty-state-title {
+  font-size: clamp(1rem, 2.5vw, 1.25rem);
+  font-weight: 600;
+}
+
+.empty-state-message {
+  font-size: clamp(0.85rem, 1.8vw, 0.95rem);
+}
+
+/* Safety Tips */
+.safety-tips-card h5 {
+  font-size: clamp(1rem, 2.5vw, 1.25rem);
+  font-weight: 600;
+}
+
+.safety-tips-card li {
+  font-size: clamp(0.85rem, 1.8vw, 0.95rem);
+}
+
+/* Section Title */
+.section-title {
+  font-size: clamp(1.2rem, 3vw, 1.5rem);
+  font-weight: 700;
+}
+
+/* Skeleton Text */
+.card-title-skeleton {
+  font-size: clamp(0.8rem, 1.5vw, 0.875rem);
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  body {
+    font-size: clamp(13.5px, 2.3vw, 15px);
+  }
+
+  .product-title {
+    font-size: clamp(1.2rem, 3vw, 1.5rem);
+  }
+
+  .product-price {
+    font-size: clamp(1.4rem, 3.5vw, 1.75rem);
+  }
+
+  .custom-btn {
+    font-size: clamp(0.8rem, 1.8vw, 0.9rem);
+  }
+
+  .description-section p {
+    font-size: clamp(0.85rem, 1.8vw, 0.95rem);
+  }
+}
+
+@media (max-width: 576px) {
+  body {
+    font-size: clamp(13px, 2.2vw, 15px);
+  }
+
+  .product-title {
+    font-size: clamp(1rem, 2.5vw, 1.3rem);
+  }
+
+  .product-price {
+    font-size: clamp(1.2rem, 3vw, 1.5rem);
+  }
+
+  .custom-btn {
+    font-size: clamp(0.75rem, 1.5vw, 0.8rem);
+  }
+
+  .description-section p {
+    font-size: clamp(0.8rem, 1.8vw, 0.9rem);
+  }
+}
