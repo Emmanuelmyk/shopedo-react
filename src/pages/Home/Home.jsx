@@ -22,9 +22,6 @@ import { getCategoryName } from '../../utils/categories';
 import Footer from '../../components/Footer/Footer';
 import './Home.css';
 
-// Import Bootstrap JS for offcanvas functionality (important if not already included globally)
-import 'bootstrap/dist/js/bootstrap.bundle.min.js';
-
 const PAGE_SIZE = 12;
 
 const Home = () => {
@@ -50,9 +47,6 @@ const Home = () => {
 
   const { observe: observeImage } = useImageObserver(true);
 
-  // ==========================================
-  // Load More Products (Infinite Scroll)
-  // ==========================================
   const loadMoreProducts = useCallback(async () => {
     try {
       let query = supabase
@@ -78,6 +72,7 @@ const Home = () => {
 
       if (!data || data.length === 0) {
         if (offset === 0) {
+          // Set empty state
           let title = 'No products found';
           let message = 'Try adjusting your search or filters.';
 
@@ -95,6 +90,7 @@ const Home = () => {
 
           setEmptyStateConfig({ title, message });
         } else {
+          // Show end toast
           setToastMessage("You've reached the end of our products! 🎉");
           setShowToast(true);
         }
@@ -122,9 +118,7 @@ const Home = () => {
     enabled: !emptyStateConfig
   });
 
-  // ==========================================
-  // Fetch Ads on Mount
-  // ==========================================
+  // Fetch ads on mount
   useEffect(() => {
     const fetchAds = async () => {
       try {
@@ -147,9 +141,7 @@ const Home = () => {
     fetchAds();
   }, []);
 
-  // ==========================================
-  // URL Category Handling
-  // ==========================================
+  // Handle category from URL params
   useEffect(() => {
     const category = searchParams.get('category');
     if (category) {
@@ -157,6 +149,7 @@ const Home = () => {
     }
   }, [searchParams]);
 
+  // Reset pagination when category or search changes
   const resetPagination = () => {
     setProducts([]);
     setOffset(0);
@@ -179,9 +172,6 @@ const Home = () => {
     resetPagination();
   };
 
-  // ==========================================
-  // Wishlist handlers
-  // ==========================================
   const handleStartShopping = () => {
     handleCategorySelect('all');
     setShowWishlist(false);
@@ -195,9 +185,6 @@ const Home = () => {
     setShowCategoryMenu(prev => !prev);
   };
 
-  // ==========================================
-  // Render JSX
-  // ==========================================
   return (
     <>
       <Navbar
@@ -207,7 +194,6 @@ const Home = () => {
         menuActive={showCategoryMenu}
       />
 
-      {/* Wishlist Offcanvas */}
       <WishlistOffcanvas
         show={showWishlist}
         onHide={() => setShowWishlist(false)}
@@ -217,7 +203,6 @@ const Home = () => {
         onStartShopping={handleStartShopping}
       />
 
-      {/* Category Menu */}
       <CategoryMenu
         show={showCategoryMenu}
         onHide={() => setShowCategoryMenu(false)}
@@ -226,7 +211,6 @@ const Home = () => {
         ads={ads}
       />
 
-      {/* Layout */}
       <div className="layout-container container">
         <Sidebar
           activeCategory={currentCategoryId}
@@ -267,7 +251,6 @@ const Home = () => {
         </main>
       </div>
 
-      {/* Toast Notification */}
       <Toast
         show={showToast}
         message={toastMessage}
