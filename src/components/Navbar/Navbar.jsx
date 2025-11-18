@@ -1,11 +1,16 @@
 // ==========================================
 // FILE: src/components/Navbar/Navbar.jsx
 // ==========================================
-import React from 'react';
-import { Link } from 'react-router-dom';
-import './Navbar.css';
+import React from "react";
+import { Link } from "react-router-dom";
+import "./Navbar.css";
 
-const Navbar = ({ wishlistCount, onWishlistClick, onMenuToggle, menuActive }) => {
+const Navbar = ({
+  wishlistCount,
+  onWishlistClick,
+  onMenuToggle,
+  menuActive,
+}) => {
   return (
     <nav className="navbar navbar-expand-lg">
       <div className="container px-3">
@@ -14,12 +19,12 @@ const Navbar = ({ wishlistCount, onWishlistClick, onMenuToggle, menuActive }) =>
         </Link>
         <div className="d-flex align-items-center ms-auto">
           {/* Wishlist Button */}
-          <button 
-            className="nav-link position-relative me-2 p-0 border-0 bg-transparent" 
+          <button
+            className="nav-link position-relative me-2 p-0 border-0 bg-transparent"
             type="button"
             onClick={(e) => {
               e.preventDefault(); // Prevent default anchor behavior
-              onWishlistClick();  // Trigger parent handler to show Wishlist
+              onWishlistClick(); // Trigger parent handler to show Wishlist
             }}
             aria-label="Open Wishlist"
           >
@@ -32,21 +37,24 @@ const Navbar = ({ wishlistCount, onWishlistClick, onMenuToggle, menuActive }) =>
           </button>
 
           {/* Sell Button */}
-          <a href="/admin/login.html" className="nav-link position-relative me-2">
+          <Link to="/admin/login" className="nav-link position-relative me-2">
             <button className="btn">Sell</button>
-          </a>
+          </Link>
 
           {/* Mobile Hamburger Menu */}
-          <button 
+          <button
             id="menuToggleBtn"
-            className="btn d-lg-none p-0 border-0 bg-transparent" 
+            className="btn d-lg-none p-0 border-0 bg-transparent"
             type="button"
             data-bs-toggle="offcanvas"
             data-bs-target="#offcanvasMenu"
             aria-controls="offcanvasMenu"
             onClick={onMenuToggle}
           >
-            <div className={`hamburger ${menuActive ? 'active' : ''}`} style={{ color: 'var(--primary-text)' }}>
+            <div
+              className={`hamburger ${menuActive ? "active" : ""}`}
+              style={{ color: "var(--primary-text)" }}
+            >
               <span></span>
               <span></span>
               <span></span>
