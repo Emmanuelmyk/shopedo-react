@@ -19,6 +19,11 @@ export default function Login() {
   const [passwordStrength, setPasswordStrength] = useState(0);
   const navigate = useNavigate();
 
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }, []);
+
   const calculateStrength = (pwd) => {
     let score = 0;
     if (pwd.length >= 8) score++;
