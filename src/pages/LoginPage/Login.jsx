@@ -19,36 +19,9 @@ export default function Login() {
   const [passwordStrength, setPasswordStrength] = useState(0);
   const navigate = useNavigate();
 
-  // Force scroll to top when component mounts - multiple methods for reliability
+  // Scroll to top when component mounts
   useEffect(() => {
-    // Add body class for login page
-    document.body.classList.add("login-page");
-
-    // Method 1: Standard window scroll
-    window.scrollTo(0, 0);
-
-    // Method 2: Document element scroll
-    document.documentElement.scrollTop = 0;
-    document.body.scrollTop = 0;
-
-    // Method 3: Force scroll after a brief delay (handles async rendering)
-    const timer = setTimeout(() => {
-      window.scrollTo(0, 0);
-      document.documentElement.scrollTop = 0;
-      document.body.scrollTop = 0;
-    }, 10);
-
-    // Method 4: Handle any parent containers with scroll
-    const scrollableElements = document.querySelectorAll('[style*="overflow"]');
-    scrollableElements.forEach((el) => {
-      el.scrollTop = 0;
-    });
-
-    // Cleanup function
-    return () => {
-      clearTimeout(timer);
-      document.body.classList.remove("login-page");
-    };
+    window.scrollTo({ top: 0, behavior: "instant" });
   }, []);
 
   const calculateStrength = (pwd) => {
