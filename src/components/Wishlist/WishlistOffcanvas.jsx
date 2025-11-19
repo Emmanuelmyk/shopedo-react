@@ -1,92 +1,69 @@
 // ==========================================
 // FILE: src/components/Wishlist/WishlistOffcanvas.jsx
 // ==========================================
-import React, { useEffect, useRef } from 'react';
-import WishlistItem from './WishlistItem';
-import './Wishlist.css';
+import React, { useEffect, useRef } from "react";
+import WishlistItem from "./WishlistItem";
+import "./Wishlist.css";
 
-const WishlistOffcanvas = ({ 
-  show, 
-  onHide, 
-  wishlistItems, 
-  onRemove, 
-  onShare, 
-  onStartShopping 
+const WishlistOffcanvas = ({
+  show,
+  onHide,
+  wishlistItems,
+  onRemove,
+  onShare,
+  onStartShopping,
 }) => {
   const offcanvasRef = useRef(null);
-  const bsOffcanvasRef = useRef(null);
 
+  // Sync Bootstrap's hide event → parent onHide
   useEffect(() => {
-    const offcanvasElement = offcanvasRef.current;
-    if (!offcanvasElement) return;
+    const el = offcanvasRef.current;
+    if (!el) return;
 
-    // Wait for Bootstrap to be available
-    const initOffcanvas = () => {
-      if (window.bootstrap && window.bootstrap.Offcanvas) {
-        if (!bsOffcanvasRef.current) {
-          bsOffcanvasRef.current = new window.bootstrap.Offcanvas(offcanvasElement, {
-            backdrop: true,
-            keyboard: true,
-            scroll: false
-          });
+    const handleHidden = () => onHide?.();
 
-          offcanvasElement.addEventListener('hidden.bs.offcanvas', () => {
-            if (onHide) onHide();
-          });
-        }
-      }
-    };
-
-    if (window.bootstrap) {
-      initOffcanvas();
-    } else {
-      // Wait for Bootstrap to load
-      setTimeout(initOffcanvas, 100);
-    }
-
-    return () => {
-      if (bsOffcanvasRef.current) {
-        try {
-          bsOffcanvasRef.current.dispose();
-        } catch (e) {
-          console.warn('Error disposing offcanvas:', e);
-        }
-        bsOffcanvasRef.current = null;
-      }
-    };
+    el.addEventListener("hidden.bs.offcanvas", handleHidden);
+    return () => el.removeEventListener("hidden.bs.offcanvas", handleHidden);
   }, [onHide]);
 
+  // Control visibility via data attributes (pure Bootstrap way)
   useEffect(() => {
-    if (!bsOffcanvasRef.current) return;
+    const el = offcanvasRef.current;
+    if (!el) return;
 
-    try {
-      if (show) {
-        bsOffcanvasRef.current.show();
-      } else {
-        bsOffcanvasRef.current.hide();
-      }
-    } catch (e) {
-      console.warn('Error toggling offcanvas:', e);
+    if (show) {
+      el.classList.add("show");
+      document.body.classList.add("offcanvas-open"); // optional: prevent scroll
+    } else {
+      el.classList.remove("show");
+      document.body.classList.remove("offcanvas-open");
     }
   }, [show]);
 
   return (
-    <div 
+    <div
       ref={offcanvasRef}
-      className="offcanvas offcanvas-end" 
-      tabIndex="-1" 
+      className={`offcanvas offcanvas-end ${show ? "show" : ""}`}
+      tabIndex="-1"
       id="wishlistOffcanvas"
       aria-labelledby="wishlistOffcanvasLabel"
+      data-bs-backdrop="true"
+      data-bs-scroll="false"
+      data-bs-keyboard="true"
     >
       <div className="offcanvas-header">
-        <h5 className="offcanvas-title" id="wishlistOffcanvasLabel">My Wishlist</h5>
-        <button 
-          type="button" 
-          className="btn-close" 
-          data-bs-dismiss="offcanvas" 
+        <h5 className="offcanvas-title" id="wishlistOffcanvasLabel">
+          My Wishlist
+        </h5>
+        <button
+          type="button"
+          className="btn-close"
+          data-bs-dismiss="offcanvas"
           aria-label="Close"
-        ></button>
+          onClick={onHide}
+        />
       </div>
+
       <div className="offcanvas-body">
         {wishlistItems.length === 0 ? (
           <div id="wishlist-empty-state" className="text-center py-5">
@@ -95,13 +72,16 @@ const WishlistOffcanvas = ({
             <p className="text-muted">
               Discover amazing products and save your favorites for later.
             </p>
-            <button className="btn btn-outline-success" onClick={onStartShopping}>
+            <button
+              className="btn btn-outline-success"
+              onClick={onStartShopping}
+            >
               Start Shopping
             </button>
           </div>
         ) : (
           <div id="wishlist-items-container">
-            {wishlistItems.map(item => (
+            {wishlistItems.map((item) => (
               <WishlistItem
                 key={item.id}
                 item={item}

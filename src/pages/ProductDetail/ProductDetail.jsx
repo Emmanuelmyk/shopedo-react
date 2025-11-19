@@ -1,33 +1,36 @@
 // ==========================================
 // FILE: src/pages/ProductDetail/ProductDetail.jsx
 // ==========================================
-import React, { useState, useEffect, useCallback } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
-import Navbar from '../../components/Navbar/Navbar';
-import Footer from '../../components/Footer/Footer';
-import ProductCard from '../../components/ProductCard/ProductCard';
-import ProductSkeleton from '../../components/Skeleton/ProductSkeleton';
-import DetailSkeleton from '../../components/Skeleton/DetailSkeleton';
-import WishlistOffcanvas from '../../components/Wishlist/WishlistOffcanvas';
-import CategoryMenu from '../../components/CategoryMenu/CategoryMenu';
-import EmptyState from '../../components/EmptyState/EmptyState';
-import Button from '../../components/Button/Button';
-import { supabase } from '../../utils/supabaseClient';
-import { useWishlist } from '../../hooks/useWishlist';
-import { useInfiniteScroll } from '../../hooks/useInfiniteScroll';
-import { useImageObserver } from '../../hooks/useImageObserver';
-import { shareProduct } from '../../utils/wishlistUtils';
-import { escapeHtml, formatNumber, formatDate } from '../../utils/formatUtils';
-import { getPublicUrlFromPath, getSellerProfileUrl } from '../../utils/imageUtils';
-import { getCategoryName } from '../../utils/categories';
-import './ProductDetail.css';
+import React, { useState, useEffect, useCallback } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import Navbar from "../../components/Navbar/Navbar";
+import Footer from "../../components/Footer/Footer";
+import ProductCard from "../../components/ProductCard/ProductCard";
+import ProductSkeleton from "../../components/Skeleton/ProductSkeleton";
+import DetailSkeleton from "../../components/Skeleton/DetailSkeleton";
+import WishlistOffcanvas from "../../components/Wishlist/WishlistOffcanvas";
+import CategoryMenu from "../../components/CategoryMenu/CategoryMenu";
+import EmptyState from "../../components/EmptyState/EmptyState";
+import Button from "../../components/Button/Button";
+import { supabase } from "../../utils/supabaseClient";
+import { useWishlist } from "../../hooks/useWishlist";
+import { useInfiniteScroll } from "../../hooks/useInfiniteScroll";
+import { useImageObserver } from "../../hooks/useImageObserver";
+import { shareProduct } from "../../utils/wishlistUtils";
+import { escapeHtml, formatNumber, formatDate } from "../../utils/formatUtils";
+import {
+  getPublicUrlFromPath,
+  getSellerProfileUrl,
+} from "../../utils/imageUtils";
+import { getCategoryName } from "../../utils/categories";
+import "./ProductDetail.css";
 
 const RELATED_PAGE_SIZE = 12;
 
 const ProductDetail = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const productId = searchParams.get('id');
+  const productId = searchParams.get("id");
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -37,11 +40,12 @@ const ProductDetail = () => {
   const [showWishlist, setShowWishlist] = useState(false);
   const [showCategoryMenu, setShowCategoryMenu] = useState(false);
   const [showSellerPhone, setShowSellerPhone] = useState(false);
-  const [contactButtonLabel, setContactButtonLabel] = useState('Contact Seller');
+  const [contactButtonLabel, setContactButtonLabel] =
+    useState("Contact Seller");
 
   // Scroll to top when component mounts
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'instant' });
+    window.scrollTo({ top: 0, behavior: "instant" });
   }, []);
 
   const {
@@ -49,7 +53,7 @@ const ProductDetail = () => {
     wishlistCount,
     toggleWishlist,
     removeFromWishlist,
-    isInWishlist
+    isInWishlist,
   } = useWishlist();
 
   const { observe: observeImage } = useImageObserver(true);
@@ -64,19 +68,19 @@ const ProductDetail = () => {
 
       try {
         const { data, error } = await supabase
-          .from('products')
-          .select('*')
-          .eq('id', productId)
+          .from("products")
+          .select("*")
+          .eq("id", productId)
           .single();
 
         if (error || !data) {
-          console.error('Error fetching product:', error);
+          console.error("Error fetching product:", error);
           setProduct(null);
         } else {
           setProduct(data);
         }
       } catch (err) {
-        console.error('Error fetching product:', err);
+        console.error("Error fetching product:", err);
         setProduct(null);
       } finally {
         setLoading(false);
@@ -91,18 +95,18 @@ const ProductDetail = () => {
     const fetchAds = async () => {
       try {
         const { data, error } = await supabase
-          .from('ads')
-          .select('id, image_path, link')
-          .order('id', { ascending: true });
+          .from("ads")
+          .select("id, image_path, link")
+          .order("id", { ascending: true });
 
         if (error) {
-          console.error('Ads fetch error:', error);
+          console.error("Ads fetch error:", error);
           return;
         }
 
         setAds(data || []);
       } catch (e) {
-        console.error('Ads fetch error:', e);
+        console.error("Ads fetch error:", e);
       }
     };
 
@@ -115,15 +119,17 @@ const ProductDetail = () => {
 
     try {
       const { data, error } = await supabase
-        .from('products')
-        .select('id, name, description, price, category_id, img_path, condition, location')
-        .eq('category_id', product.category_id)
-        .neq('id', product.id)
-        .order('id', { ascending: false })
+        .from("products")
+        .select(
+          "id, name, description, price, category_id, img_path, condition, location"
+        )
+        .eq("category_id", product.category_id)
+        .neq("id", product.id)
+        .order("id", { ascending: false })
         .range(relatedOffset, relatedOffset + RELATED_PAGE_SIZE - 1);
 
       if (error) {
-        console.error('Error fetching related products:', error);
+        console.error("Error fetching related products:", error);
         return false;
       }
 
@@ -131,12 +137,12 @@ const ProductDetail = () => {
         return false;
       }
 
-      setRelatedProducts(prev => [...prev, ...data]);
-      setRelatedOffset(prev => prev + data.length);
+      setRelatedProducts((prev) => [...prev, ...data]);
+      setRelatedOffset((prev) => prev + data.length);
 
       return data.length === RELATED_PAGE_SIZE;
     } catch (err) {
-      console.error('Error loading related products:', err);
+      console.error("Error loading related products:", err);
       return false;
     }
   }, [product, relatedOffset]);
@@ -144,17 +150,17 @@ const ProductDetail = () => {
   const {
     sentinelRef: relatedSentinelRef,
     loading: relatedLoading,
-    exhausted: relatedExhausted
+    exhausted: relatedExhausted,
   } = useInfiniteScroll(loadMoreRelatedProducts, {
-    enabled: !!product
+    enabled: !!product,
   });
 
   const handleContactSeller = () => {
     if (!showSellerPhone) {
       setShowSellerPhone(true);
-      setContactButtonLabel('Call Now');
+      setContactButtonLabel("Call Now");
     } else {
-      window.location.href = 'tel:+2348123456789';
+      window.location.href = "tel:+2348123456789";
     }
   };
 
@@ -163,12 +169,12 @@ const ProductDetail = () => {
   };
 
   const handleStartShopping = () => {
-    navigate('/');
+    // navigate("/");
     setShowWishlist(false);
   };
 
   const handleMenuToggle = () => {
-    setShowCategoryMenu(prev => !prev);
+    setShowCategoryMenu((prev) => !prev);
   };
 
   if (loading) {
@@ -207,9 +213,9 @@ const ProductDetail = () => {
     );
   }
 
-  const mainImageUrl = product.img_path 
-    ? getPublicUrlFromPath(product.img_path) 
-    : '/assets/emptypics.png';
+  const mainImageUrl = product.img_path
+    ? getPublicUrlFromPath(product.img_path)
+    : "/assets/emptypics.png";
   const sellerProfileUrl = getSellerProfileUrl(product.seller_profile_path);
   const categoryName = getCategoryName(product.category_id);
   const timePosted = formatDate(product.created_at);
@@ -239,8 +245,8 @@ const ProductDetail = () => {
         activeCategory={product.category_id.toString()}
         onCategorySelect={(categoryId) => {
           setShowCategoryMenu(false);
-          if (categoryId === 'all') {
-            navigate('/');
+          if (categoryId === "all") {
+            navigate("/");
           } else {
             navigate(`/?category=${categoryId}`);
           }
@@ -263,14 +269,18 @@ const ProductDetail = () => {
                 src={mainImageUrl}
                 alt={escapeHtml(product.name)}
                 className="product-detail-image mb-3"
-                onError={(e) => { e.target.src = '/assets/emptypics.png'; }}
+                onError={(e) => {
+                  e.target.src = "/assets/emptypics.png";
+                }}
               />
               <div className="thumbnail-container">
                 <img
                   src={mainImageUrl}
                   alt="Thumbnail 1"
                   className="thumbnail-img active"
-                  onError={(e) => { e.target.src = '/assets/emptypics.png'; }}
+                  onError={(e) => {
+                    e.target.src = "/assets/emptypics.png";
+                  }}
                 />
               </div>
 
@@ -281,19 +291,24 @@ const ProductDetail = () => {
                   </h5>
                   <ul className="list-unstyled">
                     <li>
-                      <i className="bi bi-check-circle"></i> Meet for public place with plenty people
+                      <i className="bi bi-check-circle"></i> Meet for public
+                      place with plenty people
                     </li>
                     <li>
-                      <i className="bi bi-check-circle"></i> Check the item well before you pay
+                      <i className="bi bi-check-circle"></i> Check the item well
+                      before you pay
                     </li>
                     <li>
-                      <i className="bi bi-check-circle"></i> No send money before you see the item
+                      <i className="bi bi-check-circle"></i> No send money
+                      before you see the item
                     </li>
                     <li>
-                      <i className="bi bi-check-circle"></i> Bring somebody wey you trust follow you
+                      <i className="bi bi-check-circle"></i> Bring somebody wey
+                      you trust follow you
                     </li>
                     <li>
-                      <i className="bi bi-check-circle"></i> If price too good, e fit be fake
+                      <i className="bi bi-check-circle"></i> If price too good,
+                      e fit be fake
                     </li>
                   </ul>
                 </div>
@@ -303,15 +318,22 @@ const ProductDetail = () => {
             <div className="col-lg-5">
               <div className="product-info-card mb-4">
                 <div className="card-body">
-                  <div className="product-price">₦{formatNumber(product.price)}</div>
+                  <div className="product-price">
+                    ₦{formatNumber(product.price)}
+                  </div>
                   <h1 className="product-title">{escapeHtml(product.name)}</h1>
                   <div className="product-location">
-                    <i className="bi bi-geo-alt-fill"></i> {escapeHtml(product.location)}
+                    <i className="bi bi-geo-alt-fill"></i>{" "}
+                    {escapeHtml(product.location)}
                   </div>
 
                   <div className="description-section">
                     <h6>Description</h6>
-                    <p>{escapeHtml(product.description || 'No description available.')}</p>
+                    <p>
+                      {escapeHtml(
+                        product.description || "No description available."
+                      )}
+                    </p>
                   </div>
 
                   <div className="product-details">
@@ -332,12 +354,16 @@ const ProductDetail = () => {
 
                   <div className="action-buttons">
                     <Button
-                      variant={productInWishlist ? 'primary' : 'secondary'}
+                      variant={productInWishlist ? "primary" : "secondary"}
                       onClick={() => toggleWishlist(product)}
                       className="flex-fill"
                     >
-                      <i className={`bi ${productInWishlist ? 'bi-check' : 'bi-bookmark'}`}></i>
-                      {productInWishlist ? 'Saved' : 'Save'}
+                      <i
+                        className={`bi ${
+                          productInWishlist ? "bi-check" : "bi-bookmark"
+                        }`}
+                      ></i>
+                      {productInWishlist ? "Saved" : "Save"}
                     </Button>
                     <Button
                       variant="primary"
@@ -358,13 +384,20 @@ const ProductDetail = () => {
                       src={sellerProfileUrl}
                       className="seller-avatar"
                       alt="Seller Profile"
-                      onError={(e) => { e.target.src = '/assets/profilepics.png'; }}
+                      onError={(e) => {
+                        e.target.src = "/assets/profilepics.png";
+                      }}
                     />
                     <div>
-                      <div style={{ marginBottom: '0.5rem' }}>
+                      <div style={{ marginBottom: "0.5rem" }}>
                         <div className="seller-name">
-                          {escapeHtml(product.seller_name || 'Anonymous Seller')}
-                          <span className="verified-badge" title="Verified Seller">
+                          {escapeHtml(
+                            product.seller_name || "Anonymous Seller"
+                          )}
+                          <span
+                            className="verified-badge"
+                            title="Verified Seller"
+                          >
                             <i className="bi bi-patch-check me-1"></i>Verified
                           </span>
                         </div>
@@ -385,7 +418,8 @@ const ProductDetail = () => {
                   </div>
                   {showSellerPhone && (
                     <div className="seller-phone show">
-                      <i className="bi bi-telephone-fill me-2"></i> +234 812 345 6789
+                      <i className="bi bi-telephone-fill me-2"></i> +234 812 345
+                      6789
                     </div>
                   )}
                 </div>
@@ -398,19 +432,24 @@ const ProductDetail = () => {
                   </h5>
                   <ul className="list-unstyled">
                     <li>
-                      <i className="bi bi-check-circle"></i> Meet for public place with plenty people
+                      <i className="bi bi-check-circle"></i> Meet for public
+                      place with plenty people
                     </li>
                     <li>
-                      <i className="bi bi-check-circle"></i> Check the item well before you pay
+                      <i className="bi bi-check-circle"></i> Check the item well
+                      before you pay
                     </li>
                     <li>
-                      <i className="bi bi-check-circle"></i> No send money before you see the item
+                      <i className="bi bi-check-circle"></i> No send money
+                      before you see the item
                     </li>
                     <li>
-                      <i className="bi bi-check-circle"></i> Bring somebody wey you trust follow you
+                      <i className="bi bi-check-circle"></i> Bring somebody wey
+                      you trust follow you
                     </li>
                     <li>
-                      <i className="bi bi-check-circle"></i> If price too good, e fit be fake
+                      <i className="bi bi-check-circle"></i> If price too good,
+                      e fit be fake
                     </li>
                   </ul>
                 </div>
@@ -430,7 +469,7 @@ const ProductDetail = () => {
             />
           ) : (
             <div className="row g-3" id="related-products-grid">
-              {relatedProducts.map(relatedProduct => (
+              {relatedProducts.map((relatedProduct) => (
                 <ProductCard
                   key={relatedProduct.id}
                   product={relatedProduct}
@@ -442,7 +481,11 @@ const ProductDetail = () => {
               {relatedLoading && <ProductSkeleton count={RELATED_PAGE_SIZE} />}
             </div>
           )}
-          <div ref={relatedSentinelRef} id="related-scroll-sentinel" style={{ height: '1px' }}></div>
+          <div
+            ref={relatedSentinelRef}
+            id="related-scroll-sentinel"
+            style={{ height: "1px" }}
+          ></div>
         </div>
       </main>
 
