@@ -3,23 +3,20 @@
 // ==========================================
 import React, { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
-import Navbar from "../../components/Navbar/Navbar";
+import AppLayout from "../../components/AppLayout/AppLayout";
 import SearchBar from "../../components/SearchBar/SearchBar";
 import Sidebar from "../../components/Sidebar/Sidebar";
 import ProductCard from "../../components/ProductCard/ProductCard";
 import ProductSkeleton from "../../components/Skeleton/ProductSkeleton";
-import WishlistOffcanvas from "../../components/Wishlist/WishlistOffcanvas";
-import CategoryMenu from "../../components/CategoryMenu/CategoryMenu";
 import Breadcrumb from "../../components/Breadcrumb/Breadcrumb";
 import EmptyState from "../../components/EmptyState/EmptyState";
 import Toast from "../../components/Toast/Toast";
 import { supabase } from "../../utils/supabaseClient";
-import { useWishlist } from "../../hooks/useWishlist";
+import { useWishlistContext } from "../../contexts/WishlistContext";
 import { useInfiniteScroll } from "../../hooks/useInfiniteScroll";
 import { useImageObserver } from "../../hooks/useImageObserver";
-import { shareProduct } from "../../utils/wishlistUtils";
+import { useAds } from "../../hooks/useAds";
 import { getCategoryName } from "../../utils/categories";
-import Footer from "../../components/Footer/Footer";
 import "./Home.css";
 
 const PAGE_SIZE = 12;
@@ -30,22 +27,13 @@ const Home = () => {
   const [offset, setOffset] = useState(0);
   const [currentCategoryId, setCurrentCategoryId] = useState("all");
   const [currentSearchTerm, setCurrentSearchTerm] = useState("");
-  const [ads, setAds] = useState([]);
-  const [showWishlist, setShowWishlist] = useState(false);
-  const [showCategoryMenu, setShowCategoryMenu] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [emptyStateConfig, setEmptyStateConfig] = useState(null);
 
-  const {
-    wishlistItems,
-    wishlistCount,
-    toggleWishlist,
-    removeFromWishlist,
-    isInWishlist,
-  } = useWishlist();
-
+  const { toggleWishlist, isInWishlist } = useWishlistContext();
   const { observe: observeImage } = useImageObserver(true);
+  const { ads } = useAds();
 
   const loadMoreProducts = useCallback(async () => {
     try {
@@ -113,33 +101,9 @@ const Home = () => {
     }
   }, [offset, currentCategoryId, currentSearchTerm]);
 
-  const { sentinelRef, loading, exhausted, reset, setExhausted } =
-    useInfiniteScroll(loadMoreProducts, {
-      enabled: !emptyStateConfig,
-    });
-
-  // Fetch ads on mount
-  useEffect(() => {
-    const fetchAds = async () => {
-      try {
-        const { data, error } = await supabase
-          .from("ads")
-          .select("id, image_path, link")
-          .order("id", { ascending: true });
-
-        if (error) {
-          console.error("Ads fetch error:", error);
-          return;
-        }
-
-        setAds(data || []);
-      } catch (e) {
-        console.error("Ads fetch error:", e);
-      }
-    };
-
-    fetchAds();
-  }, []);
+  const { sentinelRef, loading, reset } = useInfiniteScroll(loadMoreProducts, {
+    enabled: !emptyStateConfig,
+  });
 
   // Handle category from URL params
   useEffect(() => {
@@ -172,9 +136,14 @@ const Home = () => {
     resetPagination();
   };
 
-  const handleStartShopping = () => {
-    // handleCategorySelect('all');
-    setShowWishlist(false);
+  const handleToggleWishlist = (product) => {
+    const wasAdded = toggleWishlist(product);
+    if (wasAdded) {
+      setToastMessage("✓ Added to wishlist!");
+    } else {
+      setToastMessage("✓ Removed from wishlist");
+    }
+    setShowToast(true);
   };
 
   const categoryName =
@@ -182,36 +151,11 @@ const Home = () => {
       ? getCategoryName(parseInt(currentCategoryId))
       : null;
 
-  const handleMenuToggle = () => {
-    setShowCategoryMenu((prev) => !prev);
-  };
-
   return (
-    <>
-      <Navbar
-        wishlistCount={wishlistCount}
-        onWishlistClick={() => setShowWishlist(true)}
-        onMenuToggle={handleMenuToggle}
-        menuActive={showCategoryMenu}
-      />
-
-      <WishlistOffcanvas
-        show={showWishlist}
-        onHide={() => setShowWishlist(false)}
-        wishlistItems={wishlistItems}
-        onRemove={removeFromWishlist}
-        onShare={shareProduct}
-        onStartShopping={handleStartShopping}
-      />
-
-      <CategoryMenu
-        show={showCategoryMenu}
-        onHide={() => setShowCategoryMenu(false)}
-        activeCategory={currentCategoryId}
-        onCategorySelect={handleCategorySelect}
-        ads={ads}
-      />
-
+    <AppLayout
+      activeCategory={currentCategoryId}
+      onCategorySelect={handleCategorySelect}
+    >
       <div className="layout-container container">
         <Sidebar
           activeCategory={currentCategoryId}
@@ -239,7 +183,7 @@ const Home = () => {
                 <ProductCard
                   key={product.id}
                   product={product}
-                  onSaveToggle={toggleWishlist}
+                  onSaveToggle={handleToggleWishlist}
                   isInWishlist={isInWishlist(product.id)}
                   imageObserver={{ observe: observeImage }}
                 />
@@ -261,9 +205,7 @@ const Home = () => {
         message={toastMessage}
         onClose={() => setShowToast(false)}
       />
-
-      <Footer />
-    </>
+    </AppLayout>
   );
 };
 

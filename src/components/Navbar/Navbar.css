@@ -19,6 +19,45 @@
   max-width: 200px;
 }
 
+/* Wishlist button styles */
+.nav-link {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.nav-link:hover {
+  transform: scale(1.1);
+  color: var(--primary-accent) !important;
+}
+
+.nav-link.active {
+  color: var(--primary-accent) !important;
+}
+
+.nav-link i {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nav-link:active {
+  transform: scale(0.95);
+}
+
+/* Badge animation */
+.badge {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: badgePulse 2s ease-in-out infinite;
+}
+
+@keyframes badgePulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
 .hamburger {
   display: flex;
   flex-direction: column;

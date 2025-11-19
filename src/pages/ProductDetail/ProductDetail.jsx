@@ -3,17 +3,16 @@
 // ==========================================
 import React, { useState, useEffect, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import Navbar from "../../components/Navbar/Navbar";
-import Footer from "../../components/Footer/Footer";
+import AppLayout from "../../components/AppLayout/AppLayout";
+import SafeImage from "../../components/SafeImage/SafeImage";
 import ProductCard from "../../components/ProductCard/ProductCard";
 import ProductSkeleton from "../../components/Skeleton/ProductSkeleton";
 import DetailSkeleton from "../../components/Skeleton/DetailSkeleton";
-import WishlistOffcanvas from "../../components/Wishlist/WishlistOffcanvas";
-import CategoryMenu from "../../components/CategoryMenu/CategoryMenu";
 import EmptyState from "../../components/EmptyState/EmptyState";
 import Button from "../../components/Button/Button";
+import Toast from "../../components/Toast/Toast";
 import { supabase } from "../../utils/supabaseClient";
-import { useWishlist } from "../../hooks/useWishlist";
+import { useWishlistContext } from "../../contexts/WishlistContext";
 import { useInfiniteScroll } from "../../hooks/useInfiniteScroll";
 import { useImageObserver } from "../../hooks/useImageObserver";
 import { shareProduct } from "../../utils/wishlistUtils";
@@ -36,26 +35,18 @@ const ProductDetail = () => {
   const [loading, setLoading] = useState(true);
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [relatedOffset, setRelatedOffset] = useState(0);
-  const [ads, setAds] = useState([]);
-  const [showWishlist, setShowWishlist] = useState(false);
-  const [showCategoryMenu, setShowCategoryMenu] = useState(false);
   const [showSellerPhone, setShowSellerPhone] = useState(false);
   const [contactButtonLabel, setContactButtonLabel] =
     useState("Contact Seller");
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
 
   // Scroll to top when component mounts
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
   }, []);
 
-  const {
-    wishlistItems,
-    wishlistCount,
-    toggleWishlist,
-    removeFromWishlist,
-    isInWishlist,
-  } = useWishlist();
-
+  const { toggleWishlist, isInWishlist } = useWishlistContext();
   const { observe: observeImage } = useImageObserver(true);
 
   // Fetch product details
@@ -89,29 +80,6 @@ const ProductDetail = () => {
 
     fetchProduct();
   }, [productId]);
-
-  // Fetch ads
-  useEffect(() => {
-    const fetchAds = async () => {
-      try {
-        const { data, error } = await supabase
-          .from("ads")
-          .select("id, image_path, link")
-          .order("id", { ascending: true });
-
-        if (error) {
-          console.error("Ads fetch error:", error);
-          return;
-        }
-
-        setAds(data || []);
-      } catch (e) {
-        console.error("Ads fetch error:", e);
-      }
-    };
-
-    fetchAds();
-  }, []);
 
   // Load related products
   const loadMoreRelatedProducts = useCallback(async () => {
@@ -147,13 +115,10 @@ const ProductDetail = () => {
     }
   }, [product, relatedOffset]);
 
-  const {
-    sentinelRef: relatedSentinelRef,
-    loading: relatedLoading,
-    exhausted: relatedExhausted,
-  } = useInfiniteScroll(loadMoreRelatedProducts, {
-    enabled: !!product,
-  });
+  const { sentinelRef: relatedSentinelRef, loading: relatedLoading } =
+    useInfiniteScroll(loadMoreRelatedProducts, {
+      enabled: !!product,
+    });
 
   const handleContactSeller = () => {
     if (!showSellerPhone) {
@@ -168,48 +133,37 @@ const ProductDetail = () => {
     navigate(-1);
   };
 
-  const handleStartShopping = () => {
-    // navigate("/");
-    setShowWishlist(false);
-  };
-
-  const handleMenuToggle = () => {
-    setShowCategoryMenu((prev) => !prev);
+  const handleToggleWishlist = (product) => {
+    const wasAdded = toggleWishlist(product);
+    if (wasAdded) {
+      setToastMessage("✓ Added to wishlist!");
+    } else {
+      setToastMessage("✓ Removed from wishlist");
+    }
+    setShowToast(true);
   };
 
   if (loading) {
     return (
-      <>
-        <Navbar
-          wishlistCount={wishlistCount}
-          onWishlistClick={() => setShowWishlist(true)}
-          onMenuToggle={handleMenuToggle}
-          menuActive={showCategoryMenu}
-        />
+      <AppLayout activeCategory="all">
         <main>
           <div className="container px-3" id="product-detail-container">
             <DetailSkeleton />
           </div>
         </main>
-      </>
+      </AppLayout>
     );
   }
 
   if (!product) {
     return (
-      <>
-        <Navbar
-          wishlistCount={wishlistCount}
-          onWishlistClick={() => setShowWishlist(true)}
-          onMenuToggle={handleMenuToggle}
-          menuActive={showCategoryMenu}
-        />
+      <AppLayout activeCategory="all">
         <main>
           <div className="container px-3" id="product-detail-container">
             <div className="alert alert-danger">Product not found.</div>
           </div>
         </main>
-      </>
+      </AppLayout>
     );
   }
 
@@ -221,39 +175,19 @@ const ProductDetail = () => {
   const timePosted = formatDate(product.created_at);
   const productInWishlist = isInWishlist(product.id);
 
+  const handleCategorySelect = (categoryId) => {
+    if (categoryId === "all") {
+      navigate("/");
+    } else {
+      navigate(`/?category=${categoryId}`);
+    }
+  };
+
   return (
-    <>
-      <Navbar
-        wishlistCount={wishlistCount}
-        onWishlistClick={() => setShowWishlist(true)}
-        onMenuToggle={handleMenuToggle}
-        menuActive={showCategoryMenu}
-      />
-
-      <WishlistOffcanvas
-        show={showWishlist}
-        onHide={() => setShowWishlist(false)}
-        wishlistItems={wishlistItems}
-        onRemove={removeFromWishlist}
-        onShare={shareProduct}
-        onStartShopping={handleStartShopping}
-      />
-
-      <CategoryMenu
-        show={showCategoryMenu}
-        onHide={() => setShowCategoryMenu(false)}
-        activeCategory={product.category_id.toString()}
-        onCategorySelect={(categoryId) => {
-          setShowCategoryMenu(false);
-          if (categoryId === "all") {
-            navigate("/");
-          } else {
-            navigate(`/?category=${categoryId}`);
-          }
-        }}
-        ads={ads}
-      />
-
+    <AppLayout
+      activeCategory={product.category_id.toString()}
+      onCategorySelect={handleCategorySelect}
+    >
       <main>
         <div className="container px-3" id="product-detail-container">
           <div className="d-flex justify-content-start mb-3">
@@ -264,23 +198,17 @@ const ProductDetail = () => {
 
           <div className="row">
             <div className="col-lg-7 mb-4">
-              <img
+              <SafeImage
                 id="main-product-image"
                 src={mainImageUrl}
                 alt={escapeHtml(product.name)}
                 className="product-detail-image mb-3"
-                onError={(e) => {
-                  e.target.src = "/assets/emptypics.png";
-                }}
               />
               <div className="thumbnail-container">
-                <img
+                <SafeImage
                   src={mainImageUrl}
                   alt="Thumbnail 1"
                   className="thumbnail-img active"
-                  onError={(e) => {
-                    e.target.src = "/assets/emptypics.png";
-                  }}
                 />
               </div>
 
@@ -355,7 +283,7 @@ const ProductDetail = () => {
                   <div className="action-buttons">
                     <Button
                       variant={productInWishlist ? "primary" : "secondary"}
-                      onClick={() => toggleWishlist(product)}
+                      onClick={() => handleToggleWishlist(product)}
                       className="flex-fill"
                     >
                       <i
@@ -380,13 +308,11 @@ const ProductDetail = () => {
                 <div className="card-body">
                   <h4 className="card-title mb-3">Seller Information</h4>
                   <div className="seller-info">
-                    <img
+                    <SafeImage
                       src={sellerProfileUrl}
                       className="seller-avatar"
                       alt="Seller Profile"
-                      onError={(e) => {
-                        e.target.src = "/assets/profilepics.png";
-                      }}
+                      fallbackSrc="/assets/profilepics.png"
                     />
                     <div>
                       <div style={{ marginBottom: "0.5rem" }}>
@@ -489,8 +415,12 @@ const ProductDetail = () => {
         </div>
       </main>
 
-      <Footer />
-    </>
+      <Toast
+        show={showToast}
+        message={toastMessage}
+        onClose={() => setShowToast(false)}
+      />
+    </AppLayout>
   );
 };
 

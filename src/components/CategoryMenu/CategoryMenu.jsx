@@ -1,111 +1,122 @@
 // ==========================================
 // FILE: src/components/CategoryMenu/CategoryMenu.jsx
 // ==========================================
-import React, { useEffect, useRef } from 'react';
-import { CATEGORIES } from '../../utils/categories';
-import AdsCarousel from '../AdsCarousel/AdsCarousel';
-import './CategoryMenu.css';
+import React, { useEffect, useRef } from "react";
+import { CATEGORIES } from "../../utils/categories";
+import AdsCarousel from "../AdsCarousel/AdsCarousel";
+import "./CategoryMenu.css";
 
-const CategoryMenu = ({ 
-  show, 
-  onHide, 
-  activeCategory, 
+const CategoryMenu = ({
+  show,
+  onHide,
+  activeCategory,
   onCategorySelect,
-  ads 
+  ads,
 }) => {
   const offcanvasRef = useRef(null);
-  const bsOffcanvasRef = useRef(null);
+  const backdropRef = useRef(null);
 
+  // Handle show/hide with manual DOM manipulation
   useEffect(() => {
     const offcanvasElement = offcanvasRef.current;
     if (!offcanvasElement) return;
 
-    // Wait for Bootstrap to be available
-    const initOffcanvas = () => {
-      if (window.bootstrap && window.bootstrap.Offcanvas) {
-        if (!bsOffcanvasRef.current) {
-          bsOffcanvasRef.current = new window.bootstrap.Offcanvas(offcanvasElement, {
-            backdrop: true,
-            keyboard: true,
-            scroll: false
-          });
+    if (show) {
+      // Show offcanvas
+      offcanvasElement.classList.add("show");
+      document.body.style.overflow = "hidden";
+      document.body.style.paddingRight = "0px";
 
-          offcanvasElement.addEventListener('hidden.bs.offcanvas', () => {
-            if (onHide) onHide();
+      // Create and show backdrop
+      if (!backdropRef.current) {
+        const backdrop = document.createElement("div");
+        backdrop.className = "offcanvas-backdrop fade";
+        backdrop.style.zIndex = "1040";
+        document.body.appendChild(backdrop);
+        backdropRef.current = backdrop;
+
+        // Trigger fade-in with smoother timing
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            backdrop.classList.add("show");
           });
-        }
+        });
+
+        // Close on backdrop click
+        backdrop.addEventListener("click", onHide);
       }
-    };
-
-    if (window.bootstrap) {
-      initOffcanvas();
     } else {
-      // Wait for Bootstrap to load
-      setTimeout(initOffcanvas, 100);
+      // Hide offcanvas
+      offcanvasElement.classList.remove("show");
+      document.body.style.overflow = "";
+      document.body.style.paddingRight = "";
+
+      // Remove backdrop with smooth fade-out
+      if (backdropRef.current) {
+        backdropRef.current.classList.remove("show");
+        setTimeout(() => {
+          if (backdropRef.current) {
+            backdropRef.current.remove();
+            backdropRef.current = null;
+          }
+        }, 350); // Slightly longer for smoother fade
+      }
     }
 
     return () => {
-      if (bsOffcanvasRef.current) {
-        try {
-          bsOffcanvasRef.current.dispose();
-        } catch (e) {
-          console.warn('Error disposing offcanvas:', e);
-        }
-        bsOffcanvasRef.current = null;
+      // Cleanup on unmount
+      if (backdropRef.current) {
+        backdropRef.current.remove();
+        backdropRef.current = null;
       }
+      document.body.style.overflow = "";
+      document.body.style.paddingRight = "";
     };
-  }, [onHide]);
-
-  useEffect(() => {
-    if (!bsOffcanvasRef.current) return;
-
-    try {
-      if (show) {
-        bsOffcanvasRef.current.show();
-      } else {
-        bsOffcanvasRef.current.hide();
-      }
-    } catch (e) {
-      console.warn('Error toggling offcanvas:', e);
-    }
-  }, [show]);
+  }, [show, onHide]);
 
   const handleCategoryClick = (categoryId) => {
     onCategorySelect(categoryId);
   };
 
   return (
-    <div 
+    <div
       ref={offcanvasRef}
-      className="offcanvas offcanvas-end" 
-      tabIndex="-1" 
+      className="offcanvas offcanvas-end"
+      tabIndex="-1"
       id="offcanvasMenu"
       aria-labelledby="offcanvasMenuLabel"
     >
       <div className="offcanvas-header">
-        <h5 className="offcanvas-title" id="offcanvasMenuLabel">Categories</h5>
-        <button 
-          type="button" 
-          className="btn-close" 
-          data-bs-dismiss="offcanvas" 
+        <h5 className="offcanvas-title" id="offcanvasMenuLabel">
+          Categories
+        </h5>
+        <button
+          type="button"
+          className="btn-close"
+          data-bs-dismiss="offcanvas"
           aria-label="Close"
         ></button>
       </div>
       <div className="offcanvas-body">
         <div className="list-group category-list" id="mobile-categories-list">
           <button
-            className={`list-group-item list-group-item-action ${activeCategory === 'all' ? 'active' : ''}`}
-            onClick={() => handleCategoryClick('all')}
+            className={`list-group-item list-group-item-action ${
+              activeCategory === "all" ? "active" : ""
+            }`}
+            onClick={() => handleCategoryClick("all")}
           >
             <i className="bi bi-house-door"></i>All
           </button>
-          {CATEGORIES.map(cat => (
+          {CATEGORIES.map((cat) => (
             <button
               key={cat.id}
-              className={`list-group-item list-group-item-action ${activeCategory === cat.id.toString() ? 'active' : ''}`}
+              className={`list-group-item list-group-item-action ${
+                activeCategory === cat.id.toString() ? "active" : ""
+              }`}
               onClick={() => handleCategoryClick(cat.id.toString())}
             >
-              <i className={`bi bi-${cat.icon}`}></i>{cat.name}
+              <i className={`bi bi-${cat.icon}`}></i>
+              {cat.name}
             </button>
           ))}
         </div>

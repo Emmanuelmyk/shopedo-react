@@ -14,42 +14,73 @@ const WishlistOffcanvas = ({
   onStartShopping,
 }) => {
   const offcanvasRef = useRef(null);
+  const backdropRef = useRef(null);
 
-  // Sync Bootstrap's hide event → parent onHide
+  // Handle show/hide with manual DOM manipulation
   useEffect(() => {
-    const el = offcanvasRef.current;
-    if (!el) return;
-
-    const handleHidden = () => onHide?.();
-
-    el.addEventListener("hidden.bs.offcanvas", handleHidden);
-    return () => el.removeEventListener("hidden.bs.offcanvas", handleHidden);
-  }, [onHide]);
-
-  // Control visibility via data attributes (pure Bootstrap way)
-  useEffect(() => {
-    const el = offcanvasRef.current;
-    if (!el) return;
+    const offcanvasElement = offcanvasRef.current;
+    if (!offcanvasElement) return;
 
     if (show) {
-      el.classList.add("show");
-      document.body.classList.add("offcanvas-open"); // optional: prevent scroll
+      // Show offcanvas
+      offcanvasElement.classList.add("show");
+      document.body.style.overflow = "hidden";
+      document.body.style.paddingRight = "0px";
+
+      // Create and show backdrop
+      if (!backdropRef.current) {
+        const backdrop = document.createElement("div");
+        backdrop.className = "offcanvas-backdrop fade";
+        backdrop.style.zIndex = "1040";
+        document.body.appendChild(backdrop);
+        backdropRef.current = backdrop;
+
+        // Trigger fade-in with smoother timing
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            backdrop.classList.add("show");
+          });
+        });
+
+        // Close on backdrop click
+        backdrop.addEventListener("click", onHide);
+      }
     } else {
-      el.classList.remove("show");
-      document.body.classList.remove("offcanvas-open");
+      // Hide offcanvas
+      offcanvasElement.classList.remove("show");
+      document.body.style.overflow = "";
+      document.body.style.paddingRight = "";
+
+      // Remove backdrop with smooth fade-out
+      if (backdropRef.current) {
+        backdropRef.current.classList.remove("show");
+        setTimeout(() => {
+          if (backdropRef.current) {
+            backdropRef.current.remove();
+            backdropRef.current = null;
+          }
+        }, 350); // Slightly longer for smoother fade
+      }
     }
-  }, [show]);
+
+    return () => {
+      // Cleanup on unmount
+      if (backdropRef.current) {
+        backdropRef.current.remove();
+        backdropRef.current = null;
+      }
+      document.body.style.overflow = "";
+      document.body.style.paddingRight = "";
+    };
+  }, [show, onHide]);
 
   return (
     <div
       ref={offcanvasRef}
-      className={`offcanvas offcanvas-end ${show ? "show" : ""}`}
+      className="offcanvas offcanvas-end"
       tabIndex="-1"
       id="wishlistOffcanvas"
       aria-labelledby="wishlistOffcanvasLabel"
-      data-bs-backdrop="true"
-      data-bs-scroll="false"
-      data-bs-keyboard="true"
     >
       <div className="offcanvas-header">
         <h5 className="offcanvas-title" id="wishlistOffcanvasLabel">

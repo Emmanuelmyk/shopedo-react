@@ -41,3 +41,17 @@
   text-align: center;
   margin-right: 0.75rem;
 }
+
+/* Smooth offcanvas animations for category menu */
+#offcanvasMenu.offcanvas {
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+
+#offcanvasMenu.offcanvas.show {
+  transform: translateX(0) !important;
+}
+
+#offcanvasMenu.offcanvas:not(.show) {
+  transform: translateX(100%) !important;
+}

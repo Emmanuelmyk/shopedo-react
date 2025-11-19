@@ -1,17 +1,17 @@
 // ==========================================
 // FILE: src/components/Button/Button.jsx
 // ==========================================
-import React from 'react';
-import './Button.css';
+import React from "react";
+import "./Button.css";
 
-const Button = ({ 
-  children, 
-  variant = 'primary', 
-  onClick, 
+const Button = ({
+  children,
+  variant = "primary",
+  onClick,
   disabled = false,
-  className = '',
-  type = 'button',
-  ...props 
+  className = "",
+  type = "button",
+  ...props
 }) => {
   return (
     <button

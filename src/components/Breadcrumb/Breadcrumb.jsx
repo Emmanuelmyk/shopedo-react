@@ -1,8 +1,8 @@
 // ==========================================
 // FILE: src/components/Breadcrumb/Breadcrumb.jsx
 // ==========================================
-import React from 'react';
-import './Breadcrumb.css';
+import React from "react";
+import "./Breadcrumb.css";
 
 const Breadcrumb = ({ categoryName, onHomeClick }) => {
   return (
@@ -12,7 +12,13 @@ const Breadcrumb = ({ categoryName, onHomeClick }) => {
           {categoryName ? (
             <>
               <li className="breadcrumb-item">
-                <a href="#" onClick={(e) => { e.preventDefault(); onHomeClick(); }}>
+                <a
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    onHomeClick();
+                  }}
+                >
                   All Products
                 </a>
               </li>

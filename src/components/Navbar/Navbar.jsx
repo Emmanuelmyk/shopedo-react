@@ -10,6 +10,7 @@ const Navbar = ({
   onWishlistClick,
   onMenuToggle,
   menuActive,
+  wishlistActive,
 }) => {
   return (
     <nav className="navbar navbar-expand-lg">
@@ -20,15 +21,19 @@ const Navbar = ({
         <div className="d-flex align-items-center ms-auto">
           {/* Wishlist Button */}
           <button
-            className="nav-link position-relative me-2 p-0 border-0 bg-transparent"
+            className={`nav-link position-relative me-2 p-0 border-0 bg-transparent ${
+              wishlistActive ? "active" : ""
+            }`}
             type="button"
-            onClick={(e) => {
-              e.preventDefault(); // Prevent default anchor behavior
-              onWishlistClick(); // Trigger parent handler to show Wishlist
-            }}
-            aria-label="Open Wishlist"
+            onClick={onWishlistClick}
+            aria-label="Toggle Wishlist"
+            aria-expanded={wishlistActive}
           >
-            <i className="bi bi-bookmark fs-5"></i>
+            <i
+              className={`bi ${
+                wishlistActive ? "bi-bookmark-fill" : "bi-bookmark"
+              } fs-5`}
+            ></i>
             {wishlistCount > 0 && (
               <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-dark">
                 {wishlistCount}
@@ -46,10 +51,9 @@ const Navbar = ({
             id="menuToggleBtn"
             className="btn d-lg-none p-0 border-0 bg-transparent"
             type="button"
-            data-bs-toggle="offcanvas"
-            data-bs-target="#offcanvasMenu"
-            aria-controls="offcanvasMenu"
             onClick={onMenuToggle}
+            aria-label="Toggle menu"
+            aria-expanded={menuActive}
           >
             <div
               className={`hamburger ${menuActive ? "active" : ""}`}

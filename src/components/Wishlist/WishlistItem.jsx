@@ -1,12 +1,15 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { escapeHtml, formatNumber } from '../../utils/formatUtils';
-import { getPublicUrlFromPath } from '../../utils/imageUtils';
-import './Wishlist.css';
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import SafeImage from "../SafeImage/SafeImage";
+import { escapeHtml, formatNumber } from "../../utils/formatUtils";
+import { getPublicUrlFromPath } from "../../utils/imageUtils";
+import "./Wishlist.css";
 
 const WishlistItem = ({ item, onRemove, onShare }) => {
   const navigate = useNavigate();
-  const imgPublicUrl = item.img_path ? getPublicUrlFromPath(item.img_path) : '/assets/emptypics.png';
+  const imgPublicUrl = item.img_path
+    ? getPublicUrlFromPath(item.img_path)
+    : "/assets/emptypics.png";
 
   const handleProductClick = () => {
     navigate(`/product-detail?id=${item.id}`);
@@ -14,17 +17,19 @@ const WishlistItem = ({ item, onRemove, onShare }) => {
 
   return (
     <div className="wishlist-item position-relative">
-      <img 
-        src={escapeHtml(imgPublicUrl)} 
-        alt={escapeHtml(item.name)} 
-        loading="lazy" 
-        onError={(e) => { e.target.src = '/assets/emptypics.png'; }}
+      <SafeImage
+        src={imgPublicUrl}
+        alt={escapeHtml(item.name)}
+        loading="lazy"
       />
       <div className="wishlist-item-info">
         <h6>
-          <a 
-            href="#" 
-            onClick={(e) => { e.preventDefault(); handleProductClick(); }}
+          <a
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              handleProductClick();
+            }}
             className="text-decoration-none text-reset"
           >
             {escapeHtml(item.name)}
@@ -37,13 +42,13 @@ const WishlistItem = ({ item, onRemove, onShare }) => {
         </div>
       </div>
       <div className="wishlist-actions">
-        <i 
-          className="bi bi-trash-fill wishlist-delete" 
+        <i
+          className="bi bi-trash-fill wishlist-delete"
           onClick={() => onRemove(item.id)}
           title="Remove from saved"
         ></i>
-        <button 
-          className="share-btn" 
+        <button
+          className="share-btn"
           onClick={() => onShare(item.id, item.name, item.price)}
           title="Share this product"
         >
