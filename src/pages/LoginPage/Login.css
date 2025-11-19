@@ -2,7 +2,7 @@
 /* FINAL VERSION – Mobile-First, Fits Every Screen */
 
 .login-container {
-  min-height: 100dvh; /* Dynamic viewport height */
+  min-height: 100dvh;
   background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
   display: flex;
   flex-direction: column;
@@ -10,6 +10,16 @@
   position: relative;
   overflow: hidden;
   font-family: "Inter", system-ui, -apple-system, sans-serif;
+  /* Force container to start at top */
+  scroll-behavior: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+/* Ensure body doesn't retain scroll position */
+body.login-page {
+  overflow-x: hidden;
+  scroll-behavior: auto;
 }
 
 /* Subtle animated background */
