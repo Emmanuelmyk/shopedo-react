@@ -94,7 +94,7 @@ const Dashboard = () => {
             >
               <i className="bi bi-plus-circle me-2"></i>
               <span className="d-none d-sm-inline">Add New Product</span>
-              <span className="d-inline d-sm-none">Add</span>
+              <span className="d-inline d-sm-none">Add Product</span>
             </Link>
           </div>
         </div>
