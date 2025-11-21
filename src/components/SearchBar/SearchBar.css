@@ -4,7 +4,46 @@
   padding: 0.5rem 0;
 }
 
+.search-container .input-group {
+  display: flex;
+  flex-wrap: nowrap;
+}
+
+.search-container #searchInput {
+  flex: 1;
+  min-width: 0;
+}
+
+.search-container #clearBtn,
+.search-container #searchBtn {
+  flex-shrink: 0;
+}
+
 #searchInput:focus {
   box-shadow: none !important;
   border-color: var(--border-color) !important;
+}
+
+/* Ensure buttons stay on the right on mobile */
+@media (max-width: 767px) {
+  .search-container .input-group {
+    flex-wrap: nowrap !important;
+  }
+
+  .search-container #searchInput {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .search-container #clearBtn {
+    flex: 0 0 auto;
+    width: auto;
+    min-width: 44px;
+  }
+
+  .search-container #searchBtn {
+    flex: 0 0 auto;
+    width: auto;
+    min-width: 44px;
+  }
 }
