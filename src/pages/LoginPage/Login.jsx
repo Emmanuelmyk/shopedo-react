@@ -1,6 +1,6 @@
 // src/pages/LoginPage/Login.jsx
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "../../utils/supabaseClient";
 import "./Login.css";
 import Navbar from "../../components/Navbar/Navbar";
@@ -18,11 +18,19 @@ export default function Login() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState(0);
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Scroll to top when component mounts
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
-  }, []);
+
+    // Check if there's a session expiry message from inactivity logout
+    if (location.state?.message) {
+      setMessage(location.state.message);
+      // Clear the location state
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
 
   const calculateStrength = (pwd) => {
     let score = 0;

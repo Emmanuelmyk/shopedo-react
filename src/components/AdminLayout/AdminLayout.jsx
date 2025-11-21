@@ -5,6 +5,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "../../utils/supabaseClient";
+import { useInactivityLogout } from "../../hooks/useInactivityLogout";
 import "./AdminLayout.css";
 
 const AdminLayout = ({ children }) => {
@@ -13,6 +14,9 @@ const AdminLayout = ({ children }) => {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 992);
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Auto logout after 10 minutes of inactivity (with 2 minute warning)
+  const { showWarning } = useInactivityLogout(10 * 60 * 1000, 2 * 60 * 1000);
 
   useEffect(() => {
     const getUser = async () => {
@@ -176,6 +180,17 @@ const AdminLayout = ({ children }) => {
             </div>
           </div>
         </header>
+
+        {/* Inactivity Warning Banner */}
+        {showWarning && (
+          <div className="inactivity-warning">
+            <i className="bi bi-exclamation-triangle-fill me-2"></i>
+            <span>
+              You will be logged out in 2 minutes due to inactivity. Move your
+              mouse or press any key to stay logged in.
+            </span>
+          </div>
+        )}
 
         {/* Content */}
         <main className="admin-content">{children}</main>
