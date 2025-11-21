@@ -3,7 +3,7 @@
 
 .login-container {
   min-height: 100dvh; /* Dynamic viewport height */
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
   display: flex;
   flex-direction: column;
   padding: 1rem;
@@ -19,7 +19,7 @@
   inset: -50%;
   background: radial-gradient(
     circle at center,
-    rgba(25, 135, 84, 0.04) 0%,
+    rgba(25, 135, 84, 0.08) 0%,
     transparent 70%
   );
   animation: float 22s ease-in-out infinite;
@@ -70,8 +70,7 @@
   height: 2.5rem; /* Reduced size */
   width: auto;
   margin: 0 auto 0.75rem;
-  filter: brightness(0) saturate(100%) invert(24%) sepia(98%) saturate(1500%)
-    hue-rotate(130deg) brightness(90%) contrast(85%);
+  filter: none; /* No filter - use original dark logo */
   transition: transform 0.3s ease;
 }
 
@@ -82,13 +81,13 @@
 .login-title {
   font-size: 1.65rem; /* Smaller than before */
   font-weight: 700;
-  color: #1f2937;
+  color: #f1f5f9;
   margin: 0;
   line-height: 1.2;
 }
 
 .login-subtitle {
-  color: #6b7280;
+  color: #94a3b8;
   margin-top: 0.5rem;
   font-size: 0.925rem;
   line-height: 1.4;
@@ -96,14 +95,14 @@
 
 /* ———————— LOGIN CARD ———————— */
 .login-card {
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(30, 41, 59, 0.95);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(229, 231, 235, 0.8);
+  border: 1px solid rgba(71, 85, 105, 0.8);
   border-radius: 1rem;
   padding: 2rem 1.75rem;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
-    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3),
+    0 4px 6px -2px rgba(0, 0, 0, 0.2);
   animation: slideUp 0.7s ease-out 0.1s both;
   max-height: calc(100dvh - 14rem);
   overflow-y: auto;
@@ -112,7 +111,7 @@
 
 .login-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.4);
 }
 
 /* ———————— FORM ———————— */
@@ -130,29 +129,30 @@
 .form-label {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #374151;
+  color: #cbd5e1;
   margin-bottom: 0.5rem;
 }
 
 .form-input {
   width: 100%;
   padding: 0.8rem 1rem;
-  border: 1.5px solid #e5e7eb;
+  border: 1.5px solid #475569;
   border-radius: 0.5rem;
   font-size: 0.925rem;
-  background: #ffffff;
+  background: #1e293b;
+  color: #f1f5f9;
   transition: all 0.25s ease;
 }
 
 .form-input:focus {
   outline: none;
   border-color: #198754;
-  box-shadow: 0 0 0 4px rgba(25, 135, 84, 0.12);
+  box-shadow: 0 0 0 4px rgba(25, 135, 84, 0.2);
   transform: translateY(-1px);
 }
 
 .form-input::placeholder {
-  color: #9ca3af;
+  color: #64748b;
 }
 
 /* Password Toggle */
@@ -167,7 +167,7 @@
   transform: translateY(-50%);
   background: none;
   border: none;
-  color: #6b7280;
+  color: #94a3b8;
   cursor: pointer;
   padding: 0.5rem;
   font-size: 1.1rem;
@@ -189,7 +189,7 @@
   display: flex;
   justify-content: space-between;
   font-size: 0.75rem;
-  color: #6b7280;
+  color: #94a3b8;
   margin-bottom: 0.375rem;
 }
 
@@ -199,7 +199,7 @@
 
 .strength-bar {
   height: 6px;
-  background: #e5e7eb;
+  background: #475569;
   border-radius: 3px;
   overflow: hidden;
 }

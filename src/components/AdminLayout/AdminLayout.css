@@ -77,12 +77,11 @@
   opacity: 0.9;
 }
 
-.logo-image {
+/* .logo-image {
   height: 45px;
   width: auto;
   max-width: 180px;
-  filter: brightness(0) invert(1);
-}
+} */
 
 .sidebar-close {
   display: none;
