@@ -251,7 +251,7 @@ const EditProduct = () => {
               <div className="row g-4">
                 {/* Image Upload - Same as AddProduct */}
                 <div className="col-12">
-                  <label className="form-label">Product Image</label>
+                  <label className="form-label-txt">Product Image</label>
                   <div className="image-upload-section">
                     <div className="image-preview-container">
                       {imagePreview ? (
@@ -294,7 +294,7 @@ const EditProduct = () => {
 
                 {/* Product Name */}
                 <div className="col-md-6">
-                  <label htmlFor="name" className="form-label">
+                  <label htmlFor="name" className="form-label-txt">
                     Product Name <span className="text-danger">*</span>
                   </label>
                   <input
@@ -315,7 +315,7 @@ const EditProduct = () => {
 
                 {/* Price */}
                 <div className="col-md-6">
-                  <label htmlFor="price" className="form-label">
+                  <label htmlFor="price" className="form-label-txt">
                     Price (₦) <span className="text-danger">*</span>
                   </label>
                   <input
@@ -338,7 +338,7 @@ const EditProduct = () => {
 
                 {/* Category */}
                 <div className="col-md-6">
-                  <label htmlFor="category_id" className="form-label">
+                  <label htmlFor="category_id" className="form-label-txt">
                     Category <span className="text-danger">*</span>
                   </label>
                   <select
@@ -364,7 +364,7 @@ const EditProduct = () => {
 
                 {/* Condition */}
                 <div className="col-md-6">
-                  <label htmlFor="condition" className="form-label">
+                  <label htmlFor="condition" className="form-label-txt">
                     Condition <span className="text-danger">*</span>
                   </label>
                   <select
@@ -384,7 +384,7 @@ const EditProduct = () => {
 
                 {/* Location */}
                 <div className="col-md-6">
-                  <label htmlFor="location" className="form-label">
+                  <label htmlFor="location" className="form-label-txt">
                     Location <span className="text-danger">*</span>
                   </label>
                   <select
@@ -410,7 +410,7 @@ const EditProduct = () => {
 
                 {/* Seller Name */}
                 <div className="col-md-6">
-                  <label htmlFor="seller_name" className="form-label">
+                  <label htmlFor="seller_name" className="form-label-txt">
                     Seller Name <span className="text-danger">*</span>
                   </label>
                   <input
@@ -431,7 +431,7 @@ const EditProduct = () => {
 
                 {/* Description */}
                 <div className="col-12">
-                  <label htmlFor="description" className="form-label">
+                  <label htmlFor="description" className="form-label-txt">
                     Description
                   </label>
                   <textarea
@@ -450,7 +450,7 @@ const EditProduct = () => {
                   <div className="d-flex gap-3">
                     <button
                       type="submit"
-                      className="btn btn-primary"
+                      className="btn btn-success"
                       disabled={saving}
                     >
                       {saving ? (

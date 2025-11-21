@@ -90,7 +90,7 @@ const Dashboard = () => {
           <div className="welcome-actions">
             <Link
               to="/admin/products/add"
-              className="btn btn-primary btn-add-product"
+              className="btn btn-success btn-add-product"
             >
               <i className="bi bi-plus-circle me-2"></i>
               <span className="d-none d-sm-inline">Add New Product</span>
@@ -228,7 +228,7 @@ const Dashboard = () => {
               </div>
               <h3>No products yet</h3>
               <p>Start selling by adding your first product</p>
-              <Link to="/admin/products/add" className="btn btn-primary">
+              <Link to="/admin/products/add" className="btn btn-success">
                 <i className="bi bi-plus-circle me-2"></i>
                 Add Your First Product
               </Link>
@@ -263,7 +263,7 @@ const Dashboard = () => {
                         </td>
                         <td>
                           <span className="category-badge">
-                            {product.category_id}
+                            {getCategoryName(product.category_id)}
                           </span>
                         </td>
                         <td>
@@ -308,7 +308,7 @@ const Dashboard = () => {
                     </div>
                     <div className="product-mobile-meta">
                       <span className="category-badge-mobile">
-                        Category {product.category_id}
+                        {getCategoryName(product.category_id)}
                       </span>
                       <span className="product-date-mobile">
                         {new Date(product.created_at).toLocaleDateString(
@@ -320,7 +320,7 @@ const Dashboard = () => {
                     <div className="product-mobile-actions">
                       <Link
                         to={`/admin/products/edit/${product.id}`}
-                        className="btn btn-sm btn-primary w-100"
+                        className="btn btn-sm btn-success w-100"
                       >
                         <i className="bi bi-pencil me-1"></i>
                         Edit Product

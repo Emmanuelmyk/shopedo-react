@@ -164,7 +164,6 @@ const AdminLayout = ({ children }) => {
                 alt="EDOFINDS"
                 className="brand-logo"
               />
-              <span className="brand-text">Seller Dashboard</span>
             </div>
           </div>
 

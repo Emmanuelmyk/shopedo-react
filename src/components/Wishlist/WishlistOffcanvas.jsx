@@ -16,7 +16,7 @@ const WishlistOffcanvas = ({
   const offcanvasRef = useRef(null);
   const backdropRef = useRef(null);
 
-  // Handle show/hide with manual DOM manipulation
+  // Handle show/hide with simple uniform animation
   useEffect(() => {
     const offcanvasElement = offcanvasRef.current;
     if (!offcanvasElement) return;
@@ -25,22 +25,14 @@ const WishlistOffcanvas = ({
       // Show offcanvas
       offcanvasElement.classList.add("show");
       document.body.style.overflow = "hidden";
-      document.body.style.paddingRight = "0px";
 
       // Create and show backdrop
       if (!backdropRef.current) {
         const backdrop = document.createElement("div");
-        backdrop.className = "offcanvas-backdrop fade";
+        backdrop.className = "offcanvas-backdrop fade show";
         backdrop.style.zIndex = "1040";
         document.body.appendChild(backdrop);
         backdropRef.current = backdrop;
-
-        // Trigger fade-in with smoother timing
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            backdrop.classList.add("show");
-          });
-        });
 
         // Close on backdrop click
         backdrop.addEventListener("click", onHide);
@@ -49,17 +41,11 @@ const WishlistOffcanvas = ({
       // Hide offcanvas
       offcanvasElement.classList.remove("show");
       document.body.style.overflow = "";
-      document.body.style.paddingRight = "";
 
-      // Remove backdrop with smooth fade-out
+      // Remove backdrop immediately
       if (backdropRef.current) {
-        backdropRef.current.classList.remove("show");
-        setTimeout(() => {
-          if (backdropRef.current) {
-            backdropRef.current.remove();
-            backdropRef.current = null;
-          }
-        }, 350); // Slightly longer for smoother fade
+        backdropRef.current.remove();
+        backdropRef.current = null;
       }
     }
 
@@ -70,7 +56,6 @@ const WishlistOffcanvas = ({
         backdropRef.current = null;
       }
       document.body.style.overflow = "";
-      document.body.style.paddingRight = "";
     };
   }, [show, onHide]);
 

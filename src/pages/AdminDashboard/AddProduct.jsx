@@ -234,7 +234,7 @@ const AddProduct = () => {
                       />
                       <label
                         htmlFor="image"
-                        className="btn btn-outline-primary"
+                        className="btn btn-outline-success"
                       >
                         <i className="bi bi-upload me-2"></i>
                         Choose Image
@@ -407,7 +407,7 @@ const AddProduct = () => {
                   <div className="d-flex gap-3">
                     <button
                       type="submit"
-                      className="btn btn-primary"
+                      className="btn btn-success"
                       disabled={loading}
                     >
                       {loading ? (

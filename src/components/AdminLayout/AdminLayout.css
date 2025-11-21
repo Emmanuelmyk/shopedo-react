@@ -333,6 +333,38 @@
   min-width: 0; /* Allow text to shrink */
 }
 
+/* Navbar Logout Button */
+.navbar-logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: rgba(255, 107, 107, 0.1);
+  border: 1px solid rgba(255, 107, 107, 0.3);
+  border-radius: 10px;
+  color: #ff6b6b;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  white-space: nowrap;
+}
+
+.navbar-logout-btn:hover {
+  background: rgba(255, 107, 107, 0.2);
+  border-color: #ff6b6b;
+  color: #ff5252;
+  transform: translateY(-2px);
+}
+
+.navbar-logout-btn i {
+  font-size: 1.1rem;
+}
+
+.logout-text {
+  font-weight: 600;
+}
+
 /* ==========================================
    CONTENT AREA
    ========================================== */
@@ -421,12 +453,33 @@
     height: 32px;
     font-size: 1.1rem;
   }
+
+  /* Navbar logout button - icon only on mobile */
+  .navbar-logout-btn {
+    padding: 0.5rem;
+    min-width: 40px;
+    justify-content: center;
+  }
+
+  .logout-text {
+    display: none; /* Hide text on mobile, show icon only */
+  }
 }
 
 /* Tablet (768px - 991px) - Reduce email max-width */
 @media (min-width: 768px) and (max-width: 991px) {
   .user-email-small {
     max-width: 150px; /* Shorter on tablets */
+  }
+
+  /* Navbar logout button - smaller on tablet */
+  .navbar-logout-btn {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+  }
+
+  .navbar-logout-btn i {
+    font-size: 1rem;
   }
 
   .admin-content {
@@ -544,7 +597,8 @@
 /* Focus states for accessibility */
 .menu-toggle:focus,
 .nav-item:focus,
-.logout-nav-item:focus {
+.logout-nav-item:focus,
+.navbar-logout-btn:focus {
   outline: 2px solid #198754;
   outline-offset: 2px;
 }
@@ -552,7 +606,8 @@
 /* Prevent text selection on buttons */
 .menu-toggle,
 .sidebar-close,
-.logout-nav-item {
+.logout-nav-item,
+.navbar-logout-btn {
   user-select: none;
   -webkit-user-select: none;
   -moz-user-select: none;

@@ -114,7 +114,7 @@ const ProductsList = () => {
             <h1>Products</h1>
             <p className="text-muted">Manage all your products</p>
           </div>
-          <Link to="/admin/products/add" className="btn btn-primary">
+          <Link to="/admin/products/add" className="btn btn-success">
             <i className="bi bi-plus-circle me-2"></i>
             Add Product
           </Link>
@@ -198,7 +198,7 @@ const ProductsList = () => {
                             <div className="action-buttons">
                               <Link
                                 to={`/admin/products/edit/${product.id}`}
-                                className="btn btn-sm btn-outline-primary"
+                                className="btn btn-sm btn-outline-success"
                                 title="Edit"
                               >
                                 <i className="bi bi-pencil"></i>
@@ -263,7 +263,7 @@ const ProductsList = () => {
                       <div className="product-card-actions">
                         <Link
                           to={`/admin/products/edit/${product.id}`}
-                          className="btn btn-sm btn-primary"
+                          className="btn btn-sm btn-success"
                         >
                           <i className="bi bi-pencil me-1"></i>
                           Edit

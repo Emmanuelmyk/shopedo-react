@@ -170,33 +170,7 @@
   font-size: clamp(0.85rem, 1.8vw, 0.95rem);
 }
 
-/* Smooth offcanvas animations */
-.offcanvas {
-  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-  will-change: transform;
-}
-
-.offcanvas.show {
-  transform: translateX(0) !important;
-}
-
-.offcanvas:not(.show) {
-  transform: translateX(100%) !important;
-}
-
-/* Backdrop animations */
-.offcanvas-backdrop {
-  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  will-change: opacity;
-}
-
-.offcanvas-backdrop.fade {
-  opacity: 0;
-}
-
-.offcanvas-backdrop.fade.show {
-  opacity: 0.5;
-}
+/* Offcanvas styles moved to src/styles/Shared.css */
 
 @media (max-width: 768px) {
   .wishlist-item {

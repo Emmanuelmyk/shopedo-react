@@ -11,6 +11,7 @@ import AddProduct from "./pages/AdminDashboard/AddProduct";
 import EditProduct from "./pages/AdminDashboard/EditProduct";
 import TestAuth from "./pages/AdminDashboard/TestAuth";
 import "./App.css";
+import "./styles/Shared.css";
 
 function App() {
   return (
