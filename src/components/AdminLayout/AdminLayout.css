@@ -76,6 +76,8 @@
   align-items: center;
   gap: 0.875rem;
   flex: 1;
+  min-width: 0; /* Allow flex item to shrink */
+  overflow: hidden;
 }
 
 .user-avatar-header {
@@ -88,7 +90,7 @@
   justify-content: center;
   font-size: 1.75rem;
   color: white;
-  flex-shrink: 0;
+  flex-shrink: 0; /* Prevent avatar from shrinking */
 }
 
 .user-details-header {
@@ -96,6 +98,8 @@
   flex-direction: column;
   gap: 0.25rem;
   overflow: hidden;
+  min-width: 0; /* Allow text container to shrink */
+  flex: 1;
 }
 
 .user-email-header {
@@ -105,6 +109,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  max-width: 100%; /* Ensure it respects parent width */
 }
 
 .user-role-header {
@@ -284,6 +289,8 @@
   display: flex;
   align-items: center;
   gap: 1rem;
+  min-width: 0; /* Allow flex item to shrink */
+  flex-shrink: 1;
 }
 
 .navbar-user {
@@ -294,6 +301,8 @@
   background: #f8f9fa;
   border-radius: 12px;
   transition: all 0.2s;
+  min-width: 0; /* Allow flex item to shrink */
+  max-width: 100%;
 }
 
 .navbar-user:hover {
@@ -310,6 +319,7 @@
   justify-content: center;
   font-size: 1.25rem;
   color: white;
+  flex-shrink: 0; /* Prevent avatar from shrinking */
 }
 
 .user-email-small {
@@ -320,6 +330,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  min-width: 0; /* Allow text to shrink */
 }
 
 /* ==========================================
@@ -398,7 +409,7 @@
   }
 
   .user-email-small {
-    display: none;
+    display: none; /* Hide email on mobile to prevent overflow */
   }
 
   .navbar-user {
@@ -409,6 +420,13 @@
     width: 32px;
     height: 32px;
     font-size: 1.1rem;
+  }
+}
+
+/* Tablet (768px - 991px) - Reduce email max-width */
+@media (min-width: 768px) and (max-width: 991px) {
+  .user-email-small {
+    max-width: 150px; /* Shorter on tablets */
   }
 
   .admin-content {
@@ -447,6 +465,13 @@
 
   .logout-nav-item {
     padding-top: 1rem;
+  }
+}
+
+/* Desktop (992px - 1200px) - Medium max-width */
+@media (min-width: 992px) and (max-width: 1200px) {
+  .user-email-small {
+    max-width: 180px;
   }
 }
 
