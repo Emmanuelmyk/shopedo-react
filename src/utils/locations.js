@@ -1,0 +1,33 @@
+// Valid locations in Benin City, Edo State
+export const LOCATIONS = [
+  'GRA',
+  'Ugbowo',
+  'Uselu',
+  'Siluko Road',
+  'Akpakpava',
+  'Ring Road',
+  'Sapele Road',
+  'Airport Road',
+  'Ikpoba Hill',
+  'New Benin',
+  'Ogida',
+  'Ogbe',
+  'Ekenwan Road',
+  'Adesuwa',
+  'Okhoro',
+  'Etete',
+  'Oliha',
+  'Upper Sokponba',
+  'Lower Sokponba',
+  'Textile Mill Road',
+  'Iwogban',
+  'Uwelu',
+  'Evbuotubu',
+  'Ogbelaka',
+  'Igun',
+  'Iweka',
+  'Ihogbe',
+  'Isekhere',
+  'Urubi'
+];
+

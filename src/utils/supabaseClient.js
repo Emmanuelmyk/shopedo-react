@@ -58,7 +58,23 @@ if (!supabaseUrl || !supabaseKey) {
 
   supabase = dummyClient;
 } else {
-  supabase = createClient(supabaseUrl, supabaseKey);
+  // Create Supabase client with proper auth configuration
+  supabase = createClient(supabaseUrl, supabaseKey, {
+    auth: {
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: true,
+      storage: window.localStorage,
+      storageKey: "supabase.auth.token",
+    },
+  });
+
+  console.log("✅ Supabase client initialized");
+  console.log("📍 URL:", supabaseUrl);
+  console.log(
+    "🔑 Key type:",
+    supabaseKey.includes("anon") ? "anon (correct)" : "Check key type"
+  );
 }
 
 export { supabase };

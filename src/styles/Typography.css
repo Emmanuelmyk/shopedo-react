@@ -170,7 +170,8 @@ small {
 
 .product-card .condition {
   font-size: clamp(0.75rem, 1.5vw, 0.8rem);
-  font-weight: 600;
+  font-weight: 500;
+  color: #6b7280;
 }
 
 .product-card .small {
@@ -197,7 +198,8 @@ small {
 
 .product-condition {
   font-size: clamp(0.75rem, 1.5vw, 0.85rem);
-  font-weight: 600;
+  font-weight: 500;
+  color: #6b7280;
 }
 
 .description-section h6 {

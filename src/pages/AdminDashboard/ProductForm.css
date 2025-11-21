@@ -1,0 +1,272 @@
+/* ==========================================
+   FILE: src/pages/AdminDashboard/ProductForm.css
+   Responsive Product Form Styles
+   ========================================== */
+
+.product-form-container {
+  max-width: 1000px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.page-header {
+  margin-bottom: 2rem;
+}
+
+.page-header h1 {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin-bottom: 0.5rem;
+}
+
+/* Image Upload Section */
+.image-upload-section {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+  padding: 1.5rem;
+  background-color: #f8f9fa;
+  border-radius: 12px;
+}
+
+.image-preview-container {
+  flex-shrink: 0;
+}
+
+.image-preview {
+  width: 200px;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 2px solid #e0e0e0;
+}
+
+.image-placeholder {
+  width: 200px;
+  height: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #fff;
+  border: 2px dashed #ccc;
+  border-radius: 12px;
+  color: #999;
+}
+
+.image-placeholder i {
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+}
+
+.image-placeholder p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+/* Form Elements */
+.form-label {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.form-control,
+.form-select {
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  padding: 0.625rem 1rem;
+  font-size: 0.95rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: #198754;
+  box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25);
+}
+
+.form-control.is-invalid,
+.form-select.is-invalid {
+  border-color: #dc3545;
+}
+
+.form-control.is-invalid:focus,
+.form-select.is-invalid:focus {
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+.invalid-feedback {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+}
+
+textarea.form-control {
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* Buttons */
+.btn {
+  border-radius: 8px;
+  padding: 0.625rem 1.5rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.btn-primary {
+  background: #198754;
+  border: none;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #0e452c;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(25, 135, 84, 0.4);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-outline-primary {
+  border-color: #198754;
+  color: #198754;
+}
+
+.btn-outline-primary:hover {
+  background-color: #198754;
+  border-color: #198754;
+  color: white;
+}
+
+.btn-outline-secondary {
+  border-color: #6c757d;
+  color: #6c757d;
+}
+
+.btn-outline-secondary:hover {
+  background-color: #6c757d;
+  border-color: #6c757d;
+  color: white;
+}
+
+/* Alert */
+.alert {
+  border-radius: 8px;
+  border: none;
+}
+
+.alert-danger {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.alert-success {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+/* ==========================================
+   RESPONSIVE DESIGN
+   ========================================== */
+
+/* Tablet (max-width: 991px) */
+@media (max-width: 991px) {
+  .product-form-container {
+    padding: 0 1rem;
+  }
+
+  .page-header h1 {
+    font-size: 1.75rem;
+  }
+
+  .image-upload-section {
+    gap: 1.5rem;
+  }
+}
+
+/* Mobile (max-width: 767px) */
+@media (max-width: 767px) {
+  .product-form-container {
+    padding: 0;
+  }
+
+  .page-header {
+    margin-bottom: 1.5rem;
+  }
+
+  .page-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .page-header .text-muted {
+    font-size: 0.9rem;
+  }
+
+  .image-upload-section {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.25rem;
+  }
+
+  .image-preview,
+  .image-placeholder {
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto;
+  }
+
+  .form-label {
+    font-size: 0.9rem;
+  }
+
+  .form-control,
+  .form-select {
+    font-size: 0.9rem;
+    padding: 0.5rem 0.875rem;
+  }
+
+  .btn {
+    padding: 0.5rem 1.25rem;
+    font-size: 0.9rem;
+  }
+
+  .card {
+    border-radius: 12px;
+  }
+}
+
+/* Small Mobile (max-width: 480px) */
+@media (max-width: 480px) {
+  .page-header h1 {
+    font-size: 1.35rem;
+  }
+
+  .image-upload-section {
+    padding: 1rem;
+  }
+
+  .image-preview,
+  .image-placeholder {
+    max-width: 250px;
+    height: 250px;
+  }
+
+  .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .d-flex.gap-2 {
+    flex-direction: column;
+    gap: 0.75rem !important;
+  }
+
+  .d-flex.gap-2 .btn {
+    width: 100%;
+  }
+}

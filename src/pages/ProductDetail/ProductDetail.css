@@ -90,11 +90,8 @@
 
 .product-condition {
   display: inline-block;
-  background: #e8f5e8;
-  color: #0e452c;
-  padding: 0.25rem 0.75rem;
-  border-radius: 50px;
-  font-weight: 600;
+  color: #6b7280;
+  font-weight: 500;
   font-size: clamp(0.75rem, 1.5vw, 0.85rem);
   margin-bottom: 1.5rem;
 }
