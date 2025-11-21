@@ -277,7 +277,7 @@ const EditProduct = () => {
                       />
                       <label
                         htmlFor="image"
-                        className="btn btn-outline-primary"
+                        className="btn btn-outline-success"
                       >
                         <i className="bi bi-upload me-2"></i>
                         Change Image
