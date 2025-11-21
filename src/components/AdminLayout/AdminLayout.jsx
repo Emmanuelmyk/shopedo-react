@@ -72,9 +72,15 @@ const AdminLayout = ({ children }) => {
       {/* Sidebar */}
       <aside className={`admin-sidebar ${sidebarOpen ? "open" : "closed"}`}>
         <div className="sidebar-header">
-          <Link to="/" className="sidebar-logo" onClick={closeSidebarOnMobile}>
-            <img src="/assets/logo.png" alt="EDOFINDS" className="logo-image" />
-          </Link>
+          <div className="sidebar-user-info">
+            <div className="user-avatar-header">
+              <i className="bi bi-person-circle"></i>
+            </div>
+            <div className="user-details-header">
+              <span className="user-email-header">{userEmail}</span>
+              <span className="user-role-header">Seller Account</span>
+            </div>
+          </div>
           {isMobile && (
             <button className="sidebar-close" onClick={toggleSidebar}>
               <i className="bi bi-x-lg"></i>
@@ -117,6 +123,17 @@ const AdminLayout = ({ children }) => {
           </Link>
 
           <Link
+            to="/admin/edit-info"
+            className={`nav-item ${
+              isActive("/admin/edit-info") ? "active" : ""
+            }`}
+            onClick={closeSidebarOnMobile}
+          >
+            <i className="bi bi-pencil-square"></i>
+            <span>Edit Info</span>
+          </Link>
+
+          <Link
             to="/"
             className="nav-item"
             target="_blank"
@@ -125,23 +142,12 @@ const AdminLayout = ({ children }) => {
             <i className="bi bi-globe"></i>
             <span>View Marketplace</span>
           </Link>
-        </nav>
 
-        <div className="sidebar-footer">
-          <div className="user-profile">
-            <div className="user-avatar">
-              <i className="bi bi-person-circle"></i>
-            </div>
-            <div className="user-details">
-              <span className="user-email">{userEmail}</span>
-              <span className="user-role">Seller</span>
-            </div>
-          </div>
-          <button onClick={handleLogout} className="logout-btn">
+          <button onClick={handleLogout} className="nav-item logout-nav-item">
             <i className="bi bi-box-arrow-right"></i>
             <span>Logout</span>
           </button>
-        </div>
+        </nav>
       </aside>
 
       {/* Main Content */}

@@ -68,25 +68,51 @@
   align-items: center;
   justify-content: space-between;
   min-height: 80px;
+  background: rgba(255, 255, 255, 0.05);
 }
 
-.sidebar-logo {
+.sidebar-user-info {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  flex: 1;
+}
+
+.user-avatar-header {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
-  text-decoration: none;
-  transition: opacity 0.2s;
+  font-size: 1.75rem;
+  color: white;
+  flex-shrink: 0;
 }
 
-.sidebar-logo:hover {
-  opacity: 0.9;
+.user-details-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  overflow: hidden;
 }
 
-/* .logo-image {
-  height: 45px;
-  width: auto;
-  max-width: 180px;
-} */
+.user-email-header {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: white;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-role-header {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
 
 .sidebar-close {
   display: none;
@@ -99,6 +125,7 @@
   cursor: pointer;
   transition: all 0.2s;
   font-size: 1.25rem;
+  flex-shrink: 0;
 }
 
 .sidebar-close:hover {
@@ -110,6 +137,8 @@
   flex: 1;
   padding: 1.5rem 0;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .nav-item {
@@ -156,85 +185,21 @@
   white-space: nowrap;
 }
 
-/* Sidebar Footer */
-.sidebar-footer {
-  padding: 1rem 0.75rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+/* Logout button in menu */
+.logout-nav-item {
   margin-top: auto;
-  padding-bottom: calc(
-    1rem + env(safe-area-inset-bottom, 0px)
-  ); /* Add safe area for mobile navigation */
-}
-
-.user-profile {
-  display: flex;
-  align-items: center;
-  gap: 0.875rem;
-  padding: 1rem;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  margin-bottom: 0.75rem;
-}
-
-.user-avatar {
-  width: 42px;
-  height: 42px;
-  background: #198754;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  flex-shrink: 0;
-}
-
-.user-details {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  flex: 1;
-  min-width: 0;
-}
-
-.user-email {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: white;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.user-role {
-  font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.6);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.logout-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.875rem 1rem;
-  margin: 0 0.25rem;
-  background: rgba(255, 107, 107, 0.1);
-  border: 1px solid rgba(255, 107, 107, 0.3);
-  border-radius: 10px;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
   color: #ff6b6b;
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s;
-  width: calc(100% - 0.5rem);
 }
 
-.logout-btn:hover {
-  background: rgba(255, 107, 107, 0.2);
-  border-color: #ff6b6b;
+.logout-nav-item:hover {
+  background: rgba(255, 107, 107, 0.15);
   color: #ff5252;
-  transform: translateY(-2px);
+  transform: translateX(4px);
 }
+
+/* Old sidebar footer styles removed - now using header for user info and menu for logout */
 
 /* ==========================================
    MAIN CONTENT AREA
@@ -456,14 +421,18 @@
     min-height: 70px;
   }
 
-  .logo-icon {
+  .user-avatar-header {
     width: 42px;
     height: 42px;
-    font-size: 1.35rem;
+    font-size: 1.5rem;
   }
 
-  .logo-text {
-    font-size: 1.2rem;
+  .user-email-header {
+    font-size: 0.85rem;
+  }
+
+  .user-role-header {
+    font-size: 0.7rem;
   }
 
   .nav-item {
@@ -476,28 +445,8 @@
     font-size: 1.25rem;
   }
 
-  .user-profile {
-    padding: 0.875rem;
-  }
-
-  .user-avatar {
-    width: 38px;
-    height: 38px;
-    font-size: 1.35rem;
-  }
-
-  .user-email {
-    font-size: 0.8rem;
-  }
-
-  .logout-btn {
-    padding: 0.75rem 0.875rem;
-    font-size: 0.9rem;
-  }
-
-  /* Add extra padding for mobile navigation bar */
-  .sidebar-footer {
-    padding-bottom: calc(1rem + 60px); /* Extra space for Android navigation */
+  .logout-nav-item {
+    padding-top: 1rem;
   }
 }
 
@@ -507,9 +456,14 @@
     width: 260px;
   }
 
-  /* Ensure logout button is not blocked on small screens */
-  .sidebar-footer {
-    padding-bottom: calc(1rem + 70px); /* More space for smaller screens */
+  .user-avatar-header {
+    width: 38px;
+    height: 38px;
+    font-size: 1.35rem;
+  }
+
+  .user-email-header {
+    font-size: 0.8rem;
   }
 
   .admin-navbar {
@@ -565,7 +519,7 @@
 /* Focus states for accessibility */
 .menu-toggle:focus,
 .nav-item:focus,
-.logout-btn:focus {
+.logout-nav-item:focus {
   outline: 2px solid #198754;
   outline-offset: 2px;
 }
@@ -573,7 +527,7 @@
 /* Prevent text selection on buttons */
 .menu-toggle,
 .sidebar-close,
-.logout-btn {
+.logout-nav-item {
   user-select: none;
   -webkit-user-select: none;
   -moz-user-select: none;
