@@ -44,6 +44,7 @@
   left: 0;
   top: 0;
   height: 100vh;
+  height: 100dvh; /* Use dynamic viewport height for mobile */
   width: 280px;
   background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
   color: white;
@@ -53,6 +54,10 @@
   flex-direction: column;
   box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
   overflow-y: auto;
+  padding-bottom: env(
+    safe-area-inset-bottom,
+    0px
+  ); /* Safe area for notched devices */
 }
 
 /* Sidebar Header */
@@ -156,6 +161,9 @@
   padding: 1rem 0.75rem;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   margin-top: auto;
+  padding-bottom: calc(
+    1rem + env(safe-area-inset-bottom, 0px)
+  ); /* Add safe area for mobile navigation */
 }
 
 .user-profile {
@@ -486,12 +494,22 @@
     padding: 0.75rem 0.875rem;
     font-size: 0.9rem;
   }
+
+  /* Add extra padding for mobile navigation bar */
+  .sidebar-footer {
+    padding-bottom: calc(1rem + 60px); /* Extra space for Android navigation */
+  }
 }
 
 /* Small Mobile (< 480px) */
 @media (max-width: 479px) {
   .admin-sidebar {
     width: 260px;
+  }
+
+  /* Ensure logout button is not blocked on small screens */
+  .sidebar-footer {
+    padding-bottom: calc(1rem + 70px); /* More space for smaller screens */
   }
 
   .admin-navbar {
