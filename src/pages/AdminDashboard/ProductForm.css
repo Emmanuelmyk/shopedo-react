@@ -85,7 +85,6 @@
   border-radius: 8px;
   border: 1px solid #ddd;
   padding: 0.625rem 1rem;
-  font-size: 0.95rem;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
@@ -93,6 +92,7 @@
 .form-select:focus {
   border-color: #198754;
   box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25);
+  transform: none;
 }
 
 .form-control.is-invalid,

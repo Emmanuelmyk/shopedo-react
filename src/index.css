@@ -9,3 +9,31 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+/* ==========================================
+   PREVENT MOBILE ZOOM ON INPUT FOCUS
+   ========================================== */
+/* Ensure all input fields have minimum 16px font-size to prevent mobile browser zoom */
+input,
+textarea,
+select,
+button {
+  font-size: 16px !important;
+}
+
+/* Remove any transform/scale effects on input focus to prevent layout shifts */
+input:focus,
+textarea:focus,
+select:focus,
+input:active,
+textarea:active,
+select:active,
+.form-control:focus,
+.form-control:active,
+.form-input:focus,
+.form-input:active,
+.form-select:focus,
+.form-select:active {
+  transform: none !important;
+  zoom: 1 !important;
+}

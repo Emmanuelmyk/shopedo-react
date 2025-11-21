@@ -138,17 +138,15 @@
   padding: 0.8rem 1rem;
   border: 1.5px solid #475569;
   border-radius: 0.5rem;
-  font-size: 0.925rem;
   background: #1e293b;
   color: #f1f5f9;
-  transition: all 0.25s ease;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
 .form-input:focus {
   outline: none;
   border-color: #198754;
   box-shadow: 0 0 0 4px rgba(25, 135, 84, 0.2);
-  transform: translateY(-1px);
 }
 
 .form-input::placeholder {
