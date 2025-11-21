@@ -208,7 +208,7 @@ const AddProduct = () => {
               <div className="row g-4">
                 {/* Image Upload */}
                 <div className="col-12">
-                  <label className="form-label">Product Image</label>
+                  <label className="form-label-txt">Product Image</label>
                   <div className="image-upload-section">
                     <div className="image-preview-container">
                       {imagePreview ? (
@@ -251,7 +251,7 @@ const AddProduct = () => {
 
                 {/* Product Name */}
                 <div className="col-md-6">
-                  <label htmlFor="name" className="form-label">
+                  <label htmlFor="name" className="form-label-txt">
                     Product Name <span className="text-danger">*</span>
                   </label>
                   <input
@@ -272,7 +272,7 @@ const AddProduct = () => {
 
                 {/* Price */}
                 <div className="col-md-6">
-                  <label htmlFor="price" className="form-label">
+                  <label htmlFor="price" className="form-label-txt">
                     Price (₦) <span className="text-danger">*</span>
                   </label>
                   <input
@@ -295,7 +295,7 @@ const AddProduct = () => {
 
                 {/* Category */}
                 <div className="col-md-6">
-                  <label htmlFor="category_id" className="form-label">
+                  <label htmlFor="category_id" className="form-label-txt">
                     Category <span className="text-danger">*</span>
                   </label>
                   <select
@@ -321,7 +321,7 @@ const AddProduct = () => {
 
                 {/* Condition */}
                 <div className="col-md-6">
-                  <label htmlFor="condition" className="form-label">
+                  <label htmlFor="condition" className="form-label-txt">
                     Condition <span className="text-danger">*</span>
                   </label>
                   <select
@@ -341,7 +341,7 @@ const AddProduct = () => {
 
                 {/* Location */}
                 <div className="col-md-6">
-                  <label htmlFor="location" className="form-label">
+                  <label htmlFor="location" className="form-label-txt">
                     Location <span className="text-danger">*</span>
                   </label>
                   <select
@@ -367,7 +367,7 @@ const AddProduct = () => {
 
                 {/* Seller Name */}
                 <div className="col-md-6">
-                  <label htmlFor="seller_name" className="form-label">
+                  <label htmlFor="seller_name" className="form-label-txt">
                     Seller Name <span className="text-danger">*</span>
                   </label>
                   <input
@@ -388,7 +388,7 @@ const AddProduct = () => {
 
                 {/* Description */}
                 <div className="col-12">
-                  <label htmlFor="description" className="form-label">
+                  <label htmlFor="description" className="form-label-txt">
                     Description
                   </label>
                   <textarea
