@@ -36,8 +36,8 @@ export const getSellerProfileUrl = (imgPath) => {
 export const loadAndCompressImage = async (
   src,
   maxWidth = 400,
-  maxHeight = 220
-  // quality = 0.8
+  maxHeight = 220,
+  quality = 1
 ) => {
   try {
     const response = await fetch(src);
