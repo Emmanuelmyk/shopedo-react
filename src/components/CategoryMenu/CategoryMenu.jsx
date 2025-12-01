@@ -16,17 +16,16 @@ const CategoryMenu = ({
   const offcanvasRef = useRef(null);
   const backdropRef = useRef(null);
 
-  // Handle show/hide with simple uniform animation
   useEffect(() => {
-    const offcanvasElement = offcanvasRef.current;
-    if (!offcanvasElement) return;
+    const offcanvas = offcanvasRef.current;
+    if (!offcanvas) return;
 
     if (show) {
-      // Show offcanvas
-      offcanvasElement.classList.add("show");
+      offcanvas.classList.add("show");
+      offcanvas.classList.remove("hiding");
       document.body.style.overflow = "hidden";
 
-      // Create and show backdrop
+      // SHOW BACKDROP
       if (!backdropRef.current) {
         const backdrop = document.createElement("div");
         backdrop.className = "offcanvas-backdrop fade show";
@@ -34,23 +33,28 @@ const CategoryMenu = ({
         document.body.appendChild(backdrop);
         backdropRef.current = backdrop;
 
-        // Close on backdrop click
         backdrop.addEventListener("click", onHide);
       }
     } else {
-      // Hide offcanvas
-      offcanvasElement.classList.remove("show");
+      // ADD SMOOTH CLOSE ANIMATION
+      offcanvas.classList.add("hiding");
+      offcanvas.classList.remove("show");
       document.body.style.overflow = "";
 
-      // Remove backdrop immediately
+      // FADE OUT BACKDROP
       if (backdropRef.current) {
-        backdropRef.current.remove();
-        backdropRef.current = null;
+        backdropRef.current.classList.remove("show");
+
+        setTimeout(() => {
+          if (backdropRef.current) {
+            backdropRef.current.remove();
+            backdropRef.current = null;
+          }
+        }, 300); // must match CSS transition time
       }
     }
 
     return () => {
-      // Cleanup on unmount
       if (backdropRef.current) {
         backdropRef.current.remove();
         backdropRef.current = null;
@@ -78,10 +82,11 @@ const CategoryMenu = ({
         <button
           type="button"
           className="btn-close"
-          data-bs-dismiss="offcanvas"
           aria-label="Close"
+          onClick={onHide}
         ></button>
       </div>
+
       <div className="offcanvas-body">
         <div className="list-group category-list" id="mobile-categories-list">
           <button
@@ -92,6 +97,7 @@ const CategoryMenu = ({
           >
             <i className="bi bi-house-door"></i>All
           </button>
+
           {CATEGORIES.map((cat) => (
             <button
               key={cat.id}
@@ -105,6 +111,7 @@ const CategoryMenu = ({
             </button>
           ))}
         </div>
+
         <AdsCarousel ads={ads} isMobile={true} />
       </div>
     </div>

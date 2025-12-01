@@ -1,1 +1,15 @@
 /* Category list and offcanvas styles moved to src/styles/Shared.css */
+/* Smooth animation */
+.offcanvas {
+  transition: transform 0.35s ease-in-out !important;
+}
+
+/* Open state */
+.offcanvas.show {
+  transform: translateX(0) !important;
+}
+
+/* Closing state */
+.offcanvas.hiding {
+  transform: translateX(100%) !important; /* sliding from right */
+}

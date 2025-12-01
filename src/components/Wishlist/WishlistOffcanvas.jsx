@@ -38,15 +38,21 @@ const WishlistOffcanvas = ({
         backdrop.addEventListener("click", onHide);
       }
     } else {
-      // Hide offcanvas
-      offcanvasElement.classList.remove("show");
-      document.body.style.overflow = "";
+      // Add hiding class to trigger animation
+      offcanvasElement.classList.add("hiding");
 
-      // Remove backdrop immediately
-      if (backdropRef.current) {
-        backdropRef.current.remove();
-        backdropRef.current = null;
-      }
+      // Wait for animation to finish
+      setTimeout(() => {
+        offcanvasElement.classList.remove("show");
+        offcanvasElement.classList.remove("hiding");
+        document.body.style.overflow = "";
+
+        // Remove backdrop after animation
+        if (backdropRef.current) {
+          backdropRef.current.remove();
+          backdropRef.current = null;
+        }
+      }, 400); // must match CSS transition duration
     }
 
     return () => {
