@@ -192,7 +192,7 @@ const ProductDetail = () => {
         <div className="container px-3" id="product-detail-container">
           <div className="d-flex justify-content-start mb-3">
             <Button variant="outline" onClick={handleBack}>
-              <i className="bi bi-arrow-left"></i> Back
+              <i className="bi bi-arrow-left"></i>
             </Button>
           </div>
 

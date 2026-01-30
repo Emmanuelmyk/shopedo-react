@@ -100,6 +100,10 @@ export default function Login() {
   return (
     <>
       <div className="login-container">
+        <button className="back-button" onClick={() => navigate(-1)}>
+          ←
+        </button>
+
         {/* <Navbar /> */}
         {/* Floating Background Effect */}
         <div className="login-wrapper">

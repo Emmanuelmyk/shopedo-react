@@ -463,3 +463,26 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+.back-button {
+  position: absolute;
+  top: 1.25rem;
+  left: 1.25rem;
+  z-index: 20;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(6px);
+  color: #e2e8f0;
+  border: 1px solid rgba(71, 85, 105, 0.5);
+  padding: 0.5rem 0.9rem;
+  font-size: 0.9rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.back-button:hover {
+  color: #ffffff;
+  border-color: #198754;
+  background: rgba(25, 135, 84, 0.15);
+  transform: translateY(-2px);
+}
