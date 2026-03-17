@@ -9,7 +9,6 @@ import WishlistOffcanvas from "../Wishlist/WishlistOffcanvas";
 import CategoryMenu from "../CategoryMenu/CategoryMenu";
 import Footer from "../Footer/Footer";
 import { useWishlistContext } from "../../contexts/WishlistContext";
-import { useAds } from "../../hooks/useAds";
 import { shareProduct } from "../../utils/wishlistUtils";
 
 /**
@@ -33,8 +32,6 @@ const AppLayout = ({
 
   const { wishlistItems, wishlistCount, removeFromWishlist } =
     useWishlistContext();
-
-  const { ads } = useAds();
 
   const handleMenuToggle = () => {
     // Close wishlist if it's open
@@ -99,7 +96,6 @@ const AppLayout = ({
         onHide={() => setShowCategoryMenu(false)}
         activeCategory={activeCategory}
         onCategorySelect={handleCategorySelectInternal}
-        ads={ads}
       />
 
       {children}

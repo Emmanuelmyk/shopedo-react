@@ -6,9 +6,9 @@ import { useSearchParams } from "react-router-dom";
 import AppLayout from "../../components/AppLayout/AppLayout";
 import SearchBar from "../../components/SearchBar/SearchBar";
 import Sidebar from "../../components/Sidebar/Sidebar";
+import AdsCarousel from "../../components/AdsCarousel/AdsCarousel";
 import ProductCard from "../../components/ProductCard/ProductCard";
 import ProductSkeleton from "../../components/Skeleton/ProductSkeleton";
-import Breadcrumb from "../../components/Breadcrumb/Breadcrumb";
 import EmptyState from "../../components/EmptyState/EmptyState";
 import Toast from "../../components/Toast/Toast";
 import { supabase } from "../../utils/supabaseClient";
@@ -17,6 +17,7 @@ import { useInfiniteScroll } from "../../hooks/useInfiniteScroll";
 import { useImageObserver } from "../../hooks/useImageObserver";
 import { useAds } from "../../hooks/useAds";
 import { getCategoryName } from "../../utils/categories";
+import SectionCards from "../../components/SectionCards/SectionCards";
 import "./Home.css";
 
 const PAGE_SIZE = 12;
@@ -40,14 +41,14 @@ const Home = () => {
       let query = supabase
         .from("products")
         .select(
-          "id, name, description, price, category_id, img_path, condition, location"
+          "id, name, description, price, category_id, img_path, condition, location",
         )
         .order("id", { ascending: false })
         .range(offset, offset + PAGE_SIZE - 1);
 
       if (currentSearchTerm) {
         query = query.or(
-          `name.ilike.%${currentSearchTerm}%,description.ilike.%${currentSearchTerm}%`
+          `name.ilike.%${currentSearchTerm}%,description.ilike.%${currentSearchTerm}%`,
         );
       }
 
@@ -150,6 +151,10 @@ const Home = () => {
     currentCategoryId !== "all"
       ? getCategoryName(parseInt(currentCategoryId))
       : null;
+  const itemsTitle = categoryName || "All Products";
+  const itemsSubtitle = categoryName
+    ? `Browse listings in ${categoryName}`
+    : "Browse all available listings";
 
   return (
     <AppLayout
@@ -164,12 +169,16 @@ const Home = () => {
         />
 
         <main className="product-grid">
+          <AdsCarousel ads={ads} isMobile />
+
           <SearchBar onSearch={handleSearch} initialValue={currentSearchTerm} />
 
-          <Breadcrumb
-            categoryName={categoryName}
-            onHomeClick={() => handleCategorySelect("all")}
-          />
+          <SectionCards activeSection="items" />
+
+          <div className="items-header">
+            <h2 className="items-title">{itemsTitle}</h2>
+            <p className="items-subtitle">{itemsSubtitle}</p>
+          </div>
 
           {emptyStateConfig ? (
             <EmptyState

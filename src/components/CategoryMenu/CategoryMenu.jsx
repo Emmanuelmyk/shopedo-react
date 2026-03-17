@@ -3,16 +3,10 @@
 // ==========================================
 import React, { useEffect, useRef } from "react";
 import { CATEGORIES } from "../../utils/categories";
-import AdsCarousel from "../AdsCarousel/AdsCarousel";
+import ReferralCard from "../ReferralCard/ReferralCard";
 import "./CategoryMenu.css";
 
-const CategoryMenu = ({
-  show,
-  onHide,
-  activeCategory,
-  onCategorySelect,
-  ads,
-}) => {
+const CategoryMenu = ({ show, onHide, activeCategory, onCategorySelect }) => {
   const offcanvasRef = useRef(null);
   const backdropRef = useRef(null);
 
@@ -112,7 +106,7 @@ const CategoryMenu = ({
           ))}
         </div>
 
-        <AdsCarousel ads={ads} isMobile={true} />
+        <ReferralCard />
       </div>
     </div>
   );

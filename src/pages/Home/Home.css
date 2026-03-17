@@ -13,6 +13,26 @@
   position: relative;
 }
 
+.items-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin-bottom: 0.95rem;
+}
+
+.items-title {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.items-subtitle {
+  margin: 0;
+  font-size: 0.86rem;
+  color: #64748b;
+}
+
 #scroll-sentinel {
   height: 1px;
   width: 100%;
