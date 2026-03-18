@@ -41,10 +41,10 @@ const ProductDetail = () => {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
 
-  // Scroll to top when component mounts
+  // Keep the viewport at the top when switching between products.
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
-  }, []);
+  }, [productId]);
 
   const { toggleWishlist, isInWishlist } = useWishlistContext();
   const { observe: observeImage } = useImageObserver(true);
@@ -56,6 +56,12 @@ const ProductDetail = () => {
         setLoading(false);
         return;
       }
+
+      setLoading(true);
+      setShowSellerPhone(false);
+      setContactButtonLabel("Contact Seller");
+      setRelatedProducts([]);
+      setRelatedOffset(0);
 
       try {
         const { data, error } = await supabase
@@ -89,7 +95,7 @@ const ProductDetail = () => {
       const { data, error } = await supabase
         .from("products")
         .select(
-          "id, name, description, price, category_id, img_path, condition, location"
+          "id, name, description, price, category_id, img_path, condition, location",
         )
         .eq("category_id", product.category_id)
         .neq("id", product.id)
@@ -114,6 +120,12 @@ const ProductDetail = () => {
       return false;
     }
   }, [product, relatedOffset]);
+
+  useEffect(() => {
+    if (!product) return;
+    setRelatedProducts([]);
+    setRelatedOffset(0);
+  }, [product?.id]);
 
   const { sentinelRef: relatedSentinelRef, loading: relatedLoading } =
     useInfiniteScroll(loadMoreRelatedProducts, {
@@ -189,27 +201,50 @@ const ProductDetail = () => {
       onCategorySelect={handleCategorySelect}
     >
       <main>
-        <div className="container px-3" id="product-detail-container">
-          <div className="d-flex justify-content-start mb-3">
-            <Button variant="outline" onClick={handleBack}>
-              <i className="bi bi-arrow-left"></i>
+        <div
+          className="container px-3 product-detail-page"
+          id="product-detail-container"
+        >
+          <div className="detail-topbar">
+            <Button
+              variant="outline"
+              onClick={handleBack}
+              className="detail-back-btn"
+            >
+              <i className="bi bi-arrow-left"></i> Back
             </Button>
+            <div className="detail-topbar-meta">
+              <span className="detail-tag">{escapeHtml(categoryName)}</span>
+              <span className="detail-tag detail-tag-muted">
+                <i className="bi bi-clock-history"></i> {escapeHtml(timePosted)}
+              </span>
+            </div>
           </div>
 
-          <div className="row">
+          <div className="row g-4">
             <div className="col-lg-7 mb-4">
-              <SafeImage
-                id="main-product-image"
-                src={mainImageUrl}
-                alt={escapeHtml(product.name)}
-                className="product-detail-image mb-3"
-              />
-              <div className="thumbnail-container">
+              <div className="product-media-card">
                 <SafeImage
+                  id="main-product-image"
                   src={mainImageUrl}
-                  alt="Thumbnail 1"
-                  className="thumbnail-img active"
+                  alt={escapeHtml(product.name)}
+                  className="product-detail-image"
                 />
+                <div className="media-overlay">
+                  <span className="media-chip">
+                    {escapeHtml(product.condition)}
+                  </span>
+                  <span className="media-chip media-chip-accent">
+                    Verified Listing
+                  </span>
+                </div>
+                <div className="thumbnail-container">
+                  <SafeImage
+                    src={mainImageUrl}
+                    alt="Thumbnail 1"
+                    className="thumbnail-img active"
+                  />
+                </div>
               </div>
 
               <div className="safety-tips-card d-none d-lg-block">
@@ -246,20 +281,32 @@ const ProductDetail = () => {
             <div className="col-lg-5">
               <div className="product-info-card mb-4">
                 <div className="card-body">
+                  <div className="price-row">
+                    <div className="product-category">
+                      {escapeHtml(categoryName)}
+                    </div>
+                  </div>
                   <div className="product-price">
                     ₦{formatNumber(product.price)}
                   </div>
                   <h1 className="product-title">{escapeHtml(product.name)}</h1>
-                  <div className="product-location">
-                    <i className="bi bi-geo-alt-fill"></i>{" "}
-                    {escapeHtml(product.location)}
+
+                  <div className="meta-pills">
+                    <div className="product-location">
+                      <i className="bi bi-geo-alt-fill"></i>
+                      {escapeHtml(product.location)}
+                    </div>
+                    <div className="product-condition">
+                      <i className="bi bi-patch-check-fill"></i>
+                      {escapeHtml(product.condition)}
+                    </div>
                   </div>
 
                   <div className="description-section">
                     <h6>Description</h6>
                     <p>
                       {escapeHtml(
-                        product.description || "No description available."
+                        product.description || "No description available.",
                       )}
                     </p>
                   </div>
@@ -284,7 +331,7 @@ const ProductDetail = () => {
                     <Button
                       variant={productInWishlist ? "primary" : "secondary"}
                       onClick={() => handleToggleWishlist(product)}
-                      className="flex-fill"
+                      className="flex-fill detail-action-btn"
                     >
                       <i
                         className={`bi ${
@@ -296,7 +343,7 @@ const ProductDetail = () => {
                     <Button
                       variant="primary"
                       onClick={handleContactSeller}
-                      className="flex-fill"
+                      className="flex-fill detail-action-btn"
                     >
                       <i className="bi bi-telephone"></i> {contactButtonLabel}
                     </Button>
@@ -306,31 +353,27 @@ const ProductDetail = () => {
 
               <div className="seller-card">
                 <div className="card-body">
-                  <h4 className="card-title mb-3">Seller Information</h4>
-                  <div className="seller-info">
+                  <div className="seller-card-head">
+                    <h4 className="card-title mb-0">Seller Information</h4>
+                    <span className="verified-badge" title="Verified Seller">
+                      <i className="bi bi-patch-check me-1"></i>Verified
+                    </span>
+                  </div>
+
+                  <div className="seller-profile-row">
                     <SafeImage
                       src={sellerProfileUrl}
                       className="seller-avatar"
                       alt="Seller Profile"
                       fallbackSrc="/assets/profilepics.png"
                     />
-                    <div>
-                      <div style={{ marginBottom: "0.5rem" }}>
-                        <div className="seller-name">
-                          {escapeHtml(
-                            product.seller_name || "Anonymous Seller"
-                          )}
-                          <span
-                            className="verified-badge"
-                            title="Verified Seller"
-                          >
-                            <i className="bi bi-patch-check me-1"></i>Verified
-                          </span>
-                        </div>
+                    <div className="seller-profile-main">
+                      <div className="seller-name">
+                        {escapeHtml(product.seller_name || "Anonymous Seller")}
                       </div>
                       <div className="seller-location">
                         <i className="bi bi-geo-alt-fill me-1 text-muted"></i>
-                        {escapeHtml(product.location)}
+                        <span>{escapeHtml(product.location)}</span>
                       </div>
                       <div className="seller-rating">
                         <i className="bi bi-star-fill"></i>
@@ -342,6 +385,29 @@ const ProductDetail = () => {
                       </div>
                     </div>
                   </div>
+
+                  <div className="seller-stats">
+                    <div className="seller-stat-item">
+                      <span className="seller-stat-label">Member Status</span>
+                      <span className="seller-stat-value">Trusted Seller</span>
+                    </div>
+                    <div className="seller-stat-item">
+                      <span className="seller-stat-label">Response Time</span>
+                      <span className="seller-stat-value">Within 1 hour</span>
+                    </div>
+                  </div>
+
+                  <div className="seller-trust-list">
+                    <div className="seller-trust-item">
+                      <i className="bi bi-shield-check"></i>
+                      Identity and profile reviewed
+                    </div>
+                    <div className="seller-trust-item">
+                      <i className="bi bi-chat-dots"></i>
+                      Use in-app chat before payment
+                    </div>
+                  </div>
+
                   {showSellerPhone && (
                     <div className="seller-phone show">
                       <i className="bi bi-telephone-fill me-2"></i> +234 812 345

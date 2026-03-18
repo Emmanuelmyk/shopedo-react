@@ -21,7 +21,7 @@ const ProductCard = ({
     if (imgRef.current && imageObserver) {
       imageObserver.observe(imgRef.current);
     }
-  }, [imageObserver]);
+  }, [imageObserver, product.img_path]);
 
   const handleCardClick = () => {
     // Scroll to top before navigating

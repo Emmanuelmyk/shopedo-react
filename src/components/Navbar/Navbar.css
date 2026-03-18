@@ -1,61 +1,191 @@
 .navbar {
   background: var(--card-bg);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+  border-bottom: 1px solid var(--border-color);
   position: fixed !important;
   top: 0;
   left: 0;
   right: 0;
   z-index: 1050;
   width: 100%;
+  padding: 0.85rem 0;
 }
 
 .navbar .container {
   max-width: 1100px !important;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
-.navbar-brand img {
-  height: 40px;
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.navbar-brand:hover {
+  opacity: 0.8;
+}
+
+.navbar-brand .logo-img {
+  height: 42px;
   width: auto;
   max-width: 200px;
 }
 
-/* Wishlist button styles */
-.nav-link {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+.navbar-brand .brand-text {
+  display: none;
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: var(--primary-text);
+  letter-spacing: -0.02em;
+}
+
+.nav-spacer {
+  flex: 1;
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.nav-action-btn,
+.nav-action-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s ease;
+}
+
+.nav-action-link,
+.nav-action-link:hover,
+.nav-action-link:focus,
+.nav-action-link:active,
+.nav-action-link:visited {
+  text-decoration: none;
+}
+
+.nav-action-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  color: var(--primary-text);
+  font-size: 1.1rem;
   position: relative;
 }
 
-.nav-link:hover {
-  transform: scale(1.1);
-  color: var(--primary-accent) !important;
+.wishlist-btn {
+  width: clamp(38px, 4vw, 44px);
+  height: clamp(38px, 4vw, 44px);
+  border-radius: 12px;
 }
 
-.nav-link.active {
-  color: var(--primary-accent) !important;
+.wishlist-btn i {
+  font-size: clamp(1rem, 1.45vw, 1.2rem);
+  transition: transform 0.25s ease;
 }
 
-.nav-link i {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+.wishlist-btn.pop i {
+  animation: wishlistIconPop 0.45s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.nav-link:active {
-  transform: scale(0.95);
+.nav-action-btn:hover {
+  background: rgba(25, 135, 84, 0.08);
+  color: var(--primary-accent);
+  transform: translateY(-1px);
 }
 
-/* Badge animation */
-.badge {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  animation: badgePulse 2s ease-in-out infinite;
+.nav-action-btn.active {
+  background: rgba(25, 135, 84, 0.12);
+  color: var(--primary-accent);
 }
 
-@keyframes badgePulse {
-  0%,
+.wishlist-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: var(--primary-accent);
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.25rem 0.45rem;
+  border-radius: 999px;
+  line-height: 1;
+  min-width: 20px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(25, 135, 84, 0.3);
+  transform-origin: center;
+}
+
+.wishlist-badge.pop {
+  animation: wishlistBadgePop 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes wishlistBadgePop {
+  0% {
+    transform: scale(1);
+  }
+  38% {
+    transform: scale(1.45) translateY(-1px);
+  }
+  68% {
+    transform: scale(0.92);
+  }
   100% {
     transform: scale(1);
   }
-  50% {
-    transform: scale(1.1);
+}
+
+@keyframes wishlistIconPop {
+  0% {
+    transform: scale(1) rotate(0deg);
   }
+  45% {
+    transform: scale(1.22) rotate(-8deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+.sell-btn {
+  background: var(--primary-accent);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 0.65rem 1.2rem;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  box-shadow: 0 4px 12px rgba(25, 135, 84, 0.2);
+}
+
+.sell-btn:hover {
+  background: var(--primary-accent-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(25, 135, 84, 0.3);
+}
+
+.sell-btn:active {
+  transform: translateY(0);
+}
+
+.sell-btn i {
+  font-size: 1rem;
 }
 
 .hamburger {
@@ -63,9 +193,10 @@
   flex-direction: column;
   justify-content: space-around;
   width: 24px;
-  height: 24px;
+  height: 20px;
   cursor: pointer;
   transition: transform 0.3s ease;
+  color: var(--primary-text);
 }
 
 .hamburger span {
@@ -79,7 +210,7 @@
 }
 
 .hamburger.active span:nth-child(1) {
-  transform: rotate(45deg) translate(5px, 5px);
+  transform: rotate(45deg) translate(6px, 6px);
 }
 
 .hamburger.active span:nth-child(2) {
@@ -88,21 +219,98 @@
 }
 
 .hamburger.active span:nth-child(3) {
-  transform: rotate(-45deg) translate(7px, -6px);
+  transform: rotate(-45deg) translate(6px, -6px);
 }
 
-#menuToggleBtn:hover .hamburger {
-  transform: scale(1.1);
+.nav-hamburger {
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-hamburger:hover {
+  opacity: 0.8;
 }
 
 @media (max-width: 768px) {
-  .navbar-brand img {
-    height: 35px;
+  .navbar {
+    padding: 0.7rem 0;
+  }
+
+  .navbar-brand .logo-img {
+    height: 36px;
+  }
+
+  .nav-actions {
+    gap: 0.6rem;
+  }
+
+  .nav-action-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
+  }
+
+  .wishlist-btn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .wishlist-badge {
+    top: -5px;
+    right: -5px;
+    min-width: 19px;
+    font-size: 0.62rem;
+  }
+
+  .sell-btn {
+    padding: 0.55rem 1rem;
+    font-size: 0.85rem;
   }
 }
 
 @media (max-width: 576px) {
-  .navbar-brand img {
-    height: 30px;
+  .navbar {
+    padding: 0.65rem 0;
+  }
+
+  .navbar-brand .logo-img {
+    height: 32px;
+  }
+
+  .nav-actions {
+    gap: 0.5rem;
+  }
+
+  .nav-action-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 0.95rem;
+  }
+
+  .wishlist-btn {
+    width: 38px;
+    height: 38px;
+  }
+
+  .wishlist-badge {
+    top: -4px;
+    right: -4px;
+    min-width: 18px;
+    padding: 0.23rem 0.4rem;
+    font-size: 0.6rem;
+  }
+
+  .sell-btn {
+    padding: 0.5rem 0.85rem;
+    font-size: 0.8rem;
+  }
+
+  .sell-btn i {
+    display: none;
   }
 }

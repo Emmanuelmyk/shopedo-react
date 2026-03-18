@@ -11,6 +11,28 @@ const ProtectedRoute = ({ children }) => {
   const location = useLocation();
 
   useEffect(() => {
+    const validateSession = async (session) => {
+      if (!session?.access_token) {
+        setAuthenticated(false);
+        return;
+      }
+
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser(session.access_token);
+
+      if (userError || !user) {
+        console.error("❌ Invalid/expired token:", userError);
+        setAuthenticated(false);
+        return;
+      }
+
+      setAuthenticated(true);
+      console.log("✅ User authenticated:", user.email);
+      console.log("🔑 Access token verified");
+    };
+
     const checkAuth = async () => {
       try {
         const {
@@ -22,15 +44,7 @@ const ProtectedRoute = ({ children }) => {
           console.error("❌ Auth check error:", error);
           setAuthenticated(false);
         } else {
-          setAuthenticated(!!session);
-
-          // Debug logging
-          if (session) {
-            console.log("✅ User authenticated:", session.user.email);
-            console.log("🔑 Access token present:", !!session.access_token);
-          } else {
-            console.log("❌ No active session found");
-          }
+          await validateSession(session);
         }
       } catch (err) {
         console.error("❌ Auth check error:", err);
@@ -45,16 +59,17 @@ const ProtectedRoute = ({ children }) => {
     // Listen for auth state changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setAuthenticated(!!session);
-      setLoading(false);
-
-      // Debug logging
-      if (session) {
-        console.log("🔄 Auth state changed - User:", session.user.email);
-      } else {
-        console.log("🔄 Auth state changed - Logged out");
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.access_token) {
+        await validateSession(session);
+        setLoading(false);
+        console.log(`🔄 Auth state changed - ${event}`);
+        return;
       }
+
+      setAuthenticated(false);
+      setLoading(false);
+      console.log(`🔄 Auth state changed - ${event} (no session)`);
     });
 
     return () => {

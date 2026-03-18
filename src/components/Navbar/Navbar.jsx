@@ -1,7 +1,7 @@
 // ==========================================
 // FILE: src/components/Navbar/Navbar.jsx
 // ==========================================
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import "./Navbar.css";
 
@@ -12,53 +12,78 @@ const Navbar = ({
   menuActive,
   wishlistActive,
 }) => {
+  const [badgeBurst, setBadgeBurst] = useState(false);
+  const prevCountRef = useRef(wishlistCount);
+
+  useEffect(() => {
+    const previousCount = prevCountRef.current;
+
+    if (wishlistCount > previousCount) {
+      setBadgeBurst(true);
+      const timer = setTimeout(() => {
+        setBadgeBurst(false);
+      }, 550);
+
+      prevCountRef.current = wishlistCount;
+      return () => clearTimeout(timer);
+    }
+
+    prevCountRef.current = wishlistCount;
+    return undefined;
+  }, [wishlistCount]);
+
   return (
     <nav className="navbar navbar-expand-lg">
       <div className="container px-3">
         <Link className="navbar-brand" to="/">
-          <img src="/assets/logo.png" alt="EDOFINDS" />
+          <img src="/assets/logo.png" alt="EDOFINDS" className="logo-img" />
+          <span className="brand-text">EDOFINDS</span>
         </Link>
-        <div className="d-flex align-items-center ms-auto">
+
+        <div className="nav-spacer"></div>
+
+        <div className="nav-actions">
           {/* Wishlist Button */}
           <button
-            className={`nav-link position-relative me-2 p-0 border-0 bg-transparent ${
+            className={`nav-action-btn wishlist-btn ${
               wishlistActive ? "active" : ""
-            }`}
+            } ${badgeBurst ? "pop" : ""}`}
             type="button"
             onClick={onWishlistClick}
             aria-label="Toggle Wishlist"
             aria-expanded={wishlistActive}
+            title="View saved items"
           >
             <i
               className={`bi ${
                 wishlistActive ? "bi-bookmark-fill" : "bi-bookmark"
-              } fs-5`}
+              }`}
             ></i>
             {wishlistCount > 0 && (
-              <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-dark">
+              <span className={`wishlist-badge ${badgeBurst ? "pop" : ""}`}>
                 {wishlistCount}
               </span>
             )}
           </button>
 
           {/* Sell Button */}
-          <Link to="/admin/login" className="nav-link position-relative me-2">
-            <button className="btn">Sell</button>
+          <Link to="/admin/login" className="nav-action-link">
+            <button className="sell-btn">
+              <i className="bi bi-plus-circle"></i>
+              Sell
+            </button>
           </Link>
 
           {/* Mobile Hamburger Menu */}
           <button
             id="menuToggleBtn"
-            className="btn d-lg-none p-0 border-0 bg-transparent"
+            className="nav-hamburger d-lg-none"
             type="button"
             onClick={onMenuToggle}
             aria-label="Toggle menu"
             aria-expanded={menuActive}
           >
-            <div
-              className={`hamburger ${menuActive ? "active" : ""}`}
-              style={{ color: "var(--primary-text)" }}
-            >
+            <div className={`hamburger ${menuActive ? "active" : ""}`}>
               <span></span>
               <span></span>
               <span></span>

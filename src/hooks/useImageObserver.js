@@ -20,18 +20,31 @@ export const useImageObserver = (enabled = true) => {
           if (entry.isIntersecting) {
             const img = entry.target;
             const src = img.getAttribute("data-src");
+            const container = img.closest(".product-image-container");
+
+            if (!src) {
+              observerRef.current?.unobserve(img);
+              return;
+            }
+
+            // If this URL has been loaded before, still set src for newly rendered nodes.
+            if (loadedImagesRef.current.has(src)) {
+              if (!img.getAttribute("src")) {
+                img.src = src;
+              }
+              if (container) container.classList.remove("skeleton");
+              img.classList.add("visible");
+              img.removeAttribute("data-src");
+              observerRef.current?.unobserve(img);
+              return;
+            }
 
             // Skip if already loading or loaded
-            if (
-              !src ||
-              loadingImagesRef.current.has(src) ||
-              loadedImagesRef.current.has(src)
-            ) {
+            if (loadingImagesRef.current.has(src)) {
               return;
             }
 
             loadingImagesRef.current.add(src);
-            const container = img.closest(".product-image-container");
 
             try {
               // Load image with compression
@@ -89,7 +102,7 @@ export const useImageObserver = (enabled = true) => {
         // Increased rootMargin for earlier loading (start loading before visible)
         rootMargin: "400px 0px",
         threshold: 0.01,
-      }
+      },
     );
 
     return () => {

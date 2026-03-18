@@ -10,6 +10,41 @@ import { getCategoryName } from "../../utils/categories";
 import { SkeletonDashboard } from "../../components/Skeleton/Skeleton";
 import "./Dashboard.css";
 
+const POSTING_FLOWS = [
+  {
+    key: "items",
+    title: "Post Item",
+    subtitle: "Sell products and goods",
+    icon: "bi-bag-heart",
+    path: "/admin/products/add?type=items",
+    accentClass: "posting-flow-item",
+  },
+  {
+    key: "houses",
+    title: "Post House",
+    subtitle: "Rent and sale listings",
+    icon: "bi-house-door",
+    path: "/admin/products/add?type=houses",
+    accentClass: "posting-flow-house",
+  },
+  {
+    key: "jobs",
+    title: "Post Job",
+    subtitle: "Hiring opportunities",
+    icon: "bi-briefcase",
+    path: "/admin/products/add?type=jobs",
+    accentClass: "posting-flow-job",
+  },
+  {
+    key: "events",
+    title: "Post Event",
+    subtitle: "Tickets and event promotion",
+    icon: "bi-calendar-event",
+    path: "/admin/products/add?type=events",
+    accentClass: "posting-flow-event",
+  },
+];
+
 const Dashboard = () => {
   const [stats, setStats] = useState({
     totalProducts: 0,
@@ -17,6 +52,7 @@ const Dashboard = () => {
     recentProducts: [],
     loading: true,
   });
+  const [sellerName, setSellerName] = useState("Seller");
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -31,6 +67,13 @@ const Dashboard = () => {
           setStats((prev) => ({ ...prev, loading: false }));
           return;
         }
+
+        const fallbackName = session.user.email?.split("@")[0] || "Seller";
+        setSellerName(
+          session.user.user_metadata?.full_name ||
+            session.user.user_metadata?.name ||
+            fallbackName,
+        );
 
         console.log("👤 Fetching stats for seller:", session.user.email);
 
@@ -81,10 +124,10 @@ const Dashboard = () => {
           <div className="welcome-content">
             <h1>
               <i className="bi bi-shop me-2"></i>
-              Welcome Back, Seller!
+              Welcome back, {sellerName}!
             </h1>
             <p className="welcome-subtitle">
-              Here's what's happening with your store today
+              Manage your listings faster with category-specific posting flows.
             </p>
           </div>
           <div className="welcome-actions">
@@ -98,6 +141,36 @@ const Dashboard = () => {
             </Link>
           </div>
         </div>
+
+        <section className="posting-hub">
+          <div className="posting-hub-head">
+            <h2>
+              <i className="bi bi-lightning-charge-fill me-2"></i>
+              Start A New Listing
+            </h2>
+            <p>
+              Choose the listing type and get a guided posting form instantly.
+            </p>
+          </div>
+          <div className="posting-hub-grid">
+            {POSTING_FLOWS.map((flow) => (
+              <Link
+                key={flow.key}
+                to={flow.path}
+                className={`posting-flow-card ${flow.accentClass}`}
+              >
+                <div className="posting-flow-icon">
+                  <i className={`bi ${flow.icon}`}></i>
+                </div>
+                <div className="posting-flow-content">
+                  <h3>{flow.title}</h3>
+                  <p>{flow.subtitle}</p>
+                </div>
+                <i className="bi bi-arrow-right posting-flow-arrow"></i>
+              </Link>
+            ))}
+          </div>
+        </section>
 
         {/* Stats Grid */}
         <div className="stats-grid">
@@ -274,7 +347,7 @@ const Dashboard = () => {
                                 month: "short",
                                 day: "numeric",
                                 year: "numeric",
-                              }
+                              },
                             )}
                           </span>
                         </td>
@@ -313,7 +386,7 @@ const Dashboard = () => {
                       <span className="product-date-mobile">
                         {new Date(product.created_at).toLocaleDateString(
                           "en-US",
-                          { month: "short", day: "numeric" }
+                          { month: "short", day: "numeric" },
                         )}
                       </span>
                     </div>

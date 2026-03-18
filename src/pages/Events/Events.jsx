@@ -13,14 +13,31 @@ import { useWishlistContext } from "../../contexts/WishlistContext";
 import { useInfiniteScroll } from "../../hooks/useInfiniteScroll";
 import { useImageObserver } from "../../hooks/useImageObserver";
 import { useAds } from "../../hooks/useAds";
+import { LOCATIONS } from "../../utils/locations";
 import "./Events.css";
 
 const PAGE_SIZE = 12;
+const EVENT_QUICK_FILTERS = [
+  "Concert",
+  "Conference",
+  "Party",
+  "Workshop",
+  "Festival",
+];
+
+const getSortConfig = (sortBy) => {
+  if (sortBy === "oldest") return { column: "id", ascending: true };
+  if (sortBy === "price-low") return { column: "price", ascending: true };
+  if (sortBy === "price-high") return { column: "price", ascending: false };
+  return { column: "id", ascending: false };
+};
 
 const Events = () => {
   const [events, setEvents] = useState([]);
   const [offset, setOffset] = useState(0);
   const [currentSearchTerm, setCurrentSearchTerm] = useState("");
+  const [selectedLocation, setSelectedLocation] = useState("all");
+  const [sortBy, setSortBy] = useState("newest");
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [emptyStateConfig, setEmptyStateConfig] = useState(null);
@@ -31,6 +48,8 @@ const Events = () => {
 
   const loadMoreEvents = useCallback(async () => {
     try {
+      const sortConfig = getSortConfig(sortBy);
+
       let query = supabase
         .from("products")
         .select(
@@ -39,13 +58,17 @@ const Events = () => {
         .or(
           "name.ilike.%event%,description.ilike.%event%,name.ilike.%ticket%,description.ilike.%ticket%,name.ilike.%show%,description.ilike.%show%",
         )
-        .order("id", { ascending: false })
+        .order(sortConfig.column, { ascending: sortConfig.ascending })
         .range(offset, offset + PAGE_SIZE - 1);
 
       if (currentSearchTerm) {
         query = query.or(
           `name.ilike.%${currentSearchTerm}%,description.ilike.%${currentSearchTerm}%,location.ilike.%${currentSearchTerm}%`,
         );
+      }
+
+      if (selectedLocation !== "all") {
+        query = query.eq("location", selectedLocation);
       }
 
       const { data, error } = await query;
@@ -61,7 +84,9 @@ const Events = () => {
             title: "No event listings found",
             message: currentSearchTerm
               ? `No events match \"${currentSearchTerm}\". Try a different keyword.`
-              : "No events are available right now. Please check back later.",
+              : selectedLocation !== "all"
+                ? `No event listings found in ${selectedLocation}.`
+                : "No events are available right now. Please check back later.",
           });
         } else {
           setToastMessage("You've reached the end of event listings! 🎟️");
@@ -79,7 +104,7 @@ const Events = () => {
       console.error("Error loading events:", err);
       return false;
     }
-  }, [offset, currentSearchTerm]);
+  }, [offset, currentSearchTerm, selectedLocation, sortBy]);
 
   const { sentinelRef, loading, reset } = useInfiniteScroll(loadMoreEvents, {
     enabled: !emptyStateConfig,
@@ -94,6 +119,28 @@ const Events = () => {
 
   const handleSearch = (searchTerm) => {
     setCurrentSearchTerm(searchTerm);
+    resetPagination();
+  };
+
+  const handleQuickFilter = (label) => {
+    setCurrentSearchTerm(label);
+    resetPagination();
+  };
+
+  const handleSortChange = (e) => {
+    setSortBy(e.target.value);
+    resetPagination();
+  };
+
+  const handleLocationChange = (e) => {
+    setSelectedLocation(e.target.value);
+    resetPagination();
+  };
+
+  const handleClearFilters = () => {
+    setCurrentSearchTerm("");
+    setSelectedLocation("all");
+    setSortBy("newest");
     resetPagination();
   };
 
@@ -118,10 +165,97 @@ const Events = () => {
           <SectionCards activeSection="events" />
 
           <div className="events-header">
-            <h2 className="events-title">Events</h2>
+            <div className="events-title-row">
+              <h2 className="events-title">Events</h2>
+              <span className="events-count">{events.length} listing(s)</span>
+            </div>
             <p className="events-subtitle">
               Find concerts, meetups, and local happenings
             </p>
+          </div>
+
+          <div className="events-filters">
+            <div className="events-filter-field">
+              <label htmlFor="events-location">Location</label>
+              <div className="events-select-wrap">
+                <i
+                  className="bi bi-geo-alt events-select-icon"
+                  aria-hidden="true"
+                ></i>
+                <select
+                  id="events-location"
+                  className="events-select"
+                  value={selectedLocation}
+                  onChange={handleLocationChange}
+                >
+                  <option value="all">All locations</option>
+                  {LOCATIONS.map((location) => (
+                    <option key={location} value={location}>
+                      {location}
+                    </option>
+                  ))}
+                </select>
+                <i
+                  className="bi bi-chevron-down events-select-caret"
+                  aria-hidden="true"
+                ></i>
+              </div>
+            </div>
+
+            <div className="events-filter-field">
+              <label htmlFor="events-sort">Sort by</label>
+              <div className="events-select-wrap">
+                <i
+                  className="bi bi-sliders events-select-icon"
+                  aria-hidden="true"
+                ></i>
+                <select
+                  id="events-sort"
+                  className="events-select"
+                  value={sortBy}
+                  onChange={handleSortChange}
+                >
+                  <option value="newest">Newest</option>
+                  <option value="oldest">Oldest</option>
+                  <option value="price-low">Ticket: Low to High</option>
+                  <option value="price-high">Ticket: High to Low</option>
+                </select>
+                <i
+                  className="bi bi-chevron-down events-select-caret"
+                  aria-hidden="true"
+                ></i>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              className="events-clear-btn"
+              onClick={handleClearFilters}
+              disabled={
+                !currentSearchTerm &&
+                selectedLocation === "all" &&
+                sortBy === "newest"
+              }
+            >
+              Clear Filters
+            </button>
+          </div>
+
+          <div className="events-quick-filters">
+            {EVENT_QUICK_FILTERS.map((label) => (
+              <button
+                key={label}
+                type="button"
+                className={`events-chip${
+                  currentSearchTerm.toLowerCase() === label.toLowerCase()
+                    ? " active"
+                    : ""
+                }`}
+                onClick={() => handleQuickFilter(label)}
+              >
+                {label}
+              </button>
+            ))}
           </div>
 
           {emptyStateConfig ? (

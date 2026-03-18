@@ -13,6 +13,103 @@
   margin: 0 auto;
 }
 
+.posting-hub {
+  border: 1px solid #e4ebf2;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbfa 100%);
+  padding: 1.1rem;
+  margin-bottom: 1.6rem;
+}
+
+.posting-hub-head h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.posting-hub-head p {
+  margin: 0.35rem 0 0.9rem;
+  font-size: 0.88rem;
+  color: #64748b;
+}
+
+.posting-hub-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.posting-flow-card {
+  border: 1px solid #dbe4ec;
+  border-radius: 14px;
+  background: #ffffff;
+  padding: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.posting-flow-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.09);
+}
+
+.posting-flow-icon {
+  width: 2.35rem;
+  height: 2.35rem;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 1.05rem;
+}
+
+.posting-flow-content {
+  flex: 1;
+}
+
+.posting-flow-content h3 {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.posting-flow-content p {
+  margin: 0.12rem 0 0;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.posting-flow-arrow {
+  color: #9aa8b5;
+  font-size: 0.9rem;
+}
+
+.posting-flow-item .posting-flow-icon {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.posting-flow-house .posting-flow-icon {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.posting-flow-job .posting-flow-icon {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.posting-flow-event .posting-flow-icon {
+  background: #ede9fe;
+  color: #6d28d9;
+}
+
 /* ==========================================
    WELCOME HEADER
    ========================================== */
@@ -570,6 +667,18 @@
 }
 
 /* Mobile (max-width: 767px) */
+@media (max-width: 767px) {
+  .posting-hub-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .posting-hub-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 767px) {
   .dashboard-container {
     padding: 0;

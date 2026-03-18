@@ -49,7 +49,6 @@ const SectionCards = ({ activeSection = "items" }) => {
           onClick={() => navigate(path)}
           aria-label={`Browse ${label}`}
         >
-          <span className="section-card__blob" aria-hidden="true" />
           <span className="section-card__icon-wrap">
             <i className={`bi ${icon}`}></i>
           </span>

@@ -17,10 +17,18 @@ import { useInfiniteScroll } from "../../hooks/useInfiniteScroll";
 import { useImageObserver } from "../../hooks/useImageObserver";
 import { useAds } from "../../hooks/useAds";
 import { getCategoryName } from "../../utils/categories";
+import { LOCATIONS } from "../../utils/locations";
 import SectionCards from "../../components/SectionCards/SectionCards";
 import "./Home.css";
 
 const PAGE_SIZE = 12;
+
+const getSortConfig = (sortBy) => {
+  if (sortBy === "oldest") return { column: "id", ascending: true };
+  if (sortBy === "price-low") return { column: "price", ascending: true };
+  if (sortBy === "price-high") return { column: "price", ascending: false };
+  return { column: "id", ascending: false };
+};
 
 const Home = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -28,6 +36,8 @@ const Home = () => {
   const [offset, setOffset] = useState(0);
   const [currentCategoryId, setCurrentCategoryId] = useState("all");
   const [currentSearchTerm, setCurrentSearchTerm] = useState("");
+  const [selectedLocation, setSelectedLocation] = useState("all");
+  const [sortBy, setSortBy] = useState("newest");
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [emptyStateConfig, setEmptyStateConfig] = useState(null);
@@ -38,22 +48,28 @@ const Home = () => {
 
   const loadMoreProducts = useCallback(async () => {
     try {
+      const sortConfig = getSortConfig(sortBy);
+
       let query = supabase
         .from("products")
         .select(
           "id, name, description, price, category_id, img_path, condition, location",
         )
-        .order("id", { ascending: false })
+        .order(sortConfig.column, { ascending: sortConfig.ascending })
         .range(offset, offset + PAGE_SIZE - 1);
 
       if (currentSearchTerm) {
         query = query.or(
-          `name.ilike.%${currentSearchTerm}%,description.ilike.%${currentSearchTerm}%`,
+          `name.ilike.%${currentSearchTerm}%,description.ilike.%${currentSearchTerm}%,location.ilike.%${currentSearchTerm}%`,
         );
       }
 
       if (currentCategoryId !== "all") {
         query = query.eq("category_id", Number(currentCategoryId));
+      }
+
+      if (selectedLocation !== "all") {
+        query = query.eq("location", selectedLocation);
       }
 
       const { data, error } = await query;
@@ -72,6 +88,9 @@ const Home = () => {
           if (currentSearchTerm) {
             title = "No results for your search";
             message = `No products match "${currentSearchTerm}". Try different keywords.`;
+          } else if (selectedLocation !== "all") {
+            title = `No products in ${selectedLocation}`;
+            message = "Try a nearby location or remove location filter.";
           } else if (currentCategoryId !== "all") {
             const catName = getCategoryName(parseInt(currentCategoryId));
             title = `No products in ${catName}`;
@@ -100,7 +119,7 @@ const Home = () => {
       console.error("Error loading products:", err);
       return false;
     }
-  }, [offset, currentCategoryId, currentSearchTerm]);
+  }, [offset, currentCategoryId, currentSearchTerm, selectedLocation, sortBy]);
 
   const { sentinelRef, loading, reset } = useInfiniteScroll(loadMoreProducts, {
     enabled: !emptyStateConfig,
@@ -134,6 +153,23 @@ const Home = () => {
 
   const handleSearch = (searchTerm) => {
     setCurrentSearchTerm(searchTerm);
+    resetPagination();
+  };
+
+  const handleLocationChange = (e) => {
+    setSelectedLocation(e.target.value);
+    resetPagination();
+  };
+
+  const handleSortChange = (e) => {
+    setSortBy(e.target.value);
+    resetPagination();
+  };
+
+  const handleClearFilters = () => {
+    setCurrentSearchTerm("");
+    setSelectedLocation("all");
+    setSortBy("newest");
     resetPagination();
   };
 
@@ -176,8 +212,78 @@ const Home = () => {
           <SectionCards activeSection="items" />
 
           <div className="items-header">
-            <h2 className="items-title">{itemsTitle}</h2>
+            <div className="items-title-row">
+              <h2 className="items-title">{itemsTitle}</h2>
+              <span className="items-count">{products.length} listing(s)</span>
+            </div>
             <p className="items-subtitle">{itemsSubtitle}</p>
+          </div>
+
+          <div className="items-filters">
+            <div className="items-filter-field">
+              <label htmlFor="items-location">Location</label>
+              <div className="items-select-wrap">
+                <i
+                  className="bi bi-geo-alt items-select-icon"
+                  aria-hidden="true"
+                ></i>
+                <select
+                  id="items-location"
+                  className="items-select"
+                  value={selectedLocation}
+                  onChange={handleLocationChange}
+                >
+                  <option value="all">All locations</option>
+                  {LOCATIONS.map((location) => (
+                    <option key={location} value={location}>
+                      {location}
+                    </option>
+                  ))}
+                </select>
+                <i
+                  className="bi bi-chevron-down items-select-caret"
+                  aria-hidden="true"
+                ></i>
+              </div>
+            </div>
+
+            <div className="items-filter-field">
+              <label htmlFor="items-sort">Sort by</label>
+              <div className="items-select-wrap">
+                <i
+                  className="bi bi-sliders items-select-icon"
+                  aria-hidden="true"
+                ></i>
+                <select
+                  id="items-sort"
+                  className="items-select"
+                  value={sortBy}
+                  onChange={handleSortChange}
+                >
+                  <option value="newest">Newest</option>
+                  <option value="oldest">Oldest</option>
+                  <option value="price-low">Price: Low to High</option>
+                  <option value="price-high">Price: High to Low</option>
+                </select>
+                <i
+                  className="bi bi-chevron-down items-select-caret"
+                  aria-hidden="true"
+                ></i>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              className="items-clear-btn"
+              onClick={handleClearFilters}
+              disabled={
+                !currentSearchTerm &&
+                selectedLocation === "all" &&
+                sortBy === "newest"
+              }
+            >
+              Clear Filters
+            </button>
           </div>
 
           {emptyStateConfig ? (
