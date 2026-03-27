@@ -1,0 +1,193 @@
+/* ==========================================
+   FILE: src/pages/NotFound/NotFound.css
+   ========================================== */
+
+.nf-root {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f0fdf4 0%, #f8fafc 50%, #eff6ff 100%);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Header ── */
+.nf-header {
+  padding: 1.1rem 2rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(8px);
+}
+
+.nf-logo img {
+  height: 36px;
+  width: auto;
+  object-fit: contain;
+}
+
+/* ── Body ── */
+.nf-body {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+}
+
+/* ── Card ── */
+.nf-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 24px;
+  padding: 3rem 2.5rem;
+  text-align: center;
+  max-width: 480px;
+  width: 100%;
+  box-shadow:
+    0 4px 6px rgba(15, 23, 42, 0.04),
+    0 24px 48px rgba(15, 23, 42, 0.08);
+}
+
+/* ── 404 number ── */
+.nf-code {
+  font-size: clamp(5rem, 18vw, 8rem);
+  font-weight: 900;
+  line-height: 1;
+  background: linear-gradient(135deg, #198754 0%, #22c55e 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.04em;
+  margin-bottom: 0.5rem;
+  user-select: none;
+}
+
+/* ── Icon ── */
+.nf-icon-wrap {
+  width: 60px;
+  height: 60px;
+  border-radius: 18px;
+  background: rgba(25, 135, 84, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.25rem;
+  font-size: 1.6rem;
+  color: #198754;
+  animation: nf-float 3s ease-in-out infinite;
+}
+
+@keyframes nf-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+/* ── Text ── */
+.nf-heading {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 0.6rem;
+}
+
+.nf-message {
+  font-size: 0.9rem;
+  color: #64748b;
+  line-height: 1.65;
+  margin: 0 0 2rem;
+}
+
+/* ── Buttons ── */
+.nf-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 1.75rem;
+}
+
+.nf-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.65rem 1.35rem;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.18s;
+  border: none;
+}
+
+.nf-btn--primary {
+  background: #198754;
+  color: #fff;
+}
+
+.nf-btn--primary:hover {
+  background: #146c43;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(25, 135, 84, 0.3);
+  color: #fff;
+}
+
+.nf-btn--outline {
+  background: transparent;
+  color: #475569;
+  border: 1.5px solid #e2e8f0;
+}
+
+.nf-btn--outline:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+}
+
+/* ── Quick links ── */
+.nf-links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.nf-links a {
+  color: #198754;
+  text-decoration: none;
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+
+.nf-links a:hover {
+  background: rgba(25, 135, 84, 0.08);
+}
+
+/* ── Responsive ── */
+@media (max-width: 480px) {
+  .nf-card {
+    padding: 2rem 1.5rem;
+    border-radius: 18px;
+  }
+
+  .nf-header {
+    padding: 1rem 1.25rem;
+  }
+
+  .nf-actions {
+    flex-direction: column;
+  }
+
+  .nf-btn {
+    justify-content: center;
+  }
+}

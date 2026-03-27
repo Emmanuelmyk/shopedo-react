@@ -15,6 +15,7 @@ import AddProduct from "./pages/AdminDashboard/AddProduct";
 import EditProduct from "./pages/AdminDashboard/EditProduct";
 import TestAuth from "./pages/AdminDashboard/TestAuth";
 import Billing from "./pages/AdminDashboard/Billing";
+import NotFound from "./pages/NotFound/NotFound";
 import "./App.css";
 import "./styles/Shared.css";
 
@@ -83,6 +84,9 @@ function App() {
               </ProtectedRoute>
             }
           />
+
+          {/* Catch-all → 404 */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
     </WishlistProvider>

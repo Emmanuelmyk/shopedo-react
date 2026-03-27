@@ -14,12 +14,14 @@ import { parseImgPaths, getPublicUrlFromPath } from "../../utils/imageUtils";
 import { CATEGORIES } from "../../utils/categories";
 import { LOCATIONS } from "../../utils/locations";
 import { SkeletonProductForm } from "../../components/Skeleton/Skeleton";
+import NotFound from "../NotFound/NotFound";
 import "./ProductForm.css";
 
 const EditProduct = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
   const [saving, setSaving] = useState(false);
   // imageSlots: array of 3, each null | { kind:'existing', path, url } | { kind:'new', file, preview }
   const [imageSlots, setImageSlots] = useState([null, null, null]);
@@ -105,7 +107,12 @@ const EditProduct = () => {
       }
     } catch (error) {
       console.error("❌ Error fetching product:", error);
-      setErrors({ fetch: "Failed to load product. Please try again." });
+      // PGRST116 = no rows returned — product ID doesn't exist
+      if (error?.code === "PGRST116") {
+        setNotFound(true);
+      } else {
+        setErrors({ fetch: "Failed to load product. Please try again." });
+      }
     } finally {
       setLoading(false);
     }
@@ -238,6 +245,12 @@ const EditProduct = () => {
       setSaving(false);
     }
   };
+
+  if (notFound) {
+    return (
+      <NotFound message="This listing doesn't exist or may have been removed." />
+    );
+  }
 
   if (loading) {
     return (

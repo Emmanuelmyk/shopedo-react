@@ -23,6 +23,7 @@ import {
   parseImgPaths,
 } from "../../utils/imageUtils";
 import { getCategoryName, getCategoryIcon } from "../../utils/categories";
+import NotFound from "../NotFound/NotFound";
 import "./ProductDetail.css";
 
 const RELATED_PAGE_SIZE = 12;
@@ -172,13 +173,13 @@ const ProductDetail = () => {
 
   if (!product) {
     return (
-      <AppLayout activeCategory="all">
-        <main>
-          <div className="container px-3" id="product-detail-container">
-            <div className="alert alert-danger">Product not found.</div>
-          </div>
-        </main>
-      </AppLayout>
+      <NotFound
+        message={
+          productId
+            ? "This listing doesn't exist or may have been removed by the seller."
+            : "No product ID was provided. Please go back and try again."
+        }
+      />
     );
   }
 
