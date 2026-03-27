@@ -4,8 +4,8 @@
 import React, { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { escapeHtml, formatDate, formatNumber } from "../../utils/formatUtils";
-import { getCategoryName } from "../../utils/categories";
-import { getPublicUrlFromPath } from "../../utils/imageUtils";
+import { getCategoryName, getCategoryIcon } from "../../utils/categories";
+import { getPublicUrlFromPath, parseImgPaths } from "../../utils/imageUtils";
 import "./ProductCard.css";
 
 const ProductCard = ({
@@ -17,14 +17,34 @@ const ProductCard = ({
   const navigate = useNavigate();
   const imgRef = useRef(null);
 
+  const firstImgPath = parseImgPaths(product.img_path)[0] || null;
+  const firstImgUrl = firstImgPath ? getPublicUrlFromPath(firstImgPath) : null;
+
+  const fallbackIcon = (() => {
+    const desc = product.description || "";
+    if (desc.includes("Listing Type: House")) return "bi-house-door-fill";
+    if (desc.includes("Listing Type: Job")) return "bi-briefcase-fill";
+    if (desc.includes("Listing Type: Event")) return "bi-calendar-event-fill";
+    if (desc.includes("Listing Type: Service")) return "bi-tools";
+    const cat = getCategoryIcon(product.category_id);
+    return cat ? `bi-${cat}` : "bi-bag-fill";
+  })();
+
+  const categoryLabel = product.category_id
+    ? getCategoryName(product.category_id)
+    : "General";
+  const sellerName = product.seller_name || "Edo Trusted Seller";
+  const timePosted = product.created_at
+    ? formatDate(product.created_at)
+    : "Just now";
+
   useEffect(() => {
-    if (imgRef.current && imageObserver) {
+    if (imgRef.current && imageObserver && firstImgUrl) {
       imageObserver.observe(imgRef.current);
     }
-  }, [imageObserver, product.img_path]);
+  }, [imageObserver, firstImgUrl]);
 
   const handleCardClick = () => {
-    // Scroll to top before navigating
     window.scrollTo({ top: 0, behavior: "instant" });
     navigate(`/product-detail?id=${product.id}`);
   };
@@ -35,18 +55,6 @@ const ProductCard = ({
     onSaveToggle(product);
   };
 
-  const imgPublicUrl = product.img_path
-    ? getPublicUrlFromPath(product.img_path)
-    : "";
-
-  const categoryLabel = product.category_id
-    ? getCategoryName(product.category_id)
-    : "General";
-  const sellerName = product.seller_name || "Edo Trusted Seller";
-  const timePosted = product.created_at
-    ? formatDate(product.created_at)
-    : "Just now";
-
   return (
     <div className="col-6 col-md-3 col-lg-3">
       <article
@@ -55,13 +63,19 @@ const ProductCard = ({
         onClick={handleCardClick}
       >
         <div className="product-image-container">
-          <img
-            ref={imgRef}
-            data-src={imgPublicUrl}
-            alt={escapeHtml(product.name)}
-            className="product-image"
-            loading="lazy"
-          />
+          {firstImgUrl ? (
+            <img
+              ref={imgRef}
+              data-src={firstImgUrl}
+              alt={escapeHtml(product.name)}
+              className="product-image"
+              loading="lazy"
+            />
+          ) : (
+            <div className="product-image-placeholder">
+              <i className={`bi ${fallbackIcon}`}></i>
+            </div>
+          )}
 
           <div className="image-fade" aria-hidden="true"></div>
 

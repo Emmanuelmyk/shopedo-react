@@ -51,6 +51,17 @@
   transform: scale(1);
 }
 
+.product-image-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+  color: #94a3b8;
+  font-size: 2.8rem;
+}
+
 .image-fade {
   position: absolute;
   inset: auto 0 0 0;

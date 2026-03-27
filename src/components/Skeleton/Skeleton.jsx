@@ -6,26 +6,17 @@ import "./Skeleton.css";
 
 // Basic Skeleton Line
 export const SkeletonLine = ({ width = "100%", height = "16px", className = "" }) => (
-  <div
-    className={`skeleton-line ${className}`}
-    style={{ width, height }}
-  ></div>
+  <div className={`sk ${className}`} style={{ width, height }}></div>
 );
 
 // Skeleton Circle (for avatars, icons)
 export const SkeletonCircle = ({ size = "40px", className = "" }) => (
-  <div
-    className={`skeleton-circle ${className}`}
-    style={{ width: size, height: size }}
-  ></div>
+  <div className={`sk sk-circle ${className}`} style={{ width: size, height: size }}></div>
 );
 
 // Skeleton Rectangle (for images, cards)
 export const SkeletonRect = ({ width = "100%", height = "200px", className = "" }) => (
-  <div
-    className={`skeleton-rect ${className}`}
-    style={{ width, height }}
-  ></div>
+  <div className={`sk sk-rounded ${className}`} style={{ width, height }}></div>
 );
 
 // Skeleton Card

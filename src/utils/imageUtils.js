@@ -7,6 +7,23 @@ import { supabase } from "./supabaseClient";
 // Cache for image URLs to avoid repeated Supabase calls
 const urlCache = new Map();
 
+/**
+ * Parse img_path into an array of paths.
+ * Handles both legacy single-path strings and new JSON array format.
+ */
+export const parseImgPaths = (imgPath) => {
+  if (!imgPath) return [];
+  if (typeof imgPath === "string" && imgPath.trimStart().startsWith("[")) {
+    try {
+      const parsed = JSON.parse(imgPath);
+      return Array.isArray(parsed) ? parsed.filter(Boolean) : [imgPath];
+    } catch {
+      return [imgPath];
+    }
+  }
+  return [imgPath];
+};
+
 export const getPublicUrlFromPath = (imgPath) => {
   if (!imgPath) return "";
 

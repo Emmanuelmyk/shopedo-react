@@ -1,150 +1,199 @@
-.skeleton {
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-  background-size: 200% 100%;
-  animation: skeleton-loading 1.5s infinite;
-  border-radius: 4px;
+/* ============================================================
+   SKELETON / SHIMMER  —  single source of truth
+   ============================================================ */
+
+/* ── Core shimmer keyframe ─────────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: -600px 0; }
+  100% { background-position:  600px 0; }
 }
 
-@keyframes skeleton-loading {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
+/* ── Base shimmer class (all skeleton pieces inherit this) ─── */
+.sk {
+  background: linear-gradient(
+    105deg,
+    rgba(255,255,255,0.55) 0%,
+    rgba(255,255,255,0.90) 40%,
+    rgba(255,255,255,0.55) 80%
+  );
+  background-size: 600px 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+  border-radius: 6px;
+  display: block;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.6);
 }
 
-.skeleton-image {
-  height: 160px;
-  width: 100%;
+/* ── Shape helpers ─────────────────────────────────────────── */
+.sk-circle { border-radius: 50%; }
+.sk-pill   { border-radius: 999px; }
+.sk-rounded{ border-radius: 12px; }
+.sk-rounded-lg { border-radius: 18px; }
+
+/* ============================================================
+   PRODUCT CARD SKELETON  (mirrors .product-card layout)
+   ============================================================ */
+
+.product-card-skeleton {
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.5);
+  background: linear-gradient(135deg, #f0f4f8 0%, #e8eef4 100%);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+  display: flex;
+  flex-direction: column;
 }
 
-.skeleton-price {
-  width: 60%;
-  height: 20px;
-  margin-bottom: 4px;
+/* matches .product-image-container height: 172px */
+.pcs-image {
+  height: 172px;
+  border-radius: 0;
 }
 
-.skeleton-title {
-  width: 80%;
-  height: 16px;
-  margin-bottom: 8px;
-}
-
-.skeleton-desc {
-  width: 100%;
-  height: 10px;
-  margin-bottom: 8px;
-}
-
-.skeleton-location {
-  width: 70%;
-  height: 10px;
-}
-
-.card-title-skeleton {
-  font-size: clamp(0.8rem, 1.5vw, 0.875rem);
-  font-weight: 600;
-  line-height: 1.3;
-}
-
-.skeleton-description {
-  height: 80px;
-  margin-bottom: 24px;
-}
-
-.skeleton-button {
-  height: 48px;
-  margin-right: 8px;
-}
-
-.skeleton-avatar {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  margin-right: 16px;
-}
-
-.skeleton-seller-name {
-  width: 70%;
-  height: 20px;
-  margin-bottom: 4px;
-}
-
-.skeleton-seller-location {
-  width: 50%;
-  height: 16px;
-}
-
-.skeleton-rating {
-  width: 100px;
-  height: 16px;
-  margin-bottom: 16px;
-}
-
-.skeleton-phone {
-  height: 40px;
-}
-
-.ads-skeleton-image {
-  height: 150px;
-  width: 100%;
-  border-radius: 8px;
+.pcs-body {
+  padding: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  flex: 1;
 }
 
 @media (max-width: 768px) {
-  .skeleton-image {
-    height: 130px;
-  }
-
-  .ads-skeleton-image {
-    height: auto;
-    aspect-ratio: 16 / 9;
-  }
+  .pcs-image { height: 148px; }
 }
 
 @media (max-width: 576px) {
-  .skeleton-image {
-    height: 110px;
-  }
+  .pcs-image { height: 130px; }
 }
 
-/* ==========================================
-   ADMIN SKELETON STYLES
-   ========================================== */
+/* ============================================================
+   PRODUCT DETAIL SKELETON  (mirrors ProductDetail layout)
+   ============================================================ */
 
-/* Base Skeleton Animation for Admin - matches product detail shimmer */
+.detail-skeleton-wrap {
+  margin-top: 1rem;
+}
+
+/* left column */
+.ds-media-card {
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.5);
+  background: linear-gradient(135deg, #eef3f8 0%, #e4ecf4 100%);
+  padding: 0.8rem;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+}
+
+/* matches fixed 420px image height */
+.ds-main-image {
+  height: 420px;
+  border-radius: 14px;
+}
+
+.ds-thumbs {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.8rem;
+}
+
+.ds-thumb {
+  width: 76px;
+  height: 76px;
+  flex-shrink: 0;
+  border-radius: 12px;
+}
+
+/* right-column cards */
+.ds-info-card,
+.ds-seller-card {
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.5);
+  background: linear-gradient(135deg, #eef3f8 0%, #e4ecf4 100%);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+  padding: 1.35rem;
+}
+
+.ds-seller-card {
+  margin-top: 1.25rem;
+}
+
+.ds-seller-row {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.85rem;
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 12px;
+  margin-top: 0.5rem;
+}
+
+.ds-seller-lines {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.ds-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+  margin-top: 0.9rem;
+}
+
+.ds-stat-box {
+  border-radius: 10px;
+  height: 54px;
+}
+
+.ds-action-row {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.2rem;
+}
+
+@media (max-width: 768px) {
+  .ds-main-image { height: 320px; }
+}
+
+@media (max-width: 576px) {
+  .ds-main-image { height: 260px; }
+  .ds-thumb { width: 60px; height: 60px; }
+}
+
+/* ============================================================
+   ADMIN / SHARED SKELETONS
+   ============================================================ */
+
 .skeleton-line,
 .skeleton-circle,
 .skeleton-rect {
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-  background-size: 200% 100%;
-  animation: skeleton-loading 1.5s infinite;
-  border-radius: 4px;
-}
-
-.skeleton-line {
+  background: linear-gradient(
+    105deg,
+    rgba(255,255,255,0.55) 0%,
+    rgba(255,255,255,0.90) 40%,
+    rgba(255,255,255,0.55) 80%
+  );
+  background-size: 600px 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+  border-radius: 6px;
   display: block;
   margin-bottom: 0.5rem;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.6);
 }
 
-.skeleton-circle {
-  border-radius: 50%;
-  flex-shrink: 0;
-}
+.skeleton-circle { border-radius: 50%; flex-shrink: 0; }
+.skeleton-rect   { border-radius: 8px; }
 
-.skeleton-rect {
-  display: block;
-  border-radius: 8px;
-}
-
-/* Skeleton Card */
 .skeleton-card {
-  background: white;
-  border: 1px solid #e5e7eb;
+  background: var(--card-bg, #fff);
+  border: 1px solid var(--border-color, #e5e7eb);
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
 
 .skeleton-card-body {
@@ -154,19 +203,17 @@
   gap: 0.75rem;
 }
 
-/* Skeleton Table */
-.skeleton-table-row td {
-  padding: 1rem 0.75rem;
-}
+/* Table rows */
+.skeleton-table-row td { padding: 1rem 0.75rem; }
 
-/* Skeleton Product Card (Mobile) */
+/* Mobile product card in admin */
 .skeleton-product-card {
-  background: white;
-  border: 1px solid #e5e7eb;
+  background: var(--card-bg, #fff);
+  border: 1px solid var(--border-color, #e5e7eb);
   border-radius: 12px;
   padding: 1rem;
   margin-bottom: 1rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
 
 .skeleton-product-header {
@@ -175,10 +222,7 @@
   margin-bottom: 1rem;
 }
 
-.skeleton-product-image {
-  border-radius: 8px;
-  flex-shrink: 0;
-}
+.skeleton-product-image { border-radius: 8px; flex-shrink: 0; }
 
 .skeleton-product-info {
   flex: 1;
@@ -194,12 +238,9 @@
   margin-bottom: 1rem;
 }
 
-.skeleton-product-actions {
-  display: flex;
-  gap: 0.5rem;
-}
+.skeleton-product-actions { display: flex; gap: 0.5rem; }
 
-/* Stats Grid Skeleton */
+/* Stats / Quick-Actions grids */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -207,7 +248,6 @@
   margin-bottom: 2rem;
 }
 
-/* Quick Actions Grid Skeleton */
 .quick-actions-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -215,43 +255,58 @@
   margin-bottom: 2rem;
 }
 
-/* Responsive Adjustments for Admin Skeletons */
-@media (max-width: 767px) {
-  .skeleton-card-body {
-    padding: 0.75rem;
-  }
+/* legacy aliases so old components don't break */
+.skeleton {
+  background: linear-gradient(
+    105deg,
+    rgba(255,255,255,0.55) 0%,
+    rgba(255,255,255,0.90) 40%,
+    rgba(255,255,255,0.55) 80%
+  );
+  background-size: 600px 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+  border-radius: 6px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.6);
+}
 
-  .skeleton-product-card {
-    padding: 0.875rem;
-  }
+.skeleton-image     { height: 172px; width: 100%; border-radius: 0; }
+.skeleton-price     { width: 55%; height: 20px; }
+.skeleton-title     { width: 85%; height: 15px; }
+.skeleton-desc      { width: 100%; height: 10px; }
+.skeleton-location  { width: 65%; height: 10px; }
+.skeleton-description { height: 80px; }
+.skeleton-button    { height: 46px; flex: 1; border-radius: 12px; }
+.skeleton-avatar    { width: 52px; height: 52px; border-radius: 50%; flex-shrink: 0; }
+.skeleton-seller-name     { width: 65%; height: 18px; }
+.skeleton-seller-location { width: 45%; height: 14px; }
+.skeleton-rating    { width: 90px; height: 14px; }
+.skeleton-phone     { height: 40px; border-radius: 10px; }
+.ads-skeleton-image { height: 150px; width: 100%; border-radius: 8px; }
 
-  .skeleton-product-header {
-    gap: 0.75rem;
-  }
+.card-title-skeleton {
+  font-size: clamp(0.8rem, 1.5vw, 0.875rem);
+  font-weight: 600;
+  line-height: 1.3;
+}
 
-  .skeleton-product-image {
-    width: 60px !important;
-    height: 60px !important;
-  }
+@media (max-width: 768px) {
+  .skeleton-image   { height: 148px; }
+  .ads-skeleton-image { height: auto; aspect-ratio: 16/9; }
 
-  .stats-grid {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
+  .skeleton-product-card { padding: 0.875rem; }
+  .skeleton-product-header { gap: 0.75rem; }
+  .skeleton-product-image { width: 60px !important; height: 60px !important; }
+  .stats-grid        { grid-template-columns: 1fr; gap: 1rem; }
+  .quick-actions-grid{ grid-template-columns: 1fr; gap: 1rem; }
+}
 
-  .quick-actions-grid {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
+@media (max-width: 576px) {
+  .skeleton-image { height: 130px; }
 }
 
 @media (max-width: 480px) {
-  .skeleton-product-card {
-    padding: 0.75rem;
-  }
-
-  .skeleton-product-image {
-    width: 50px !important;
-    height: 50px !important;
-  }
+  .skeleton-product-card { padding: 0.75rem; }
+  .skeleton-product-image { width: 50px !important; height: 50px !important; }
 }

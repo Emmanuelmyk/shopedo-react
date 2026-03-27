@@ -43,6 +43,14 @@ const POSTING_FLOWS = [
     path: "/admin/products/add?type=events",
     accentClass: "posting-flow-event",
   },
+  {
+    key: "services",
+    title: "Post Service",
+    subtitle: "Offer your skills to customers",
+    icon: "bi-tools",
+    path: "/admin/products/add?type=services",
+    accentClass: "posting-flow-service",
+  },
 ];
 
 const Dashboard = () => {

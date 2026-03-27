@@ -20,8 +20,9 @@ import { escapeHtml, formatNumber, formatDate } from "../../utils/formatUtils";
 import {
   getPublicUrlFromPath,
   getSellerProfileUrl,
+  parseImgPaths,
 } from "../../utils/imageUtils";
-import { getCategoryName } from "../../utils/categories";
+import { getCategoryName, getCategoryIcon } from "../../utils/categories";
 import "./ProductDetail.css";
 
 const RELATED_PAGE_SIZE = 12;
@@ -40,10 +41,12 @@ const ProductDetail = () => {
     useState("Contact Seller");
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
+  const [activeImgIndex, setActiveImgIndex] = useState(0);
 
   // Keep the viewport at the top when switching between products.
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
+    setActiveImgIndex(0);
   }, [productId]);
 
   const { toggleWishlist, isInWishlist } = useWishlistContext();
@@ -179,9 +182,19 @@ const ProductDetail = () => {
     );
   }
 
-  const mainImageUrl = product.img_path
-    ? getPublicUrlFromPath(product.img_path)
-    : "/assets/emptypics.png";
+  const imagePaths = parseImgPaths(product.img_path);
+  const activeImageUrl = imagePaths[activeImgIndex]
+    ? getPublicUrlFromPath(imagePaths[activeImgIndex])
+    : null;
+  const fallbackIcon = (() => {
+    const desc = product.description || "";
+    if (desc.includes("Listing Type: House")) return "bi-house-door-fill";
+    if (desc.includes("Listing Type: Job")) return "bi-briefcase-fill";
+    if (desc.includes("Listing Type: Event")) return "bi-calendar-event-fill";
+    if (desc.includes("Listing Type: Service")) return "bi-tools";
+    const cat = getCategoryIcon(product.category_id);
+    return cat ? `bi-${cat}` : "bi-bag-fill";
+  })();
   const sellerProfileUrl = getSellerProfileUrl(product.seller_profile_path);
   const categoryName = getCategoryName(product.category_id);
   const timePosted = formatDate(product.created_at);
@@ -224,12 +237,18 @@ const ProductDetail = () => {
           <div className="row g-4">
             <div className="col-lg-7 mb-4">
               <div className="product-media-card">
-                <SafeImage
-                  id="main-product-image"
-                  src={mainImageUrl}
-                  alt={escapeHtml(product.name)}
-                  className="product-detail-image"
-                />
+                {activeImageUrl ? (
+                  <SafeImage
+                    id="main-product-image"
+                    src={activeImageUrl}
+                    alt={escapeHtml(product.name)}
+                    className="product-detail-image"
+                  />
+                ) : (
+                  <div className="product-detail-placeholder">
+                    <i className={`bi ${fallbackIcon}`}></i>
+                  </div>
+                )}
                 <div className="media-overlay">
                   <span className="media-chip">
                     {escapeHtml(product.condition)}
@@ -238,13 +257,19 @@ const ProductDetail = () => {
                     Verified Listing
                   </span>
                 </div>
-                <div className="thumbnail-container">
-                  <SafeImage
-                    src={mainImageUrl}
-                    alt="Thumbnail 1"
-                    className="thumbnail-img active"
-                  />
-                </div>
+                {imagePaths.length > 1 && (
+                  <div className="thumbnail-container">
+                    {imagePaths.map((path, idx) => (
+                      <SafeImage
+                        key={idx}
+                        src={getPublicUrlFromPath(path)}
+                        alt={`Photo ${idx + 1}`}
+                        className={`thumbnail-img${idx === activeImgIndex ? " active" : ""}`}
+                        onClick={() => setActiveImgIndex(idx)}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div className="safety-tips-card d-none d-lg-block">

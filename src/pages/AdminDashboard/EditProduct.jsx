@@ -10,6 +10,7 @@ import {
   compressImage,
   deleteImage,
 } from "../../utils/uploadUtils";
+import { parseImgPaths, getPublicUrlFromPath } from "../../utils/imageUtils";
 import { CATEGORIES } from "../../utils/categories";
 import { LOCATIONS } from "../../utils/locations";
 import { SkeletonProductForm } from "../../components/Skeleton/Skeleton";
@@ -20,10 +21,11 @@ const EditProduct = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [imagePreview, setImagePreview] = useState(null);
-  const [imageFile, setImageFile] = useState(null);
+  // imageSlots: array of 3, each null | { kind:'existing', path, url } | { kind:'new', file, preview }
+  const [imageSlots, setImageSlots] = useState([null, null, null]);
+  const [deletionQueue, setDeletionQueue] = useState([]);
   const [errors, setErrors] = useState({});
-  const [originalImgPath, setOriginalImgPath] = useState(null);
+  const [sellerName, setSellerName] = useState("");
 
   const [formData, setFormData] = useState({
     name: "",
@@ -32,7 +34,6 @@ const EditProduct = () => {
     category_id: "",
     condition: "Brand New",
     location: "",
-    seller_name: "",
   });
 
   useEffect(() => {
@@ -77,6 +78,13 @@ const EditProduct = () => {
 
         console.log("✅ Authorized to edit product:", data.name);
 
+        setSellerName(
+          session.user.user_metadata?.full_name ||
+            session.user.user_metadata?.name ||
+            session.user.email?.split("@")[0] ||
+            "Seller",
+        );
+
         setFormData({
           name: data.name || "",
           description: data.description || "",
@@ -84,17 +92,16 @@ const EditProduct = () => {
           category_id: data.category_id || "",
           condition: data.condition || "Brand New",
           location: data.location || "",
-          seller_name: data.seller_name || "",
         });
 
-        setOriginalImgPath(data.img_path);
-
-        if (data.img_path) {
-          const imageUrl = `${
-            import.meta.env.VITE_SUPABASE_URL
-          }/storage/v1/object/public/products/${data.img_path}`;
-          setImagePreview(imageUrl);
-        }
+        const paths = parseImgPaths(data.img_path);
+        const slots = paths.map((path) => ({
+          kind: "existing",
+          path,
+          url: getPublicUrlFromPath(path),
+        }));
+        while (slots.length < 3) slots.push(null);
+        setImageSlots(slots);
       }
     } catch (error) {
       console.error("❌ Error fetching product:", error);
@@ -112,35 +119,49 @@ const EditProduct = () => {
     }
   };
 
-  const handleImageChange = (e) => {
+  const handleSlotAdd = (e, slotIndex) => {
     const file = e.target.files[0];
-    if (file) {
-      const validTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
-      if (!validTypes.includes(file.type)) {
-        setErrors((prev) => ({
-          ...prev,
-          image: "Please upload a valid image (JPEG, PNG, WebP)",
-        }));
-        return;
-      }
+    if (!file) return;
+    e.target.value = "";
 
-      if (file.size > 5 * 1024 * 1024) {
-        setErrors((prev) => ({
-          ...prev,
-          image: "Image size must be less than 5MB",
-        }));
-        return;
-      }
-
-      setImageFile(file);
-      setErrors((prev) => ({ ...prev, image: "" }));
-
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-      };
-      reader.readAsDataURL(file);
+    const validTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+    if (!validTypes.includes(file.type)) {
+      setErrors((prev) => ({
+        ...prev,
+        image: "Please upload a valid image (JPEG, PNG, WebP)",
+      }));
+      return;
     }
+    if (file.size > 5 * 1024 * 1024) {
+      setErrors((prev) => ({
+        ...prev,
+        image: "Image size must be less than 5MB",
+      }));
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImageSlots((prev) => {
+        const next = [...prev];
+        next[slotIndex] = { kind: "new", file, preview: reader.result };
+        return next;
+      });
+      setErrors((prev) => ({ ...prev, image: "" }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleSlotRemove = (slotIndex) => {
+    setImageSlots((prev) => {
+      const next = [...prev];
+      const slot = next[slotIndex];
+      if (slot?.kind === "existing") {
+        setDeletionQueue((q) => [...q, slot.path]);
+      }
+      next[slotIndex] = null;
+      return next;
+    });
   };
 
   const validateForm = () => {
@@ -151,8 +172,6 @@ const EditProduct = () => {
       newErrors.price = "Valid price is required";
     if (!formData.category_id) newErrors.category_id = "Category is required";
     if (!formData.location.trim()) newErrors.location = "Location is required";
-    if (!formData.seller_name.trim())
-      newErrors.seller_name = "Seller name is required";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -168,26 +187,30 @@ const EditProduct = () => {
     setSaving(true);
 
     try {
-      let imgPath = originalImgPath;
-
-      // Upload new image if provided
-      if (imageFile) {
-        // Delete old image if exists
-        if (originalImgPath) {
-          await deleteImage(originalImgPath);
-        }
-
-        const compressed = await compressImage(imageFile);
-        const uploadResult = await uploadImage(compressed, "products");
-
-        if (!uploadResult.success) {
-          setErrors({ image: uploadResult.error });
-          setSaving(false);
-          return;
-        }
-
-        imgPath = uploadResult.path;
+      // Delete any images the user removed
+      for (const path of deletionQueue) {
+        await deleteImage(path);
       }
+
+      // Build final paths: keep existing, upload new
+      const finalPaths = [];
+      for (const slot of imageSlots) {
+        if (!slot) continue;
+        if (slot.kind === "existing") {
+          finalPaths.push(slot.path);
+        } else {
+          const compressed = await compressImage(slot.file);
+          const uploadResult = await uploadImage(compressed, "products");
+          if (!uploadResult.success) {
+            setErrors({ image: uploadResult.error });
+            setSaving(false);
+            return;
+          }
+          finalPaths.push(uploadResult.path);
+        }
+      }
+      const imgPath =
+        finalPaths.length > 0 ? JSON.stringify(finalPaths) : null;
 
       // Update product in database
       const { error } = await supabase
@@ -199,7 +222,7 @@ const EditProduct = () => {
           category_id: parseInt(formData.category_id),
           condition: formData.condition,
           location: formData.location.trim(),
-          seller_name: formData.seller_name.trim(),
+          seller_name: sellerName,
           img_path: imgPath,
         })
         .eq("id", id);
@@ -249,47 +272,78 @@ const EditProduct = () => {
               )}
 
               <div className="row g-4">
-                {/* Image Upload - Same as AddProduct */}
+                {/* Image Upload — up to 3 photos */}
                 <div className="col-12">
-                  <label className="form-label-txt">Product Image</label>
-                  <div className="image-upload-section">
-                    <div className="image-preview-container">
-                      {imagePreview ? (
-                        <img
-                          src={imagePreview}
-                          alt="Preview"
-                          className="image-preview"
-                        />
-                      ) : (
-                        <div className="image-placeholder">
-                          <i className="bi bi-image"></i>
-                          <p>No image selected</p>
-                        </div>
-                      )}
-                    </div>
-                    <div>
-                      <input
-                        type="file"
-                        id="image"
-                        accept="image/*"
-                        onChange={handleImageChange}
-                        className="d-none"
-                      />
-                      <label
-                        htmlFor="image"
-                        className="btn btn-outline-success"
+                  <label className="form-label-txt">
+                    <i className="bi bi-images"></i>
+                    Product Photos
+                    <span className="form-label-hint">
+                      (up to 3 · first is the main photo)
+                    </span>
+                  </label>
+                  <div className="image-slots-grid">
+                    {imageSlots.map((slot, idx) => (
+                      <div
+                        key={idx}
+                        className={`image-slot ${slot ? "image-slot--filled" : "image-slot--empty"}`}
                       >
-                        <i className="bi bi-upload me-2"></i>
-                        Change Image
-                      </label>
-                      <p className="text-muted small mt-2">
-                        Recommended: 800x800px, Max 5MB (JPEG, PNG, WebP)
-                      </p>
-                      {errors.image && (
-                        <div className="text-danger small">{errors.image}</div>
-                      )}
-                    </div>
+                        {slot ? (
+                          <>
+                            <img
+                              src={
+                                slot.kind === "existing"
+                                  ? slot.url
+                                  : slot.preview
+                              }
+                              alt={`Photo ${idx + 1}`}
+                              className="image-slot-preview"
+                            />
+                            {idx === 0 && (
+                              <span className="image-slot-main-badge">
+                                Main
+                              </span>
+                            )}
+                            <button
+                              type="button"
+                              className="image-slot-remove"
+                              onClick={() => handleSlotRemove(idx)}
+                              aria-label="Remove photo"
+                            >
+                              <i className="bi bi-x-lg"></i>
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <input
+                              type="file"
+                              id={`edit-slot-${idx}`}
+                              accept="image/*"
+                              onChange={(e) => handleSlotAdd(e, idx)}
+                              className="d-none"
+                            />
+                            <label
+                              htmlFor={`edit-slot-${idx}`}
+                              className="image-slot-add-label"
+                            >
+                              <i className="bi bi-plus-lg"></i>
+                              <span>
+                                {idx === 0 ? "Main photo" : "Add photo"}
+                              </span>
+                            </label>
+                          </>
+                        )}
+                      </div>
+                    ))}
                   </div>
+                  {errors.image && (
+                    <div className="invalid-feedback d-block mt-2">
+                      {errors.image}
+                    </div>
+                  )}
+                  <p className="form-helper-text mt-2">
+                    <i className="bi bi-info-circle"></i>
+                    Max 5MB each · JPEG, PNG, or WebP
+                  </p>
                 </div>
 
                 {/* Product Name */}
@@ -405,27 +459,6 @@ const EditProduct = () => {
                   </select>
                   {errors.location && (
                     <div className="invalid-feedback">{errors.location}</div>
-                  )}
-                </div>
-
-                {/* Seller Name */}
-                <div className="col-md-6">
-                  <label htmlFor="seller_name" className="form-label-txt">
-                    Seller Name <span className="text-danger">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    id="seller_name"
-                    name="seller_name"
-                    value={formData.seller_name}
-                    onChange={handleInputChange}
-                    className={`form-control ${
-                      errors.seller_name ? "is-invalid" : ""
-                    }`}
-                    placeholder="e.g., John Doe"
-                  />
-                  {errors.seller_name && (
-                    <div className="invalid-feedback">{errors.seller_name}</div>
                   )}
                 </div>
 

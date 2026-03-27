@@ -1,15 +1,95 @@
-/* Category list and offcanvas styles moved to src/styles/Shared.css */
-/* Smooth animation */
-.offcanvas {
-  transition: transform 0.35s ease-in-out !important;
+/* ==========================================
+   FILE: src/components/CategoryMenu/CategoryMenu.css
+   ========================================== */
+
+/* ── Backdrop ─────────────────────────────── */
+.cm-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  z-index: 1040;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Open state */
-.offcanvas.show {
-  transform: translateX(0) !important;
+.cm-backdrop--visible {
+  opacity: 1;
+  pointer-events: auto;
 }
 
-/* Closing state */
-.offcanvas.hiding {
-  transform: translateX(100%) !important; /* sliding from right */
+/* ── Panel ────────────────────────────────── */
+.cm-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100dvh;
+  width: 300px;
+  max-width: 85vw;
+  background: #fff;
+  z-index: 1050;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: -4px 0 32px rgba(15, 23, 42, 0.15);
 }
+
+.cm-panel--open {
+  transform: translateX(0);
+}
+
+/* ── Header ───────────────────────────────── */
+.cm-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #e8ecf0;
+  min-height: 60px;
+  flex-shrink: 0;
+}
+
+.cm-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.cm-close {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: none;
+  background: #f1f5f9;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s;
+  flex-shrink: 0;
+}
+
+.cm-close:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+/* ── Body ─────────────────────────────────── */
+.cm-body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 1rem 1.25rem;
+  scrollbar-width: thin;
+  scrollbar-color: #e2e8f0 transparent;
+}
+
+.cm-body::-webkit-scrollbar { width: 4px; }
+.cm-body::-webkit-scrollbar-track { background: transparent; }
+.cm-body::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 4px; }

@@ -1,7 +1,7 @@
 // ==========================================
 // FILE: src/components/SafeImage/SafeImage.jsx
 // ==========================================
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 
 /**
@@ -25,6 +25,11 @@ const SafeImage = ({
 }) => {
   const [imgSrc, setImgSrc] = useState(src || fallbackSrc);
   const [hasError, setHasError] = useState(false);
+
+  useEffect(() => {
+    setImgSrc(src || fallbackSrc);
+    setHasError(false);
+  }, [src]);
 
   const handleError = (e) => {
     if (!hasError) {

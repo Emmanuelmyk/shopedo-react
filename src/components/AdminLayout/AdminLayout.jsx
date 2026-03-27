@@ -1,6 +1,5 @@
 // ==========================================
 // FILE: src/components/AdminLayout/AdminLayout.jsx
-// Modern Responsive Admin Layout with Mobile Menu
 // ==========================================
 import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
@@ -8,192 +7,137 @@ import { supabase } from "../../utils/supabaseClient";
 import { useInactivityLogout } from "../../hooks/useInactivityLogout";
 import "./AdminLayout.css";
 
-const AdminLayout = ({ children }) => {
-  const [sidebarOpen, setSidebarOpen] = useState(false); // Closed by default on mobile
-  const [userEmail, setUserEmail] = useState("");
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 992);
-  const navigate = useNavigate();
-  const location = useLocation();
+const NAV_LINKS = [
+  { to: "/admin/dashboard",    icon: "bi-speedometer2",  label: "Dashboard" },
+  { to: "/admin/products",     icon: "bi-box-seam",      label: "My Listings" },
+  { to: "/admin/products/add", icon: "bi-plus-circle",   label: "Post Listing" },
+  { to: "/admin/billing",      icon: "bi-credit-card",   label: "Billing" },
+  { to: "/admin/edit-info",    icon: "bi-pencil-square", label: "Edit Info" },
+];
 
-  // Auto logout after 10 minutes of inactivity (with 2 minute warning)
+const AdminLayout = ({ children }) => {
+  const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 992);
+  const [isMobile, setIsMobile]       = useState(window.innerWidth < 992);
+  const [userEmail, setUserEmail]     = useState("");
+  const navigate  = useNavigate();
+  const location  = useLocation();
+
   const { showWarning } = useInactivityLogout(10 * 60 * 1000, 2 * 60 * 1000);
 
   useEffect(() => {
-    const getUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (user) {
-        setUserEmail(user.email);
-      }
-    };
-    getUser();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) setUserEmail(user.email);
+    });
 
-    // Handle window resize
-    const handleResize = () => {
+    const onResize = () => {
       const mobile = window.innerWidth < 992;
       setIsMobile(mobile);
-      if (!mobile) {
-        setSidebarOpen(true); // Auto-open on desktop
-      } else {
-        setSidebarOpen(false); // Auto-close on mobile
-      }
+      // auto-open on desktop, auto-close on mobile when resizing
+      if (!mobile) setSidebarOpen(true);
+      else setSidebarOpen(false);
     };
-
-    // Set initial state
-    handleResize();
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
   }, []);
+
+  const toggle = () => setSidebarOpen((v) => !v);
+
+  const closeOnMobile = () => {
+    if (isMobile) setSidebarOpen(false);
+  };
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate("/admin/login");
   };
 
-  const isActive = (path) => {
-    return location.pathname === path;
-  };
-
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
-
-  const closeSidebarOnMobile = () => {
-    if (isMobile) {
-      setSidebarOpen(false);
-    }
-  };
+  const isActive = (path) => location.pathname === path;
 
   return (
-    <div className="admin-layout">
-      {/* Mobile Overlay */}
+    <div className={`al-root ${sidebarOpen ? "al-sidebar-open" : "al-sidebar-closed"}`}>
+
+      {/* ── Overlay (mobile only) ── */}
       {isMobile && sidebarOpen && (
-        <div className="sidebar-overlay" onClick={closeSidebarOnMobile}></div>
+        <div className="al-overlay" onClick={closeOnMobile} />
       )}
 
-      {/* Sidebar */}
-      <aside className={`admin-sidebar ${sidebarOpen ? "open" : "closed"}`}>
-        <div className="sidebar-header">
-          <div className="sidebar-user-info">
-            <div className="user-avatar-header">
-              <i className="bi bi-person-circle"></i>
-            </div>
-            <div className="user-details-header">
-              <span className="user-email-header">{userEmail}</span>
-              <span className="user-role-header">Seller Account</span>
-            </div>
-          </div>
-          {isMobile && (
-            <button className="sidebar-close" onClick={toggleSidebar}>
-              <i className="bi bi-x-lg"></i>
-            </button>
-          )}
+      {/* ── Sidebar ── */}
+      <aside className={`al-sidebar ${sidebarOpen ? "open" : ""}`}>
+        <div className="al-sidebar-brand">
+          <img src="/assets/logo.png" alt="EDOFINDS" className="al-brand-logo" />
+          <button className="al-sidebar-close" onClick={toggle} aria-label="Close menu">
+            <i className="bi bi-x-lg"></i>
+          </button>
         </div>
 
-        <nav className="sidebar-nav">
-          <Link
-            to="/admin/dashboard"
-            className={`nav-item ${
-              isActive("/admin/dashboard") ? "active" : ""
-            }`}
-            onClick={closeSidebarOnMobile}
-          >
-            <i className="bi bi-speedometer2"></i>
-            <span>Dashboard</span>
-          </Link>
+        <div className="al-user-block">
+          <div className="al-user-avatar">
+            <i className="bi bi-person-fill"></i>
+          </div>
+          <div className="al-user-info">
+            <span className="al-user-email">{userEmail || "Seller"}</span>
+            <span className="al-user-role">Seller Account</span>
+          </div>
+        </div>
 
-          <Link
-            to="/admin/products"
-            className={`nav-item ${
-              isActive("/admin/products") ? "active" : ""
-            }`}
-            onClick={closeSidebarOnMobile}
-          >
-            <i className="bi bi-box-seam"></i>
-            <span>Products</span>
-          </Link>
-
-          <Link
-            to="/admin/products/add"
-            className={`nav-item ${
-              isActive("/admin/products/add") ? "active" : ""
-            }`}
-            onClick={closeSidebarOnMobile}
-          >
-            <i className="bi bi-plus-circle"></i>
-            <span>Add Product</span>
-          </Link>
-
-          <Link
-            to="/admin/edit-info"
-            className={`nav-item ${
-              isActive("/admin/edit-info") ? "active" : ""
-            }`}
-            onClick={closeSidebarOnMobile}
-          >
-            <i className="bi bi-pencil-square"></i>
-            <span>Edit Info</span>
-          </Link>
+        <nav className="al-nav">
+          {NAV_LINKS.map(({ to, icon, label }) => (
+            <Link
+              key={to}
+              to={to}
+              className={`al-nav-item ${isActive(to) ? "al-nav-item--active" : ""}`}
+              onClick={closeOnMobile}
+            >
+              <i className={`bi ${icon}`}></i>
+              <span>{label}</span>
+            </Link>
+          ))}
 
           <Link
             to="/"
-            className="nav-item"
+            className="al-nav-item"
             target="_blank"
-            onClick={closeSidebarOnMobile}
+            rel="noopener noreferrer"
+            onClick={closeOnMobile}
           >
             <i className="bi bi-globe"></i>
             <span>View Marketplace</span>
           </Link>
-
-          <button onClick={handleLogout} className="nav-item logout-nav-item">
-            <i className="bi bi-box-arrow-right"></i>
-            <span>Logout</span>
-          </button>
         </nav>
+
+        <button className="al-logout-btn" onClick={handleLogout}>
+          <i className="bi bi-box-arrow-right"></i>
+          <span>Logout</span>
+        </button>
       </aside>
 
-      {/* Main Content */}
-      <div className="admin-main">
-        {/* Modern Navbar */}
-        <header className="admin-navbar">
-          <div className="navbar-left">
-            <button className="menu-toggle" onClick={toggleSidebar}>
-              <i className="bi bi-list"></i>
-            </button>
-            <div className="navbar-brand">
-              <img
-                src="/assets/logo.png"
-                alt="EDOFINDS"
-                className="brand-logo"
-              />
-            </div>
-          </div>
+      {/* ── Main ── */}
+      <div className="al-main">
+        <header className="al-topbar">
+          <button className="al-hamburger" onClick={toggle} aria-label="Toggle menu">
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
 
-          <div className="navbar-right">
-            <div className="navbar-user">
-              <div className="user-avatar-small">
-                <i className="bi bi-person-circle"></i>
+          <div className="al-topbar-right">
+            <div className="al-topbar-user">
+              <div className="al-topbar-avatar">
+                <i className="bi bi-person-fill"></i>
               </div>
-              <span className="user-email-small">{userEmail}</span>
+              <span className="al-topbar-email">{userEmail}</span>
             </div>
           </div>
         </header>
 
-        {/* Inactivity Warning Banner */}
         {showWarning && (
-          <div className="inactivity-warning">
+          <div className="al-inactivity">
             <i className="bi bi-exclamation-triangle-fill me-2"></i>
-            <span>
-              You will be logged out in 2 minutes due to inactivity. Move your
-              mouse or press any key to stay logged in.
-            </span>
+            You will be logged out in 2 minutes due to inactivity. Move your mouse or press any key to stay logged in.
           </div>
         )}
 
-        {/* Content */}
-        <main className="admin-content">{children}</main>
+        <main className="al-content">{children}</main>
       </div>
     </div>
   );

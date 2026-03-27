@@ -35,6 +35,14 @@ const SECTIONS = [
     path: "/events",
     colorClass: "section-events",
   },
+  {
+    key: "services",
+    label: "Services",
+    sub: "Hire skilled professionals",
+    icon: "bi-tools",
+    path: "/services",
+    colorClass: "section-services",
+  },
 ];
 
 const SectionCards = ({ activeSection = "items" }) => {

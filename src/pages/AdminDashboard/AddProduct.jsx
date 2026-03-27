@@ -3,11 +3,18 @@
 // ==========================================
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import AdminLayout from "../../components/AdminLayout/AdminLayout";
 import { supabase } from "../../utils/supabaseClient";
 import { uploadImage, compressImage } from "../../utils/uploadUtils";
 import { CATEGORIES } from "../../utils/categories";
 import { LOCATIONS } from "../../utils/locations";
+import {
+  isPayPerPost,
+  hasPostsLeft,
+  getPostFeeKobo,
+  getPostFeeLabel,
+} from "../../utils/subscriptionUtils";
 import "./ProductForm.css";
 
 const LISTING_TYPES = {
@@ -83,6 +90,21 @@ const LISTING_TYPES = {
     conditionOptions: ["Upcoming", "Tickets Selling", "Limited Seats"],
     lockCategory: false,
   },
+  services: {
+    key: "services",
+    title: "Services",
+    icon: "bi-tools",
+    subtitle: "Offer your skills and expertise",
+    buttonLabel: "Post Service",
+    priceLabel: "Rate (Naira)",
+    nameLabel: "Service Title",
+    namePlaceholder: "e.g., Professional Plumbing Repair",
+    descriptionPlaceholder:
+      "Describe what you offer, your experience, and tools you use...",
+    conditionLabel: "Availability",
+    conditionOptions: ["Available", "By Appointment", "Fully Booked"],
+    lockCategory: false,
+  },
 };
 
 const CATEGORY_PRESETS = {
@@ -106,6 +128,20 @@ const CATEGORY_PRESETS = {
     organizer: "",
     ticketType: "Paid",
   },
+  services: {
+    serviceType: "Plumbing",
+    experience: "1-3 years",
+    availability: "Weekdays",
+  },
+};
+
+// Maps app listingType keys → DB listing_type values
+const DB_LISTING_TYPE = {
+  items: "item",
+  houses: "house",
+  jobs: "job",
+  events: "event",
+  services: "service",
 };
 
 const normalizeType = (value) => {
@@ -113,6 +149,7 @@ const normalizeType = (value) => {
   if (value === "house") return "houses";
   if (value === "job") return "jobs";
   if (value === "event") return "events";
+  if (value === "service") return "services";
   return LISTING_TYPES[value] ? value : "items";
 };
 
@@ -152,6 +189,16 @@ const serializeMeta = (listingType, extraData) => {
     ];
   }
 
+  if (listingType === "services") {
+    return [
+      "Listing Type: Service",
+      `Service Type: ${extraData.serviceType || "N/A"}`,
+      `Experience: ${extraData.experience || "N/A"}`,
+      `Availability: ${extraData.availability || "N/A"}`,
+      "Search Tags: service plumber electrician cleaning repair carpenter painter",
+    ];
+  }
+
   return ["Listing Type: Item", "Search Tags: item product sale"];
 };
 
@@ -166,17 +213,21 @@ const AddProduct = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [loading, setLoading] = useState(false);
-  const [imagePreview, setImagePreview] = useState(null);
-  const [imageFile, setImageFile] = useState(null);
+  // imageSlots: array of 3, each null | { file: File, preview: string }
+  const [imageSlots, setImageSlots] = useState([null, null, null]);
   const [errors, setErrors] = useState({});
   const [listingType, setListingType] = useState(() =>
     normalizeType(searchParams.get("type")),
   );
+  // Pay-per-post state
+  const [paidPostRef, setPaidPostRef] = useState(null);
+  const [paymentLoading, setPaymentLoading] = useState(false);
 
   const [extraData, setExtraData] = useState({
     ...CATEGORY_PRESETS.houses,
     ...CATEGORY_PRESETS.jobs,
     ...CATEGORY_PRESETS.events,
+    ...CATEGORY_PRESETS.services,
   });
 
   const [formData, setFormData] = useState({
@@ -186,10 +237,8 @@ const AddProduct = () => {
     category_id: "",
     condition: "Brand New",
     location: "",
-    seller_name: "",
   });
 
-  const [dragActive, setDragActive] = useState(false);
 
   const typeConfig = useMemo(() => LISTING_TYPES[listingType], [listingType]);
 
@@ -241,97 +290,45 @@ const AddProduct = () => {
     }
   };
 
-  const handleImageChange = (e) => {
+  const handleSlotAdd = (e, slotIndex) => {
     const file = e.target.files[0];
-    if (file) {
-      // Validate file type
-      const validTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
-      if (!validTypes.includes(file.type)) {
-        setErrors((prev) => ({
-          ...prev,
-          image: "Please upload a valid image (JPEG, PNG, WebP)",
-        }));
-        return;
-      }
+    if (!file) return;
+    e.target.value = "";
 
-      // Validate file size (5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        setErrors((prev) => ({
-          ...prev,
-          image: "Image size must be less than 5MB",
-        }));
-        return;
-      }
+    const validTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+    if (!validTypes.includes(file.type)) {
+      setErrors((prev) => ({
+        ...prev,
+        image: "Please upload a valid image (JPEG, PNG, WebP)",
+      }));
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setErrors((prev) => ({
+        ...prev,
+        image: "Image size must be less than 5MB",
+      }));
+      return;
+    }
 
-      setImageFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImageSlots((prev) => {
+        const next = [...prev];
+        next[slotIndex] = { file, preview: reader.result };
+        return next;
+      });
       setErrors((prev) => ({ ...prev, image: "" }));
-
-      // Create preview
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
+    };
+    reader.readAsDataURL(file);
   };
 
-  // Drag and drop handlers
-  const handleDragEnter = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
-      setDragActive(true);
-    }
-  };
-
-  const handleDragLeave = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-  };
-
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
-
-  const handleDrop = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-
-    const files = e.dataTransfer.files;
-    if (files && files.length > 0) {
-      const file = files[0];
-      // Validate file type
-      const validTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
-      if (!validTypes.includes(file.type)) {
-        setErrors((prev) => ({
-          ...prev,
-          image: "Please upload a valid image (JPEG, PNG, WebP)",
-        }));
-        return;
-      }
-
-      // Validate file size (5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        setErrors((prev) => ({
-          ...prev,
-          image: "Image size must be less than 5MB",
-        }));
-        return;
-      }
-
-      setImageFile(file);
-      setErrors((prev) => ({ ...prev, image: "" }));
-
-      // Create preview
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
+  const handleSlotRemove = (slotIndex) => {
+    setImageSlots((prev) => {
+      const next = [...prev];
+      next[slotIndex] = null;
+      return next;
+    });
   };
 
   const validateForm = () => {
@@ -347,8 +344,6 @@ const AddProduct = () => {
     }
 
     if (!formData.location.trim()) newErrors.location = "Location is required";
-    if (!formData.seller_name.trim())
-      newErrors.seller_name = "Seller name is required";
 
     if (listingType === "houses") {
       if (!extraData.propertyType.trim()) {
@@ -381,10 +376,73 @@ const AddProduct = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  const handlePaystackPayment = () => {
+    if (!window.PaystackPop) {
+      setErrors({ submit: "Payment system is loading. Please try again." });
+      return;
+    }
+
+    setPaymentLoading(true);
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) {
+        setErrors({ submit: "Please log in again." });
+        setPaymentLoading(false);
+        return;
+      }
+
+      const feeKobo = getPostFeeKobo(listingType);
+      const email = session.user.email;
+      const ref = `post_${listingType}_${Date.now()}`;
+
+      // Create a pending post_payment record
+      supabase
+        .from("post_payments")
+        .insert({
+          user_id: session.user.id,
+          listing_type: listingType,
+          amount: feeKobo,
+          status: "pending",
+          paystack_ref: ref,
+        })
+        .then(() => {
+          const handler = window.PaystackPop.setup({
+            key: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY,
+            email,
+            amount: feeKobo,
+            currency: "NGN",
+            ref,
+            callback: async (response) => {
+              // TODO: Replace with Edge Function verify-payment for production security
+              await supabase
+                .from("post_payments")
+                .update({ status: "paid" })
+                .eq("paystack_ref", response.reference);
+              setPaidPostRef(response.reference);
+              setErrors((prev) => ({ ...prev, payment: "" }));
+              setPaymentLoading(false);
+            },
+            onClose: () => {
+              setPaymentLoading(false);
+            },
+          });
+          handler.openIframe();
+        });
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!validateForm()) {
+      return;
+    }
+
+    // Pay-per-post: require payment before proceeding
+    if (isPayPerPost(listingType) && !paidPostRef) {
+      setErrors({
+        submit: `A payment of ${getPostFeeLabel(listingType)} is required to post this ${listingType} listing.`,
+      });
       return;
     }
 
@@ -394,16 +452,7 @@ const AddProduct = () => {
       // CRITICAL: Check authentication before proceeding
       const {
         data: { session },
-        error: sessionError,
       } = await supabase.auth.getSession();
-
-      console.log("🔐 Session check:");
-      console.log("  - Session exists:", !!session);
-      console.log("  - User:", session?.user?.email);
-      console.log(
-        "  - Access token:",
-        session?.access_token ? "Present" : "Missing",
-      );
 
       if (!session) {
         setErrors({
@@ -414,24 +463,44 @@ const AddProduct = () => {
         return;
       }
 
-      let imgPath = null;
+      // Subscription gate for non-pay-per-post listings
+      if (!isPayPerPost(listingType)) {
+        const { data: sub } = await supabase
+          .from("user_subscriptions")
+          .select("*")
+          .eq("user_id", session.user.id)
+          .maybeSingle();
 
-      // Upload image if provided
-      if (imageFile) {
-        console.log("📸 Uploading image...");
-        const compressed = await compressImage(imageFile);
+        if (!hasPostsLeft(sub)) {
+          setErrors({
+            submit: "You've reached your plan's post limit. Upgrade your plan on the Billing page.",
+          });
+          setLoading(false);
+          return;
+        }
+      }
+
+      // Upload all filled image slots
+      const uploadedPaths = [];
+      for (const slot of imageSlots) {
+        if (!slot) continue;
+        const compressed = await compressImage(slot.file);
         const uploadResult = await uploadImage(compressed, "products");
-
         if (!uploadResult.success) {
-          console.error("❌ Image upload failed:", uploadResult.error);
           setErrors({ image: uploadResult.error });
           setLoading(false);
           return;
         }
-
-        imgPath = uploadResult.path;
-        console.log("✅ Image uploaded:", imgPath);
+        uploadedPaths.push(uploadResult.path);
       }
+      const imgPath =
+        uploadedPaths.length > 0 ? JSON.stringify(uploadedPaths) : null;
+
+      const sellerName =
+        session.user.user_metadata?.full_name ||
+        session.user.user_metadata?.name ||
+        session.user.email?.split("@")[0] ||
+        "Seller";
 
       // Insert product into database
       const productData = {
@@ -450,30 +519,41 @@ const AddProduct = () => {
         ),
         condition: formData.condition,
         location: formData.location,
-        seller_name: formData.seller_name.trim(),
-        seller_id: session.user.id, // 🔐 Link product to current seller
+        listing_type: DB_LISTING_TYPE[listingType] ?? "item",
+        seller_name: sellerName,
+        seller_id: session.user.id,
         img_path: imgPath,
       };
 
-      console.log("📤 Inserting product with data:", productData);
-      console.log("🔑 Using session from user:", session.user.email);
-      console.log("👤 Seller ID:", session.user.id);
-
       const { data, error } = await supabase
         .from("products")
-        .insert([productData]);
+        .insert([productData])
+        .select();
 
-      if (error) {
-        console.error("❌ Insert error details:");
-        console.error("  - Message:", error.message);
-        console.error("  - Code:", error.code);
-        console.error("  - Details:", error.details);
-        console.error("  - Hint:", error.hint);
-        throw error;
+      if (error) throw error;
+
+      // Increment posts_used for subscription-gated listings
+      if (!isPayPerPost(listingType)) {
+        const { data: sub } = await supabase
+          .from("user_subscriptions")
+          .select("posts_used")
+          .eq("user_id", session.user.id)
+          .maybeSingle();
+        if (sub) {
+          await supabase
+            .from("user_subscriptions")
+            .update({ posts_used: (sub.posts_used ?? 0) + 1 })
+            .eq("user_id", session.user.id);
+        }
       }
 
-      console.log("✅ Product inserted successfully!");
-      console.log("  - Data:", data);
+      // Link pay-per-post payment to the inserted product
+      if (isPayPerPost(listingType) && paidPostRef && data?.[0]?.id) {
+        await supabase
+          .from("post_payments")
+          .update({ product_id: data[0].id })
+          .eq("paystack_ref", paidPostRef);
+      }
 
       // Success - redirect to products list
       navigate("/admin/products");
@@ -539,57 +619,74 @@ const AddProduct = () => {
               )}
 
               <div className="row g-4">
-                {/* Image Upload */}
+                {/* Image Upload — up to 3 photos */}
                 <div className="col-12">
                   <label className="form-label-txt">
-                    <i className="bi bi-image"></i>
-                    Product Image
+                    <i className="bi bi-images"></i>
+                    Product Photos
+                    <span className="form-label-hint">
+                      (up to 3 · first is the main photo)
+                    </span>
                   </label>
-                  <div
-                    className={`image-upload-section${dragActive ? " drag-active" : ""}`}
-                    onDragEnter={handleDragEnter}
-                    onDragLeave={handleDragLeave}
-                    onDragOver={handleDragOver}
-                    onDrop={handleDrop}
-                  >
-                    <div className="image-preview-container">
-                      {imagePreview ? (
-                        <img
-                          src={imagePreview}
-                          alt="Preview"
-                          className="image-preview"
-                        />
-                      ) : (
-                        <div className="image-placeholder">
-                          <i className="bi bi-cloud-arrow-up"></i>
-                          <p>Drag image here or click to browse</p>
-                        </div>
-                      )}
-                    </div>
-                    <div>
-                      <input
-                        type="file"
-                        id="image"
-                        accept="image/*"
-                        onChange={handleImageChange}
-                        className="d-none"
-                      />
-                      <label
-                        htmlFor="image"
-                        className="btn btn-outline-success"
+                  <div className="image-slots-grid">
+                    {imageSlots.map((slot, idx) => (
+                      <div
+                        key={idx}
+                        className={`image-slot ${slot ? "image-slot--filled" : "image-slot--empty"}`}
                       >
-                        <i className="bi bi-upload"></i>
-                        Choose Image
-                      </label>
-                      <p className="form-helper-text">
-                        <i className="bi bi-info-circle"></i>
-                        Recommended: 800x800px, Max 5MB (JPEG, PNG, WebP)
-                      </p>
-                      {errors.image && (
-                        <div className="invalid-feedback">{errors.image}</div>
-                      )}
-                    </div>
+                        {slot ? (
+                          <>
+                            <img
+                              src={slot.preview}
+                              alt={`Photo ${idx + 1}`}
+                              className="image-slot-preview"
+                            />
+                            {idx === 0 && (
+                              <span className="image-slot-main-badge">
+                                Main
+                              </span>
+                            )}
+                            <button
+                              type="button"
+                              className="image-slot-remove"
+                              onClick={() => handleSlotRemove(idx)}
+                              aria-label="Remove photo"
+                            >
+                              <i className="bi bi-x-lg"></i>
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <input
+                              type="file"
+                              id={`image-slot-${idx}`}
+                              accept="image/*"
+                              onChange={(e) => handleSlotAdd(e, idx)}
+                              className="d-none"
+                            />
+                            <label
+                              htmlFor={`image-slot-${idx}`}
+                              className="image-slot-add-label"
+                            >
+                              <i className="bi bi-plus-lg"></i>
+                              <span>
+                                {idx === 0 ? "Main photo" : "Add photo"}
+                              </span>
+                            </label>
+                          </>
+                        )}
+                      </div>
+                    ))}
                   </div>
+                  {errors.image && (
+                    <div className="invalid-feedback d-block mt-2">
+                      {errors.image}
+                    </div>
+                  )}
+                  <p className="form-helper-text mt-2">
+                    <i className="bi bi-info-circle"></i>
+                    Max 5MB each · JPEG, PNG, or WebP
+                  </p>
                 </div>
 
                 {/* Product Name */}
@@ -955,6 +1052,71 @@ const AddProduct = () => {
                   </>
                 )}
 
+                {listingType === "services" && (
+                  <>
+                    <div className="col-md-6">
+                      <label htmlFor="serviceType" className="form-label-txt">
+                        Service Type
+                      </label>
+                      <select
+                        id="serviceType"
+                        name="serviceType"
+                        value={extraData.serviceType}
+                        onChange={handleExtraChange}
+                        className="form-select"
+                      >
+                        <option value="Plumbing">Plumbing</option>
+                        <option value="Electrical">Electrical</option>
+                        <option value="Cleaning">Cleaning</option>
+                        <option value="Carpentry">Carpentry</option>
+                        <option value="Painting">Painting</option>
+                        <option value="Catering">Catering</option>
+                        <option value="Photography">Photography</option>
+                        <option value="Security">Security</option>
+                        <option value="Laundry">Laundry</option>
+                        <option value="Tutoring">Tutoring</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
+
+                    <div className="col-md-6">
+                      <label htmlFor="experience" className="form-label-txt">
+                        Experience
+                      </label>
+                      <select
+                        id="experience"
+                        name="experience"
+                        value={extraData.experience}
+                        onChange={handleExtraChange}
+                        className="form-select"
+                      >
+                        <option value="Under 1 year">Under 1 year</option>
+                        <option value="1-3 years">1-3 years</option>
+                        <option value="3-5 years">3-5 years</option>
+                        <option value="5+ years">5+ years</option>
+                      </select>
+                    </div>
+
+                    <div className="col-md-6">
+                      <label htmlFor="availability" className="form-label-txt">
+                        Availability
+                      </label>
+                      <select
+                        id="availability"
+                        name="availability"
+                        value={extraData.availability}
+                        onChange={handleExtraChange}
+                        className="form-select"
+                      >
+                        <option value="Weekdays">Weekdays</option>
+                        <option value="Weekends">Weekends</option>
+                        <option value="Both">Both</option>
+                        <option value="24/7">24/7</option>
+                      </select>
+                    </div>
+                  </>
+                )}
+
                 {/* Location */}
                 <div className="col-md-6">
                   <label htmlFor="location" className="form-label-txt">
@@ -981,27 +1143,6 @@ const AddProduct = () => {
                   )}
                 </div>
 
-                {/* Seller Name */}
-                <div className="col-md-6">
-                  <label htmlFor="seller_name" className="form-label-txt">
-                    Seller Name <span className="text-danger">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    id="seller_name"
-                    name="seller_name"
-                    value={formData.seller_name}
-                    onChange={handleInputChange}
-                    className={`form-control ${
-                      errors.seller_name ? "is-invalid" : ""
-                    }`}
-                    placeholder="e.g., John Doe"
-                  />
-                  {errors.seller_name && (
-                    <div className="invalid-feedback">{errors.seller_name}</div>
-                  )}
-                </div>
-
                 {/* Description */}
                 <div className="col-12">
                   <label htmlFor="description" className="form-label-txt">
@@ -1018,13 +1159,61 @@ const AddProduct = () => {
                   ></textarea>
                 </div>
 
+                {/* Pay-Per-Post Payment Banner */}
+                {isPayPerPost(listingType) && (
+                  <div className="col-12">
+                    {paidPostRef ? (
+                      <div className="alert alert-success d-flex align-items-center gap-2 mb-0">
+                        <i className="bi bi-check-circle-fill"></i>
+                        <span>
+                          Payment confirmed ({getPostFeeLabel(listingType)}). You can now submit your listing.
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="pay-banner">
+                        <div className="pay-banner-info">
+                          <i className="bi bi-credit-card-fill"></i>
+                          <div>
+                            <strong>Payment required to post</strong>
+                            <p className="mb-0">
+                              {listingType.charAt(0).toUpperCase() + listingType.slice(1)} listings
+                              cost <strong>{getPostFeeLabel(listingType)}</strong> per post.{" "}
+                              <Link to="/admin/billing" className="pay-banner-link">
+                                View plans
+                              </Link>
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          className="btn btn-warning pay-banner-btn"
+                          onClick={handlePaystackPayment}
+                          disabled={paymentLoading}
+                        >
+                          {paymentLoading ? (
+                            <>
+                              <span className="spinner-border spinner-border-sm me-1" role="status"></span>
+                              Processing…
+                            </>
+                          ) : (
+                            <>
+                              <i className="bi bi-lock-fill me-1"></i>
+                              Pay {getPostFeeLabel(listingType)}
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* Submit Buttons */}
                 <div className="col-12">
                   <div className="d-flex gap-3">
                     <button
                       type="submit"
                       className="btn btn-success"
-                      disabled={loading}
+                      disabled={loading || (isPayPerPost(listingType) && !paidPostRef)}
                     >
                       {loading ? (
                         <>

@@ -1,7 +1,7 @@
 /* ── Section Cards ── */
 .section-cards-row {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 0.7rem;
   margin-bottom: 1.4rem;
 }
@@ -10,8 +10,8 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.85rem 1rem 0.85rem 0.9rem;
+  gap: 0.5rem;
+  padding: 0.7rem 0.75rem;
   border-radius: 16px;
   border: 1.5px solid transparent;
   cursor: pointer;
@@ -39,13 +39,13 @@
 /* Icon bubble */
 .section-card__icon-wrap {
   flex-shrink: 0;
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.25rem;
+  font-size: 1rem;
   transition: transform 0.22s ease;
 }
 
@@ -63,13 +63,10 @@
 }
 
 .section-card__label {
-  font-size: 0.88rem;
+  font-size: 0.8rem;
   font-weight: 700;
   color: #0f172a;
   line-height: 1.2;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .section-card__sub {
@@ -174,13 +171,32 @@
   box-shadow: 0 4px 16px rgba(111, 66, 193, 0.2);
 }
 
+/* Services — teal */
+.section-services {
+  border-color: rgba(32, 201, 151, 0.2);
+}
+.section-services:hover {
+  border-color: rgba(32, 201, 151, 0.45);
+}
+.section-services .section-card__icon-wrap {
+  background: rgba(32, 201, 151, 0.1);
+  color: #20c997;
+}
+.section-services:hover .section-card__arrow {
+  color: #20c997;
+}
+.section-services.section-card--active {
+  border-color: #20c997;
+  box-shadow: 0 4px 16px rgba(32, 201, 151, 0.2);
+}
+
 /* ── Responsive ── */
 
 /* Tablet: tighter padding, hide subtitle */
 @media (max-width: 900px) {
   .section-card {
-    padding: 0.75rem 0.75rem;
-    gap: 0.6rem;
+    padding: 0.65rem 0.6rem;
+    gap: 0.45rem;
   }
 
   .section-card__sub {
@@ -188,14 +204,14 @@
   }
 
   .section-card__icon-wrap {
-    width: 38px;
-    height: 38px;
-    font-size: 1.1rem;
-    border-radius: 10px;
+    width: 30px;
+    height: 30px;
+    font-size: 0.9rem;
+    border-radius: 8px;
   }
 
   .section-card__label {
-    font-size: 0.82rem;
+    font-size: 0.75rem;
   }
 }
 
@@ -222,14 +238,14 @@
   }
 
   .section-card__icon-wrap {
-    width: 40px;
-    height: 40px;
-    font-size: 1.15rem;
-    border-radius: 10px;
+    width: 34px;
+    height: 34px;
+    font-size: 1rem;
+    border-radius: 9px;
   }
 
   .section-card__label {
-    font-size: 0.85rem;
+    font-size: 0.82rem;
   }
 
   .section-card__sub {

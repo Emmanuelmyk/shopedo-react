@@ -24,6 +24,10 @@ const AppLayout = ({
   children,
   activeCategory = "all",
   onCategorySelect,
+  activeSection = "all",
+  onSectionSelect,
+  activeSubFilters = {},
+  onSubFilterSelect,
   showFooter = true,
 }) => {
   const navigate = useNavigate();
@@ -63,13 +67,17 @@ const AppLayout = ({
     if (onCategorySelect) {
       onCategorySelect(categoryId);
     } else {
-      // Default behavior: navigate to home with category
       if (categoryId === "all") {
         navigate("/");
       } else {
         navigate(`/?category=${categoryId}`);
       }
     }
+  };
+
+  const handleSectionSelectInternal = (sectionKey) => {
+    setShowCategoryMenu(false);
+    if (onSectionSelect) onSectionSelect(sectionKey);
   };
 
   return (
@@ -96,6 +104,10 @@ const AppLayout = ({
         onHide={() => setShowCategoryMenu(false)}
         activeCategory={activeCategory}
         onCategorySelect={handleCategorySelectInternal}
+        activeSection={activeSection}
+        onSectionSelect={handleSectionSelectInternal}
+        activeSubFilters={activeSubFilters}
+        onSubFilterSelect={onSubFilterSelect}
       />
 
       {children}
@@ -109,6 +121,10 @@ AppLayout.propTypes = {
   children: PropTypes.node.isRequired,
   activeCategory: PropTypes.string,
   onCategorySelect: PropTypes.func,
+  activeSection: PropTypes.string,
+  onSectionSelect: PropTypes.func,
+  activeSubFilters: PropTypes.object,
+  onSubFilterSelect: PropTypes.func,
   showFooter: PropTypes.bool,
 };
 

@@ -5,6 +5,7 @@ import Home from "./pages/Home/Home";
 import Houses from "./pages/Houses/Houses";
 import Jobs from "./pages/Jobs/Jobs";
 import Events from "./pages/Events/Events";
+import Services from "./pages/Services/Services";
 import ProductDetail from "./pages/ProductDetail/ProductDetail";
 import Login from "./pages/LoginPage/Login";
 import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
@@ -13,6 +14,7 @@ import ProductsList from "./pages/AdminDashboard/ProductsList";
 import AddProduct from "./pages/AdminDashboard/AddProduct";
 import EditProduct from "./pages/AdminDashboard/EditProduct";
 import TestAuth from "./pages/AdminDashboard/TestAuth";
+import Billing from "./pages/AdminDashboard/Billing";
 import "./App.css";
 import "./styles/Shared.css";
 
@@ -26,6 +28,7 @@ function App() {
           <Route path="/houses" element={<Houses />} />
           <Route path="/jobs" element={<Jobs />} />
           <Route path="/events" element={<Events />} />
+          <Route path="/services" element={<Services />} />
           <Route path="/product-detail" element={<ProductDetail />} />
 
           {/* Admin Login (Public) */}
@@ -61,6 +64,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <EditProduct />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/billing"
+            element={
+              <ProtectedRoute>
+                <Billing />
               </ProtectedRoute>
             }
           />

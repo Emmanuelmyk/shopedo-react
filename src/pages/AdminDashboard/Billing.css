@@ -1,0 +1,608 @@
+/* ==========================================
+   FILE: src/pages/AdminDashboard/Billing.css
+   ========================================== */
+
+.billing-wrap {
+  max-width: 960px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* ── Page header ──────────────────────────── */
+.billing-page-header {
+  margin-bottom: 1.75rem;
+}
+
+.billing-page-title {
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 0.25rem;
+}
+
+.billing-page-sub {
+  font-size: 0.88rem;
+  color: #64748b;
+  margin: 0;
+}
+
+/* ── Hero Plan Card ───────────────────────── */
+.hero-plan-card {
+  border-radius: 20px;
+  padding: 1.75rem;
+  margin-bottom: 2rem;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid transparent;
+}
+
+.hero-plan-card--free {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border-color: #e2e8f0;
+}
+
+.hero-plan-card--basic {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  border-color: rgba(25,135,84,0.2);
+}
+
+.hero-plan-card--pro {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border-color: rgba(59,130,246,0.25);
+}
+
+.hero-plan-card--premium {
+  background: linear-gradient(135deg, #fefce8 0%, #fef9c3 100%);
+  border-color: rgba(234,179,8,0.3);
+}
+
+/* subtle decorative circle */
+.hero-plan-card::after {
+  content: "";
+  position: absolute;
+  top: -60px;
+  right: -60px;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.35);
+  pointer-events: none;
+}
+
+.hero-plan-inner {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+  position: relative;
+  z-index: 1;
+}
+
+.hero-plan-left { flex: 1; min-width: 0; }
+.hero-plan-right { width: 260px; flex-shrink: 0; }
+
+.hero-plan-eyebrow {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #64748b;
+  margin-bottom: 0.35rem;
+}
+
+.hero-plan-name {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.65rem;
+  font-weight: 800;
+  color: #0f172a;
+  flex-wrap: wrap;
+  margin-bottom: 0.25rem;
+}
+
+.hero-plan-name i { color: var(--primary-accent); font-size: 1.4rem; }
+.hero-plan-card--premium .hero-plan-name i { color: #eab308; }
+
+.hero-plan-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.18rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(25,135,84,0.12);
+  color: var(--primary-accent);
+  letter-spacing: 0.04em;
+}
+
+.hero-plan-price {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--primary-accent);
+  line-height: 1;
+  margin-bottom: 0.65rem;
+}
+
+.hero-plan-card--premium .hero-plan-price { color: #b45309; }
+
+.hero-plan-note {
+  font-size: 0.78rem;
+  color: #64748b;
+  margin: 0;
+}
+
+/* usage bar */
+.hero-usage-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.82rem;
+  color: #475569;
+  margin-bottom: 0.55rem;
+}
+
+.hero-usage-label strong { color: #0f172a; }
+
+.hero-usage-track {
+  height: 10px;
+  background: rgba(0,0,0,0.08);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.hero-usage-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.5s ease;
+}
+
+.hero-usage-warning {
+  margin-top: 0.55rem;
+  font-size: 0.8rem;
+  color: #dc2626;
+  font-weight: 600;
+  margin-bottom: 0;
+}
+
+/* ── Section heading ──────────────────────── */
+.billing-section-head { margin-bottom: 1rem; }
+
+.billing-section-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+}
+
+/* ── Plan Grid ────────────────────────────── */
+.plan-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.plan-tile {
+  position: relative;
+  background: #fff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 1.4rem 1.1rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.4rem;
+  transition: box-shadow 0.2s, border-color 0.2s, transform 0.2s;
+}
+
+.plan-tile:hover {
+  box-shadow: 0 8px 24px rgba(15,23,42,0.1);
+  transform: translateY(-2px);
+}
+
+.plan-tile--active {
+  border-color: var(--primary-accent);
+  background: linear-gradient(160deg, #f0fdf4 0%, #fff 60%);
+  box-shadow: 0 4px 20px rgba(25,135,84,0.12);
+}
+
+.plan-tile--premium.plan-tile--active {
+  border-color: #eab308;
+  background: linear-gradient(160deg, #fefce8 0%, #fff 60%);
+  box-shadow: 0 4px 20px rgba(234,179,8,0.15);
+}
+
+/* ribbon */
+.plan-tile-popular,
+.plan-tile-current {
+  position: absolute;
+  top: -1px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.75rem;
+  border-radius: 0 0 8px 8px;
+  white-space: nowrap;
+}
+
+.plan-tile-popular {
+  background: #3b82f6;
+  color: #fff;
+}
+
+.plan-tile-current {
+  background: var(--primary-accent);
+  color: #fff;
+}
+
+.plan-tile--premium .plan-tile-current { background: #eab308; }
+
+.plan-tile-icon {
+  font-size: 1.8rem;
+  color: var(--primary-accent);
+  margin-top: 0.9rem;
+  margin-bottom: 0.1rem;
+}
+
+.plan-tile--premium .plan-tile-icon { color: #eab308; }
+
+.plan-tile-name {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.plan-tile-price {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--primary-accent);
+  line-height: 1;
+}
+
+.plan-tile--premium .plan-tile-price { color: #b45309; }
+
+.plan-tile-limit {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.plan-tile-features {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0 0.25rem;
+  text-align: left;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.plan-tile-features li {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.76rem;
+  color: #475569;
+}
+
+.plan-tile-features li i {
+  color: var(--primary-accent);
+  font-size: 0.85rem;
+  flex-shrink: 0;
+  font-weight: 700;
+}
+
+/* buttons */
+.plan-tile-btn {
+  width: 100%;
+  margin-top: auto;
+  padding: 0.55rem 0.75rem;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: all 0.18s;
+  margin-top: 0.75rem;
+}
+
+.plan-tile-btn--primary {
+  background: var(--primary-accent);
+  color: #fff;
+}
+
+.plan-tile-btn--primary:hover:not(:disabled) {
+  background: var(--primary-accent-hover, #146c43);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(25,135,84,0.3);
+}
+
+.plan-tile-btn--outline {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+}
+
+.plan-tile-btn--outline:hover:not(:disabled) { background: #e2e8f0; }
+
+.plan-tile-btn--disabled {
+  background: #f1f5f9;
+  color: #94a3b8;
+  cursor: default;
+}
+
+.plan-tile-btn:disabled { opacity: 0.72; cursor: not-allowed; }
+
+/* ── Pay-Per-Post ─────────────────────────── */
+.ppp-section {
+  background: #fff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 18px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.ppp-header {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin-bottom: 1.2rem;
+}
+
+.ppp-header-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(25,135,84,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary-accent);
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.ppp-title {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 0.15rem;
+}
+
+.ppp-sub {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin: 0;
+}
+
+.ppp-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.ppp-card {
+  border-radius: 14px;
+  padding: 1.1rem 0.9rem;
+  background: var(--ppp-bg);
+  border: 1px solid color-mix(in srgb, var(--ppp-color) 20%, transparent);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.25rem;
+}
+
+.ppp-card-icon {
+  font-size: 1.35rem;
+  color: var(--ppp-color);
+  margin-bottom: 0.1rem;
+}
+
+.ppp-card-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #0f172a;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.ppp-card-price {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--ppp-color);
+  line-height: 1;
+}
+
+.ppp-card-note {
+  font-size: 0.72rem;
+  color: #64748b;
+}
+
+.ppp-footer-note {
+  font-size: 0.78rem;
+  color: #64748b;
+  margin: 0;
+}
+
+/* ── Payment History ──────────────────────── */
+.history-card {
+  background: #fff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 18px;
+  overflow: hidden;
+  margin-bottom: 2rem;
+}
+
+.history-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.history-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 3rem 1.5rem;
+  gap: 0.4rem;
+  text-align: center;
+}
+
+.history-empty-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  color: #94a3b8;
+  margin-bottom: 0.3rem;
+}
+
+.history-empty p {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.history-empty span {
+  font-size: 0.82rem;
+  color: #94a3b8;
+}
+
+.history-table-wrap { overflow-x: auto; }
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.history-table th {
+  padding: 0.85rem 1.1rem;
+  text-align: left;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+  background: #f8fafc;
+  border-bottom: 1.5px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+.history-table td {
+  padding: 0.85rem 1.1rem;
+  border-bottom: 1px solid #f1f5f9;
+  color: #0f172a;
+  vertical-align: middle;
+}
+
+.history-table tr:last-child td { border-bottom: none; }
+.history-table tr:hover td { background: #fafbfc; }
+
+.history-type {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.history-amount {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.history-ref {
+  font-size: 0.73rem;
+  color: #64748b;
+  background: #f8fafc;
+  padding: 0.18rem 0.45rem;
+  border-radius: 5px;
+  border: 1px solid #e2e8f0;
+}
+
+/* badges */
+.b-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.22rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.73rem;
+  font-weight: 700;
+}
+
+.b-badge--paid    { background: rgba(25,135,84,0.1);  color: var(--primary-accent); }
+.b-badge--pending { background: rgba(245,158,11,0.1); color: #b45309; }
+.b-badge--failed  { background: rgba(220,38,38,0.1);  color: #dc2626; }
+
+/* ── Skeleton loading ─────────────────────── */
+@keyframes billing-shimmer {
+  0%   { background-position: -600px 0; }
+  100% { background-position:  600px 0; }
+}
+
+.billing-skeleton-hero,
+.billing-skeleton-card {
+  background: linear-gradient(
+    105deg,
+    rgba(255,255,255,0.55) 0%,
+    rgba(255,255,255,0.90) 40%,
+    rgba(255,255,255,0.55) 80%
+  );
+  background-size: 600px 100%;
+  animation: billing-shimmer 1.6s ease-in-out infinite;
+  border-radius: 20px;
+}
+
+.billing-skeleton-hero {
+  height: 148px;
+  margin-bottom: 2rem;
+  background-color: #e8eef4;
+}
+
+.billing-skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+
+.billing-skeleton-card {
+  height: 220px;
+  background-color: #e8eef4;
+  border-radius: 16px;
+}
+
+/* ── Responsive ───────────────────────────── */
+@media (max-width: 900px) {
+  .plan-grid { grid-template-columns: repeat(2, 1fr); }
+  .billing-skeleton-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+  .hero-plan-inner { flex-direction: column; gap: 1.25rem; }
+  .hero-plan-right { width: 100%; }
+  .ppp-cards { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 560px) {
+  .plan-grid { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+  .ppp-cards { grid-template-columns: 1fr; }
+  .hero-plan-card { padding: 1.25rem; }
+  .history-table th,
+  .history-table td { padding: 0.7rem 0.85rem; }
+}
