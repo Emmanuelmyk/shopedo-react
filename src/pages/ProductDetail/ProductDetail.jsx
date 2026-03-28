@@ -15,7 +15,6 @@ import { supabase } from "../../utils/supabaseClient";
 import { useWishlistContext } from "../../contexts/WishlistContext";
 import { useInfiniteScroll } from "../../hooks/useInfiniteScroll";
 import { useImageObserver } from "../../hooks/useImageObserver";
-import { shareProduct } from "../../utils/wishlistUtils";
 import { escapeHtml, formatNumber, formatDate } from "../../utils/formatUtils";
 import {
   getPublicUrlFromPath,
@@ -38,8 +37,6 @@ const ProductDetail = () => {
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [relatedOffset, setRelatedOffset] = useState(0);
   const [showSellerPhone, setShowSellerPhone] = useState(false);
-  const [contactButtonLabel, setContactButtonLabel] =
-    useState("Contact Seller");
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [activeImgIndex, setActiveImgIndex] = useState(0);
@@ -63,7 +60,6 @@ const ProductDetail = () => {
 
       setLoading(true);
       setShowSellerPhone(false);
-      setContactButtonLabel("Contact Seller");
       setRelatedProducts([]);
       setRelatedOffset(0);
 
@@ -137,12 +133,8 @@ const ProductDetail = () => {
     });
 
   const handleContactSeller = () => {
-    if (!showSellerPhone) {
-      setShowSellerPhone(true);
-      setContactButtonLabel("Call Now");
-    } else {
-      window.location.href = "tel:+2348123456789";
-    }
+    setShowSellerPhone(true);
+    setContactButtonLabel("Contact Seller");
   };
 
   const handleBack = () => {
@@ -371,7 +363,7 @@ const ProductDetail = () => {
                       onClick={handleContactSeller}
                       className="flex-fill detail-action-btn"
                     >
-                      <i className="bi bi-telephone"></i> {contactButtonLabel}
+                      <i className="bi bi-telephone"></i> Contact Seller
                     </Button>
                   </div>
                 </div>
@@ -401,25 +393,6 @@ const ProductDetail = () => {
                         <i className="bi bi-geo-alt-fill me-1 text-muted"></i>
                         <span>{escapeHtml(product.location)}</span>
                       </div>
-                      <div className="seller-rating">
-                        <i className="bi bi-star-fill"></i>
-                        <i className="bi bi-star-fill"></i>
-                        <i className="bi bi-star-fill"></i>
-                        <i className="bi bi-star-fill"></i>
-                        <i className="bi bi-star-fill"></i>
-                        <span className="text-muted small ms-1">(5.0)</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="seller-stats">
-                    <div className="seller-stat-item">
-                      <span className="seller-stat-label">Member Status</span>
-                      <span className="seller-stat-value">Trusted Seller</span>
-                    </div>
-                    <div className="seller-stat-item">
-                      <span className="seller-stat-label">Response Time</span>
-                      <span className="seller-stat-value">Within 1 hour</span>
                     </div>
                   </div>
 
@@ -436,8 +409,8 @@ const ProductDetail = () => {
 
                   {showSellerPhone && (
                     <div className="seller-phone show">
-                      <i className="bi bi-telephone-fill me-2"></i> +234 812 345
-                      6789
+                      <i className="bi bi-chat-dots-fill me-2"></i>
+                      To get the seller&apos;s contact, reach out via the listing details.
                     </div>
                   )}
                 </div>

@@ -14,7 +14,7 @@ const Footer = () => {
             <div className="col-lg-3 col-md-6 col-12">
               <div className="footer-section">
                 <div className="footer-logo mb-3">
-                  <img src="/assets/logo.png" alt="EDOFINDS" />
+                  <img src="/assets/logo.png" alt="Nearbuy" />
                 </div>
                 <p className="footer-description">
                   Nigeria's trusted marketplace for buying and selling quality
@@ -27,7 +27,7 @@ const Footer = () => {
                   </p>
                   <p className="mb-0">
                     <i className="bi bi-envelope-fill me-2"></i>
-                    support@edofinds.ng
+                    support@nearbuy.ng
                   </p>
                 </div>
               </div>
@@ -156,7 +156,7 @@ const Footer = () => {
                 Nigeria
               </p>
               <p className="mb-0 footer-copyright">
-                © 2025 EDOFINDS.NG. All rights reserved.
+                © 2025 Nearbuy. All rights reserved.
               </p>
             </div>
             <div className="footer-bottom-right">

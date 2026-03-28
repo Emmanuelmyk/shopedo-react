@@ -24,10 +24,9 @@ const AppLayout = ({
   children,
   activeCategory = "all",
   onCategorySelect,
-  activeSection = "all",
-  onSectionSelect,
-  activeSubFilters = {},
-  onSubFilterSelect,
+  section = "items",
+  activeFilter = "",
+  onFilterSelect,
   showFooter = true,
 }) => {
   const navigate = useNavigate();
@@ -75,11 +74,6 @@ const AppLayout = ({
     }
   };
 
-  const handleSectionSelectInternal = (sectionKey) => {
-    setShowCategoryMenu(false);
-    if (onSectionSelect) onSectionSelect(sectionKey);
-  };
-
   return (
     <>
       <Navbar
@@ -104,10 +98,9 @@ const AppLayout = ({
         onHide={() => setShowCategoryMenu(false)}
         activeCategory={activeCategory}
         onCategorySelect={handleCategorySelectInternal}
-        activeSection={activeSection}
-        onSectionSelect={handleSectionSelectInternal}
-        activeSubFilters={activeSubFilters}
-        onSubFilterSelect={onSubFilterSelect}
+        section={section}
+        activeFilter={activeFilter}
+        onFilterSelect={onFilterSelect}
       />
 
       {children}
@@ -121,10 +114,9 @@ AppLayout.propTypes = {
   children: PropTypes.node.isRequired,
   activeCategory: PropTypes.string,
   onCategorySelect: PropTypes.func,
-  activeSection: PropTypes.string,
-  onSectionSelect: PropTypes.func,
-  activeSubFilters: PropTypes.object,
-  onSubFilterSelect: PropTypes.func,
+  section: PropTypes.string,
+  activeFilter: PropTypes.string,
+  onFilterSelect: PropTypes.func,
   showFooter: PropTypes.bool,
 };
 

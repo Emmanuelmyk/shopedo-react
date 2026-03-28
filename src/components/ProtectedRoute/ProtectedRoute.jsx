@@ -29,8 +29,6 @@ const ProtectedRoute = ({ children }) => {
       }
 
       setAuthenticated(true);
-      console.log("✅ User authenticated:", user.email);
-      console.log("🔑 Access token verified");
     };
 
     const checkAuth = async () => {
@@ -63,13 +61,11 @@ const ProtectedRoute = ({ children }) => {
       if (session?.access_token) {
         await validateSession(session);
         setLoading(false);
-        console.log(`🔄 Auth state changed - ${event}`);
         return;
       }
 
       setAuthenticated(false);
       setLoading(false);
-      console.log(`🔄 Auth state changed - ${event} (no session)`);
     });
 
     return () => {

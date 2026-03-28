@@ -83,8 +83,6 @@ const Dashboard = () => {
             fallbackName,
         );
 
-        console.log("👤 Fetching stats for seller:", session.user.email);
-
         // 🔐 Fetch total products for THIS seller only
         const { count: productCount } = await supabase
           .from("products")
@@ -98,8 +96,6 @@ const Dashboard = () => {
           .eq("seller_id", session.user.id) // Filter by seller_id
           .order("created_at", { ascending: false })
           .limit(5);
-
-        console.log(`✅ Seller has ${productCount || 0} products`);
 
         setStats({
           totalProducts: productCount || 0,

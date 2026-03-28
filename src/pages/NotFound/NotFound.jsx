@@ -15,7 +15,7 @@ const NotFound = ({
       {/* minimal header */}
       <header className="nf-header">
         <a href="/" className="nf-logo">
-          <img src="/assets/logo.png" alt="EDOFINDS" />
+          <img src="/assets/logo.png" alt="Nearbuy" />
         </a>
       </header>
 

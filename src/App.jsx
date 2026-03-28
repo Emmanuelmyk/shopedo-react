@@ -13,7 +13,6 @@ import Dashboard from "./pages/AdminDashboard/Dashboard";
 import ProductsList from "./pages/AdminDashboard/ProductsList";
 import AddProduct from "./pages/AdminDashboard/AddProduct";
 import EditProduct from "./pages/AdminDashboard/EditProduct";
-import TestAuth from "./pages/AdminDashboard/TestAuth";
 import Billing from "./pages/AdminDashboard/Billing";
 import NotFound from "./pages/NotFound/NotFound";
 import "./App.css";
@@ -73,14 +72,6 @@ function App() {
             element={
               <ProtectedRoute>
                 <Billing />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/test-auth"
-            element={
-              <ProtectedRoute>
-                <TestAuth />
               </ProtectedRoute>
             }
           />

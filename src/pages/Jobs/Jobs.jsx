@@ -41,6 +41,7 @@ const Jobs = () => {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [emptyStateConfig, setEmptyStateConfig] = useState(null);
+  const [hasError, setHasError] = useState(false);
 
   const { toggleWishlist, isInWishlist } = useWishlistContext();
   const { observe: observeImage } = useImageObserver(true);
@@ -102,6 +103,7 @@ const Jobs = () => {
       return data.length === PAGE_SIZE;
     } catch (err) {
       console.error("Error loading jobs:", err);
+      if (offset === 0) setHasError(true);
       return false;
     }
   }, [offset, currentSearchTerm, selectedLocation, sortBy]);
@@ -114,6 +116,7 @@ const Jobs = () => {
     setJobs([]);
     setOffset(0);
     setEmptyStateConfig(null);
+    setHasError(false);
     reset();
   };
 
@@ -153,9 +156,14 @@ const Jobs = () => {
   };
 
   return (
-    <AppLayout activeCategory="all" onCategorySelect={() => {}}>
+    <AppLayout section="jobs" activeFilter={currentSearchTerm} onFilterSelect={handleQuickFilter}>
       <div className="layout-container container">
-        <Sidebar activeCategory="all" onCategorySelect={() => {}} ads={ads} />
+        <Sidebar
+          section="jobs"
+          activeFilter={currentSearchTerm}
+          onFilterSelect={handleQuickFilter}
+          ads={ads}
+        />
 
         <main className="product-grid">
           <AdsCarousel ads={ads} isMobile />
@@ -258,7 +266,13 @@ const Jobs = () => {
             ))}
           </div>
 
-          {emptyStateConfig ? (
+          {hasError ? (
+            <EmptyState
+              icon="bi-wifi-off"
+              title="Something went wrong"
+              message="We couldn't load listings right now. Check your connection and try again."
+            />
+          ) : emptyStateConfig ? (
             <EmptyState
               icon="bi-briefcase"
               title={emptyStateConfig.title}

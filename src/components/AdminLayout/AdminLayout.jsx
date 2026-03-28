@@ -64,7 +64,7 @@ const AdminLayout = ({ children }) => {
       {/* ── Sidebar ── */}
       <aside className={`al-sidebar ${sidebarOpen ? "open" : ""}`}>
         <div className="al-sidebar-brand">
-          <img src="/assets/logo.png" alt="EDOFINDS" className="al-brand-logo" />
+          <img src="/assets/logo.png" alt="Nearbuy" className="al-brand-logo" />
           <button className="al-sidebar-close" onClick={toggle} aria-label="Close menu">
             <i className="bi bi-x-lg"></i>
           </button>

@@ -69,12 +69,6 @@ if (!supabaseUrl || !supabaseKey) {
     },
   });
 
-  console.log("✅ Supabase client initialized");
-  console.log("📍 URL:", supabaseUrl);
-  console.log(
-    "🔑 Key type:",
-    supabaseKey.includes("anon") ? "anon (correct)" : "Check key type"
-  );
 }
 
 export { supabase };

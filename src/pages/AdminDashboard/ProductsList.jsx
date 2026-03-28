@@ -41,9 +41,6 @@ const ProductsList = () => {
         return;
       }
 
-      console.log("👤 Fetching products for seller:", session.user.email);
-      console.log("🆔 Seller ID:", session.user.id);
-
       // 🔐 Only fetch products belonging to current seller
       const { data, error } = await supabase
         .from("products")
@@ -53,7 +50,6 @@ const ProductsList = () => {
 
       if (error) throw error;
 
-      console.log(`✅ Found ${data?.length || 0} products for this seller`);
       setProducts(data || []);
     } catch (error) {
       console.error("❌ Error fetching products:", error);

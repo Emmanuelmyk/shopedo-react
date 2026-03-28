@@ -43,6 +43,7 @@ const Services = () => {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [emptyStateConfig, setEmptyStateConfig] = useState(null);
+  const [hasError, setHasError] = useState(false);
 
   const { toggleWishlist, isInWishlist } = useWishlistContext();
   const { observe: observeImage } = useImageObserver(true);
@@ -102,6 +103,7 @@ const Services = () => {
       return data.length === PAGE_SIZE;
     } catch (err) {
       console.error("Error loading services:", err);
+      if (offset === 0) setHasError(true);
       return false;
     }
   }, [offset, currentSearchTerm, selectedLocation, sortBy]);
@@ -114,6 +116,7 @@ const Services = () => {
     setServices([]);
     setOffset(0);
     setEmptyStateConfig(null);
+    setHasError(false);
     reset();
   };
 
@@ -153,9 +156,14 @@ const Services = () => {
   };
 
   return (
-    <AppLayout activeCategory="all" onCategorySelect={() => {}}>
+    <AppLayout section="services" activeFilter={currentSearchTerm} onFilterSelect={handleQuickFilter}>
       <div className="layout-container container">
-        <Sidebar activeCategory="all" onCategorySelect={() => {}} ads={ads} />
+        <Sidebar
+          section="services"
+          activeFilter={currentSearchTerm}
+          onFilterSelect={handleQuickFilter}
+          ads={ads}
+        />
 
         <main className="product-grid">
           <AdsCarousel ads={ads} isMobile />
@@ -258,7 +266,13 @@ const Services = () => {
             ))}
           </div>
 
-          {emptyStateConfig ? (
+          {hasError ? (
+            <EmptyState
+              icon="bi-wifi-off"
+              title="Something went wrong"
+              message="We couldn't load listings right now. Check your connection and try again."
+            />
+          ) : emptyStateConfig ? (
             <EmptyState
               icon="bi-tools"
               title={emptyStateConfig.title}

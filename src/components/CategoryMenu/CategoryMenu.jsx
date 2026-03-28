@@ -3,10 +3,22 @@
 // ==========================================
 import React, { useEffect } from "react";
 import { CATEGORIES } from "../../utils/categories";
+import { SECTION_SUB_FILTERS } from "../../utils/sectionFilters";
 import ReferralCard from "../ReferralCard/ReferralCard";
 import "./CategoryMenu.css";
 
-const CategoryMenu = ({ show, onHide, activeCategory, onCategorySelect }) => {
+const CategoryMenu = ({
+  show,
+  onHide,
+  activeCategory,
+  onCategorySelect,
+  section = "items",
+  activeFilter = "",
+  onFilterSelect,
+}) => {
+  const subFilters = SECTION_SUB_FILTERS[section] || [];
+  const showCategories = section === "items" || !SECTION_SUB_FILTERS[section];
+
   // lock body scroll when open
   useEffect(() => {
     if (show) {
@@ -21,6 +33,11 @@ const CategoryMenu = ({ show, onHide, activeCategory, onCategorySelect }) => {
 
   const handleCategoryClick = (categoryId) => {
     onCategorySelect(categoryId);
+    onHide();
+  };
+
+  const handleFilterClick = (label) => {
+    onFilterSelect(label);
     onHide();
   };
 
@@ -42,25 +59,51 @@ const CategoryMenu = ({ show, onHide, activeCategory, onCategorySelect }) => {
         </div>
 
         <div className="cm-body">
-          <div className="list-group category-list">
-            <button
-              className={`list-group-item list-group-item-action ${activeCategory === "all" ? "active" : ""}`}
-              onClick={() => handleCategoryClick("all")}
-            >
-              <i className="bi bi-house-door"></i>All
-            </button>
-
-            {CATEGORIES.map((cat) => (
+          {showCategories ? (
+            <div className="list-group category-list">
               <button
-                key={cat.id}
-                className={`list-group-item list-group-item-action ${activeCategory === cat.id.toString() ? "active" : ""}`}
-                onClick={() => handleCategoryClick(cat.id.toString())}
+                className={`list-group-item list-group-item-action ${activeCategory === "all" ? "active" : ""}`}
+                onClick={() => handleCategoryClick("all")}
               >
-                <i className={`bi bi-${cat.icon}`}></i>
-                {cat.name}
+                <i className="bi bi-house-door"></i>All
               </button>
-            ))}
-          </div>
+
+              {CATEGORIES.map((cat) => (
+                <button
+                  key={cat.id}
+                  className={`list-group-item list-group-item-action ${activeCategory === cat.id.toString() ? "active" : ""}`}
+                  onClick={() => handleCategoryClick(cat.id.toString())}
+                >
+                  <i className={`bi bi-${cat.icon}`}></i>
+                  {cat.name}
+                </button>
+              ))}
+            </div>
+          ) : (
+            subFilters.map((group) => (
+              <div key={group.key} className="sidebar-subfilter-group">
+                <div className="sidebar-subfilter-label">{group.label}</div>
+                <div className="list-group category-list">
+                  <button
+                    className={`list-group-item list-group-item-action ${activeFilter === "" ? "active" : ""}`}
+                    onClick={() => handleFilterClick("")}
+                  >
+                    <i className="bi bi-grid"></i>All
+                  </button>
+                  {group.options.map((opt) => (
+                    <button
+                      key={opt.label}
+                      className={`list-group-item list-group-item-action ${activeFilter.toLowerCase() === opt.label.toLowerCase() ? "active" : ""}`}
+                      onClick={() => handleFilterClick(opt.label)}
+                    >
+                      <i className={`bi ${opt.icon}`}></i>
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))
+          )}
 
           <ReferralCard />
         </div>

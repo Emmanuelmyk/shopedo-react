@@ -69,7 +69,6 @@ const EditProduct = () => {
       if (data) {
         // 🔐 Verify that this product belongs to the current seller
         if (data.seller_id !== session.user.id) {
-          console.error("❌ Unauthorized: Product belongs to another seller");
           setErrors({
             fetch: "You don't have permission to edit this product.",
           });
@@ -77,8 +76,6 @@ const EditProduct = () => {
           navigate("/admin/products");
           return;
         }
-
-        console.log("✅ Authorized to edit product:", data.name);
 
         setSellerName(
           session.user.user_metadata?.full_name ||

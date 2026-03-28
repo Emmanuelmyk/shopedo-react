@@ -1029,7 +1029,7 @@ const AddProduct = () => {
                         value={extraData.organizer}
                         onChange={handleExtraChange}
                         className="form-control"
-                        placeholder="e.g., EdoFinds Events"
+                        placeholder="e.g., Nearbuy Events"
                       />
                     </div>
 

@@ -6,7 +6,7 @@
   height: calc(100vh - 56px);
   position: sticky;
   top: 56px;
-  overflow: hidden;
+  overflow-y: auto;
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
@@ -16,3 +16,52 @@
 }
 
 /* Category list styles moved to src/styles/Shared.css */
+
+/* ── Sub-filter chips ── */
+.sidebar-subfilter-group {
+  margin-bottom: 1.25rem;
+}
+
+.sidebar-subfilter-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #94a3b8;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+  padding: 0 0.25rem;
+}
+
+.sidebar-subfilter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.sidebar-subfilter-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.3rem 0.75rem;
+  border-radius: 14px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1.5px solid #e2e8f0;
+  background: transparent;
+  color: #475569;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.sidebar-subfilter-chip:hover {
+  border-color: #198754;
+  color: #198754;
+  background: rgba(25, 135, 84, 0.05);
+}
+
+.sidebar-subfilter-chip.active {
+  background: rgba(25, 135, 84, 0.1);
+  border-color: #198754;
+  color: #198754;
+  font-weight: 600;
+}

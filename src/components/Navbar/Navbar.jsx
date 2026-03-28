@@ -36,8 +36,8 @@ const Navbar = ({
     <nav className="navbar navbar-expand-lg">
       <div className="container px-3">
         <Link className="navbar-brand" to="/">
-          <img src="/assets/logo.png" alt="EDOFINDS" className="logo-img" />
-          <span className="brand-text">EDOFINDS</span>
+          <img src="/assets/logo.png" alt="Nearbuy" className="logo-img" />
+          <span className="brand-text">Nearbuy</span>
         </Link>
 
         <div className="nav-spacer"></div>

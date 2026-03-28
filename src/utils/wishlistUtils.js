@@ -40,8 +40,8 @@ export const getWishlistCount = () => {
 
 export const shareProduct = (productId, productName, productPrice) => {
   const url = `${window.location.origin}/product-detail?id=${productId}`;
-  const title = `${productName} on EDOFINDS.NG`;
-  const text = `Check out ${productName} for ₦${productPrice.toLocaleString()} on EDOFINDS.NG!`;
+  const title = `${productName} on Nearbuy`;
+  const text = `Check out ${productName} for ₦${productPrice.toLocaleString()} on Nearbuy!`;
 
   if (navigator.share) {
     navigator

@@ -266,7 +266,7 @@ export default function Login() {
             <div className="login-logo">
               <img
                 src="/assets/logo.png"
-                alt="EDOFINDS"
+                alt="Nearbuy"
                 className="logo-image"
               />
             </div>
