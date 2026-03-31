@@ -155,11 +155,12 @@
   }
 
   .items-filters {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
     padding: 0.65rem;
   }
 
   .items-clear-btn {
+    grid-column: 1 / -1;
     width: 100%;
   }
 }

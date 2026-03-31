@@ -19,9 +19,22 @@ import { useAds } from "../../hooks/useAds";
 import { getCategoryName } from "../../utils/categories";
 import { LOCATIONS } from "../../utils/locations";
 import SectionCards from "../../components/SectionCards/SectionCards";
+import CustomSelect from "../../components/CustomSelect/CustomSelect";
 import "../Home/Home.css";
 
 const PAGE_SIZE = 12;
+
+const LOCATION_OPTIONS = [
+  { value: "all", label: "All locations" },
+  ...LOCATIONS.map((l) => ({ value: l, label: l })),
+];
+
+const SORT_OPTIONS = [
+  { value: "newest", label: "Newest" },
+  { value: "oldest", label: "Oldest" },
+  { value: "price-low", label: "Price: Low to High" },
+  { value: "price-high", label: "Price: High to Low" },
+];
 
 const getSortConfig = (sortBy) => {
   if (sortBy === "oldest") return { column: "id", ascending: true };
@@ -155,13 +168,13 @@ const Items = () => {
     resetPagination();
   };
 
-  const handleLocationChange = (e) => {
-    setSelectedLocation(e.target.value);
+  const handleLocationChange = (value) => {
+    setSelectedLocation(value);
     resetPagination();
   };
 
-  const handleSortChange = (e) => {
-    setSortBy(e.target.value);
+  const handleSortChange = (value) => {
+    setSortBy(value);
     resetPagination();
   };
 
@@ -220,55 +233,23 @@ const Items = () => {
 
           <div className="items-filters">
             <div className="items-filter-field">
-              <label htmlFor="items-location">Location</label>
-              <div className="items-select-wrap">
-                <i
-                  className="bi bi-geo-alt items-select-icon"
-                  aria-hidden="true"
-                ></i>
-                <select
-                  id="items-location"
-                  className="items-select"
-                  value={selectedLocation}
-                  onChange={handleLocationChange}
-                >
-                  <option value="all">All locations</option>
-                  {LOCATIONS.map((location) => (
-                    <option key={location} value={location}>
-                      {location}
-                    </option>
-                  ))}
-                </select>
-                <i
-                  className="bi bi-chevron-down items-select-caret"
-                  aria-hidden="true"
-                ></i>
-              </div>
+              <label>Location</label>
+              <CustomSelect
+                value={selectedLocation}
+                onChange={handleLocationChange}
+                options={LOCATION_OPTIONS}
+                icon="bi-geo-alt"
+              />
             </div>
 
             <div className="items-filter-field">
-              <label htmlFor="items-sort">Sort by</label>
-              <div className="items-select-wrap">
-                <i
-                  className="bi bi-sliders items-select-icon"
-                  aria-hidden="true"
-                ></i>
-                <select
-                  id="items-sort"
-                  className="items-select"
-                  value={sortBy}
-                  onChange={handleSortChange}
-                >
-                  <option value="newest">Newest</option>
-                  <option value="oldest">Oldest</option>
-                  <option value="price-low">Price: Low to High</option>
-                  <option value="price-high">Price: High to Low</option>
-                </select>
-                <i
-                  className="bi bi-chevron-down items-select-caret"
-                  aria-hidden="true"
-                ></i>
-              </div>
+              <label>Sort by</label>
+              <CustomSelect
+                value={sortBy}
+                onChange={handleSortChange}
+                options={SORT_OPTIONS}
+                icon="bi-sliders"
+              />
             </div>
 
             <button

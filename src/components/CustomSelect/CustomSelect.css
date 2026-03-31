@@ -1,0 +1,117 @@
+/* ── Custom Select ── */
+.cs-wrap {
+  position: relative;
+  width: 100%;
+}
+
+/* Trigger button */
+.cs-trigger {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  background: #ffffff;
+  border: 1px solid #d5dce4;
+  border-radius: 11px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: #0f172a;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.cs-trigger:focus {
+  outline: none;
+  border-color: rgba(25, 135, 84, 0.5);
+  box-shadow: 0 0 0 3px rgba(25, 135, 84, 0.11);
+}
+
+.cs-wrap--open .cs-trigger {
+  border-color: rgba(25, 135, 84, 0.5);
+  box-shadow: 0 0 0 3px rgba(25, 135, 84, 0.11);
+}
+
+.cs-trigger__icon {
+  color: #6b7280;
+  font-size: 0.84rem;
+  flex-shrink: 0;
+}
+
+.cs-trigger__value {
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.cs-trigger__caret {
+  color: #94a3b8;
+  font-size: 0.72rem;
+  flex-shrink: 0;
+  transition: transform 0.18s ease;
+}
+
+.cs-wrap--open .cs-trigger__caret {
+  transform: rotate(180deg);
+}
+
+/* Dropdown list */
+.cs-dropdown {
+  position: absolute;
+  top: calc(100% + 5px);
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+  list-style: none;
+  margin: 0;
+  padding: 0.3rem;
+  z-index: 200;
+  max-height: 220px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Option */
+.cs-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.55rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.84rem;
+  font-weight: 500;
+  color: #1e293b;
+  cursor: pointer;
+  transition: background 0.14s ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.cs-option:hover,
+.cs-option:active {
+  background: #f1f5f9;
+}
+
+.cs-option--active {
+  background: #edf8f2;
+  color: #166534;
+  font-weight: 700;
+}
+
+.cs-option--active:hover {
+  background: #dcfce7;
+}
+
+.cs-option__check {
+  color: #16a34a;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
