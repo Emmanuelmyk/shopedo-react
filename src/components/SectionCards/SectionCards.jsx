@@ -4,11 +4,19 @@ import "./SectionCards.css";
 
 const SECTIONS = [
   {
+    key: "all",
+    label: "All",
+    sub: "Browse everything",
+    icon: "bi-grid-fill",
+    path: "/",
+    colorClass: "section-all",
+  },
+  {
     key: "items",
     label: "Items",
     sub: "Buy & sell anything",
     icon: "bi-bag-heart-fill",
-    path: "/",
+    path: "/items",
     colorClass: "section-items",
   },
   {

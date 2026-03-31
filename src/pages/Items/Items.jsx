@@ -1,5 +1,5 @@
 // ==========================================
-// FILE: src/pages/Home/Home.jsx
+// FILE: src/pages/Items/Items.jsx
 // ==========================================
 import React, { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
@@ -19,7 +19,7 @@ import { useAds } from "../../hooks/useAds";
 import { getCategoryName } from "../../utils/categories";
 import { LOCATIONS } from "../../utils/locations";
 import SectionCards from "../../components/SectionCards/SectionCards";
-import "./Home.css";
+import "../Home/Home.css";
 
 const PAGE_SIZE = 12;
 
@@ -30,7 +30,7 @@ const getSortConfig = (sortBy) => {
   return { column: "id", ascending: false };
 };
 
-const Home = () => {
+const Items = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState([]);
   const [offset, setOffset] = useState(0);
@@ -56,6 +56,7 @@ const Home = () => {
         .select(
           "id, name, description, price, category_id, img_path, condition, location",
         )
+        .eq("listing_type", "item")
         .order(sortConfig.column, { ascending: sortConfig.ascending })
         .range(offset, offset + PAGE_SIZE - 1);
 
@@ -76,36 +77,33 @@ const Home = () => {
       const { data, error } = await query;
 
       if (error) {
-        console.error("Error fetching products:", error);
+        console.error("Error fetching items:", error);
         return false;
       }
 
       if (!data || data.length === 0) {
         if (offset === 0) {
-          // Set empty state
-          let title = "No products found";
+          let title = "No items found";
           let message = "Try adjusting your search or filters.";
 
           if (currentSearchTerm) {
             title = "No results for your search";
-            message = `No products match "${currentSearchTerm}". Try different keywords.`;
+            message = `No items match "${currentSearchTerm}". Try different keywords.`;
           } else if (selectedLocation !== "all") {
-            title = `No products in ${selectedLocation}`;
+            title = `No items in ${selectedLocation}`;
             message = "Try a nearby location or remove location filter.";
           } else if (currentCategoryId !== "all") {
             const catName = getCategoryName(parseInt(currentCategoryId));
-            title = `No products in ${catName}`;
-            message =
-              "This category is empty. Check back later for new listings.";
+            title = `No items in ${catName}`;
+            message = "This category is empty. Check back later for new listings.";
           } else {
-            title = "No products available";
-            message = "Stay tuned for exciting products coming soon!";
+            title = "No items available";
+            message = "Stay tuned for exciting items coming soon!";
           }
 
           setEmptyStateConfig({ title, message });
         } else {
-          // Show end toast
-          setToastMessage("You've reached the end of our products! 🎉");
+          setToastMessage("You've reached the end of our items! 🎉");
           setShowToast(true);
         }
         return false;
@@ -117,7 +115,7 @@ const Home = () => {
 
       return data.length === PAGE_SIZE;
     } catch (err) {
-      console.error("Error loading products:", err);
+      console.error("Error loading items:", err);
       if (offset === 0) setHasError(true);
       return false;
     }
@@ -127,7 +125,6 @@ const Home = () => {
     enabled: !emptyStateConfig,
   });
 
-  // Handle category from URL params
   useEffect(() => {
     const category = searchParams.get("category");
     if (category) {
@@ -135,7 +132,6 @@ const Home = () => {
     }
   }, [searchParams]);
 
-  // Reset pagination when category or search changes
   const resetPagination = () => {
     setProducts([]);
     setOffset(0);
@@ -190,10 +186,10 @@ const Home = () => {
     currentCategoryId !== "all"
       ? getCategoryName(parseInt(currentCategoryId))
       : null;
-  const itemsTitle = categoryName || "All Products";
+  const itemsTitle = categoryName || "Items";
   const itemsSubtitle = categoryName
-    ? `Browse listings in ${categoryName}`
-    : "Browse all available listings";
+    ? `Browse items in ${categoryName}`
+    : "Browse all available items";
 
   return (
     <AppLayout
@@ -212,7 +208,7 @@ const Home = () => {
 
           <SearchBar onSearch={handleSearch} initialValue={currentSearchTerm} />
 
-          <SectionCards activeSection="all" />
+          <SectionCards activeSection="items" />
 
           <div className="items-header">
             <div className="items-title-row">
@@ -293,7 +289,7 @@ const Home = () => {
             <EmptyState
               icon="bi-wifi-off"
               title="Something went wrong"
-              message="We couldn't load listings right now. Check your connection and try again."
+              message="We couldn't load items right now. Check your connection and try again."
             />
           ) : emptyStateConfig ? (
             <EmptyState
@@ -333,4 +329,4 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default Items;

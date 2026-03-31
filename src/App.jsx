@@ -2,6 +2,7 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { WishlistProvider } from "./contexts/WishlistContext";
 import Home from "./pages/Home/Home";
+import Items from "./pages/Items/Items";
 import Houses from "./pages/Houses/Houses";
 import Jobs from "./pages/Jobs/Jobs";
 import Events from "./pages/Events/Events";
@@ -25,6 +26,7 @@ function App() {
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<Home />} />
+          <Route path="/items" element={<Items />} />
           <Route path="/houses" element={<Houses />} />
           <Route path="/jobs" element={<Jobs />} />
           <Route path="/events" element={<Events />} />

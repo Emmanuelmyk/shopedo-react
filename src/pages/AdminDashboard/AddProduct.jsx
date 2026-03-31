@@ -270,6 +270,8 @@ const AddProduct = () => {
   const handleListingTypeChange = (type) => {
     setListingType(type);
     setErrors({});
+    setPaidPostRef(null);
+    setPaymentLoading(false);
     setSearchParams(type === "items" ? {} : { type });
   };
 
@@ -376,7 +378,7 @@ const AddProduct = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handlePaystackPayment = () => {
+  const handlePaystackPayment = async () => {
     if (!window.PaystackPop) {
       setErrors({ submit: "Payment system is loading. Please try again." });
       return;
@@ -384,7 +386,9 @@ const AddProduct = () => {
 
     setPaymentLoading(true);
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+
       if (!session) {
         setErrors({ submit: "Please log in again." });
         setPaymentLoading(false);
@@ -394,41 +398,53 @@ const AddProduct = () => {
       const feeKobo = getPostFeeKobo(listingType);
       const email = session.user.email;
       const ref = `post_${listingType}_${Date.now()}`;
+      const dbListingType = DB_LISTING_TYPE[listingType] ?? listingType;
 
-      // Create a pending post_payment record
-      supabase
+      // Create a pending post_payment record (use singular DB type to satisfy CHECK constraint)
+      const { error: insertError } = await supabase
         .from("post_payments")
         .insert({
           user_id: session.user.id,
-          listing_type: listingType,
+          listing_type: dbListingType,
           amount: feeKobo,
           status: "pending",
           paystack_ref: ref,
-        })
-        .then(() => {
-          const handler = window.PaystackPop.setup({
-            key: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY,
-            email,
-            amount: feeKobo,
-            currency: "NGN",
-            ref,
-            callback: async (response) => {
-              // TODO: Replace with Edge Function verify-payment for production security
-              await supabase
-                .from("post_payments")
-                .update({ status: "paid" })
-                .eq("paystack_ref", response.reference);
+        });
+
+      if (insertError) {
+        setErrors({ submit: `Payment setup failed: ${insertError.message}` });
+        setPaymentLoading(false);
+        return;
+      }
+
+      const handler = window.PaystackPop.setup({
+        key: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY,
+        email,
+        amount: feeKobo,
+        currency: "NGN",
+        ref,
+        callback: (response) => {
+          // TODO: Replace with Edge Function verify-payment for production security
+          supabase
+            .from("post_payments")
+            .update({ status: "paid" })
+            .eq("paystack_ref", response.reference)
+            .then(() => {
               setPaidPostRef(response.reference);
               setErrors((prev) => ({ ...prev, payment: "" }));
               setPaymentLoading(false);
-            },
-            onClose: () => {
-              setPaymentLoading(false);
-            },
-          });
-          handler.openIframe();
-        });
-    });
+            });
+        },
+        onClose: () => {
+          setPaymentLoading(false);
+        },
+      });
+      handler.openIframe();
+    } catch (err) {
+      console.error("Paystack payment error:", err);
+      setErrors({ submit: `Payment error: ${err?.message || String(err)}` });
+      setPaymentLoading(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -475,6 +491,38 @@ const AddProduct = () => {
           setErrors({
             submit: "You've reached your plan's post limit. Upgrade your plan on the Billing page.",
           });
+          setLoading(false);
+          return;
+        }
+      }
+
+      // Verify pay-per-post payment record in DB before proceeding
+      if (isPayPerPost(listingType)) {
+        const { data: payment, error: payErr } = await supabase
+          .from("post_payments")
+          .select("id, listing_type, product_id")
+          .eq("paystack_ref", paidPostRef)
+          .eq("user_id", session.user.id)
+          .eq("status", "paid")
+          .is("product_id", null)
+          .maybeSingle();
+
+        if (payErr || !payment) {
+          setErrors({
+            submit:
+              "Payment could not be verified. Please complete the payment and try again.",
+          });
+          setPaidPostRef(null);
+          setLoading(false);
+          return;
+        }
+
+        if (payment.listing_type !== (DB_LISTING_TYPE[listingType] ?? listingType)) {
+          setErrors({
+            submit:
+              "Payment type mismatch. Please complete a new payment for this listing type.",
+          });
+          setPaidPostRef(null);
           setLoading(false);
           return;
         }
