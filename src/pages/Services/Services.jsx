@@ -56,7 +56,7 @@ const Services = () => {
       let query = supabase
         .from("products")
         .select(
-          "id, name, description, price, category_id, img_path, condition, location",
+          "id, name, description, price, category_id, img_path, condition, location, created_at",
         )
         .ilike("description", "%Listing Type: Service%")
         .order(sortConfig.column, { ascending: sortConfig.ascending })

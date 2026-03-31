@@ -95,7 +95,7 @@ const ProductDetail = () => {
       const { data, error } = await supabase
         .from("products")
         .select(
-          "id, name, description, price, category_id, img_path, condition, location",
+          "id, name, description, price, category_id, img_path, condition, location, created_at",
         )
         .eq("category_id", product.category_id)
         .neq("id", product.id)

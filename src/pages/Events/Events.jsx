@@ -54,7 +54,7 @@ const Events = () => {
       let query = supabase
         .from("products")
         .select(
-          "id, name, description, price, category_id, img_path, condition, location",
+          "id, name, description, price, category_id, img_path, condition, location, created_at",
         )
         .or(
           "name.ilike.%event%,description.ilike.%event%,name.ilike.%ticket%,description.ilike.%ticket%,name.ilike.%show%,description.ilike.%show%",

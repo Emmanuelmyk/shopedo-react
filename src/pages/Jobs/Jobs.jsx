@@ -54,7 +54,7 @@ const Jobs = () => {
       let query = supabase
         .from("products")
         .select(
-          "id, name, description, price, category_id, img_path, condition, location",
+          "id, name, description, price, category_id, img_path, condition, location, created_at",
         )
         .or(
           "name.ilike.%job%,description.ilike.%job%,name.ilike.%hiring%,description.ilike.%hiring%,name.ilike.%vacancy%,description.ilike.%vacancy%",

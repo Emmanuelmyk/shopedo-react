@@ -3,7 +3,7 @@
 // ==========================================
 import React, { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { escapeHtml, formatDate, formatNumber } from "../../utils/formatUtils";
+import { escapeHtml, timeAgo, formatNumber } from "../../utils/formatUtils";
 import { getCategoryName, getCategoryIcon } from "../../utils/categories";
 import { getPublicUrlFromPath, parseImgPaths } from "../../utils/imageUtils";
 import "./ProductCard.css";
@@ -34,9 +34,7 @@ const ProductCard = ({
     ? getCategoryName(product.category_id)
     : "General";
   const sellerName = product.seller_name || "Edo Trusted Seller";
-  const timePosted = product.created_at
-    ? formatDate(product.created_at)
-    : "Just now";
+  const timePosted = timeAgo(product.created_at);
 
   useEffect(() => {
     if (imgRef.current && imageObserver && firstImgUrl) {

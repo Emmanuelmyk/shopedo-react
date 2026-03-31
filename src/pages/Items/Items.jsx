@@ -67,7 +67,7 @@ const Items = () => {
       let query = supabase
         .from("products")
         .select(
-          "id, name, description, price, category_id, img_path, condition, location",
+          "id, name, description, price, category_id, img_path, condition, location, created_at",
         )
         .eq("listing_type", "item")
         .order(sortConfig.column, { ascending: sortConfig.ascending })

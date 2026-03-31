@@ -67,7 +67,7 @@ const Home = () => {
       let query = supabase
         .from("products")
         .select(
-          "id, name, description, price, category_id, img_path, condition, location",
+          "id, name, description, price, category_id, img_path, condition, location, created_at",
         )
         .order(sortConfig.column, { ascending: sortConfig.ascending })
         .range(offset, offset + PAGE_SIZE - 1);
