@@ -1,7 +1,7 @@
 // ==========================================
 // FILE: src/components/Wishlist/WishlistOffcanvas.jsx
 // ==========================================
-import React, { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import WishlistItem from "./WishlistItem";
 import "./Wishlist.css";
 
@@ -13,108 +13,92 @@ const WishlistOffcanvas = ({
   onShare,
   onStartShopping,
 }) => {
-  const offcanvasRef = useRef(null);
-  const backdropRef = useRef(null);
-
-  // Handle show/hide with simple uniform animation
   useEffect(() => {
-    const offcanvasElement = offcanvasRef.current;
-    if (!offcanvasElement) return;
-
     if (show) {
-      // Show offcanvas
-      offcanvasElement.classList.add("show");
+      const sw = window.innerWidth - document.documentElement.clientWidth;
+      document.documentElement.style.setProperty("--scroll-lock-pad", `${sw}px`);
       document.body.style.overflow = "hidden";
-
-      // Create and show backdrop
-      if (!backdropRef.current) {
-        const backdrop = document.createElement("div");
-        backdrop.className = "offcanvas-backdrop fade show";
-        backdrop.style.zIndex = "1040";
-        document.body.appendChild(backdrop);
-        backdropRef.current = backdrop;
-
-        // Close on backdrop click
-        backdrop.addEventListener("click", onHide);
-      }
+      document.body.style.paddingRight = `${sw}px`;
     } else {
-      // Add hiding class to trigger animation
-      offcanvasElement.classList.add("hiding");
-
-      // Wait for animation to finish
-      setTimeout(() => {
-        offcanvasElement.classList.remove("show");
-        offcanvasElement.classList.remove("hiding");
-        document.body.style.overflow = "";
-
-        // Remove backdrop after animation
-        if (backdropRef.current) {
-          backdropRef.current.remove();
-          backdropRef.current = null;
-        }
-      }, 400); // must match CSS transition duration
-    }
-
-    return () => {
-      // Cleanup on unmount
-      if (backdropRef.current) {
-        backdropRef.current.remove();
-        backdropRef.current = null;
-      }
+      document.documentElement.style.setProperty("--scroll-lock-pad", "0px");
       document.body.style.overflow = "";
+      document.body.style.paddingRight = "";
+    }
+    return () => {
+      document.documentElement.style.setProperty("--scroll-lock-pad", "0px");
+      document.body.style.overflow = "";
+      document.body.style.paddingRight = "";
     };
-  }, [show, onHide]);
+  }, [show]);
+
+  const count = wishlistItems.length;
 
   return (
-    <div
-      ref={offcanvasRef}
-      className="offcanvas offcanvas-end"
-      tabIndex="-1"
-      id="wishlistOffcanvas"
-      aria-labelledby="wishlistOffcanvasLabel"
-    >
-      <div className="offcanvas-header">
-        <h5 className="offcanvas-title" id="wishlistOffcanvasLabel">
-          My Wishlist
-        </h5>
-        <button
-          type="button"
-          className="btn-close"
-          data-bs-dismiss="offcanvas"
-          aria-label="Close"
-          onClick={onHide}
-        />
-      </div>
+    <>
+      <div
+        className={`wl-backdrop${show ? " wl-backdrop--visible" : ""}`}
+        onClick={onHide}
+        aria-hidden="true"
+      />
 
-      <div className="offcanvas-body">
-        {wishlistItems.length === 0 ? (
-          <div id="wishlist-empty-state" className="text-center py-5">
-            <i className="bi bi-bookmark-heart display-4 text-muted mb-3"></i>
-            <h5 className="text-muted">Your wishlist is empty</h5>
-            <p className="text-muted">
-              Discover amazing products and save your favorites for later.
-            </p>
-            <button
-              className="btn btn-outline-success"
-              onClick={onStartShopping}
-            >
-              Start Shopping
-            </button>
+      <div
+        className={`wl-panel${show ? " wl-panel--open" : ""}`}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="wl-title"
+      >
+        <div className="wl-header">
+          <div className="wl-header-left">
+            <h2 className="wl-title" id="wl-title">Saved Items</h2>
+            {count > 0 && (
+              <span className="wl-count-badge">{count}</span>
+            )}
           </div>
-        ) : (
-          <div id="wishlist-items-container">
-            {wishlistItems.map((item) => (
-              <WishlistItem
-                key={item.id}
-                item={item}
-                onRemove={onRemove}
-                onShare={onShare}
-              />
-            ))}
+          <button className="wl-close" onClick={onHide} aria-label="Close wishlist">
+            <i className="bi bi-x-lg" />
+          </button>
+        </div>
+
+        <div className="wl-body">
+          {count === 0 ? (
+            <div className="wl-empty">
+              <div className="wl-empty-icon">
+                <i className="bi bi-bookmark-heart" />
+              </div>
+              <h3 className="wl-empty-title">Nothing saved yet</h3>
+              <p className="wl-empty-text">
+                Browse listings and tap the bookmark to save items here.
+              </p>
+              <button className="wl-empty-cta" onClick={onStartShopping}>
+                Browse Listings
+              </button>
+            </div>
+          ) : (
+            <div className="wl-list">
+              {wishlistItems.map((item) => (
+                <WishlistItem
+                  key={item.id}
+                  item={item}
+                  onRemove={onRemove}
+                  onShare={onShare}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {count > 0 && (
+          <div className="wl-footer">
+            <span className="wl-footer-text">
+              {count} {count === 1 ? "item" : "items"} saved
+            </span>
+            <button className="wl-browse-btn" onClick={onStartShopping}>
+              Browse More
+            </button>
           </div>
         )}
       </div>
-    </div>
+    </>
   );
 };
 

@@ -9,6 +9,7 @@
   z-index: 1050;
   width: 100%;
   padding: 0.85rem 0;
+  padding-right: var(--scroll-lock-pad, 0px);
 }
 
 .navbar .container {

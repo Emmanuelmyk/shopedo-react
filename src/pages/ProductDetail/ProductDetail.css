@@ -212,6 +212,112 @@
   color: var(--primary-accent);
 }
 
+.product-price-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin-top: 0.65rem;
+}
+
+.price-prefix-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #64748b;
+}
+
+.price-suffix {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #64748b;
+  margin-left: 0.3rem;
+  font-family: inherit;
+}
+
+/* Category-specific details grid */
+.listing-details-section {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: linear-gradient(160deg, #f0fdf6 0%, #f8fafc 100%);
+  border: 1px solid #d1fae5;
+  border-radius: 14px;
+}
+
+.listing-details-title {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 0.85rem;
+  color: var(--primary-text);
+  font-weight: 700;
+  font-size: 0.86rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.listing-details-title i {
+  color: var(--primary-accent);
+  font-size: 0.9rem;
+}
+
+.listing-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.55rem;
+}
+
+.listing-info-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  background: #ffffff;
+  border: 1px solid #e2f0e8;
+  border-radius: 10px;
+  padding: 0.65rem 0.75rem;
+}
+
+.info-icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: rgba(25, 135, 84, 0.1);
+  flex-shrink: 0;
+}
+
+.info-icon-wrap i {
+  color: var(--primary-accent);
+  font-size: 0.85rem;
+}
+
+.info-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.info-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #94a3b8;
+  white-space: nowrap;
+}
+
+.info-value {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-top: 0.1rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .description-section,
 .product-details {
   margin-top: 1rem;
@@ -502,6 +608,12 @@
   }
 
   .seller-stats {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .listing-info-grid {
     grid-template-columns: 1fr;
   }
 }

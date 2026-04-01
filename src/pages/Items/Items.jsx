@@ -16,6 +16,7 @@ import { useWishlistContext } from "../../contexts/WishlistContext";
 import { useInfiniteScroll } from "../../hooks/useInfiniteScroll";
 import { useImageObserver } from "../../hooks/useImageObserver";
 import { useAds } from "../../hooks/useAds";
+import { useProductsRealtime } from "../../hooks/useProductsRealtime";
 import { getCategoryName } from "../../utils/categories";
 import { LOCATIONS } from "../../utils/locations";
 import SectionCards from "../../components/SectionCards/SectionCards";
@@ -108,7 +109,8 @@ const Items = () => {
           } else if (currentCategoryId !== "all") {
             const catName = getCategoryName(parseInt(currentCategoryId));
             title = `No items in ${catName}`;
-            message = "This category is empty. Check back later for new listings.";
+            message =
+              "This category is empty. Check back later for new listings.";
           } else {
             title = "No items available";
             message = "Stay tuned for exciting items coming soon!";
@@ -152,6 +154,8 @@ const Items = () => {
     setHasError(false);
     reset();
   };
+
+  useProductsRealtime("item", resetPagination);
 
   const handleCategorySelect = (categoryId) => {
     setCurrentCategoryId(categoryId);

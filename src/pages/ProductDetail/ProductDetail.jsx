@@ -1,7 +1,7 @@
 // ==========================================
 // FILE: src/pages/ProductDetail/ProductDetail.jsx
 // ==========================================
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import AppLayout from "../../components/AppLayout/AppLayout";
 import SafeImage from "../../components/SafeImage/SafeImage";
@@ -27,6 +27,149 @@ import "./ProductDetail.css";
 
 const RELATED_PAGE_SIZE = 12;
 
+// Parse embedded metadata appended to the description field.
+// Format when description exists:  "[user text]\n\n---\nListing Type: X\nKey: Value\n..."
+// Format when no description:       "Listing Type: X\nKey: Value\n..."
+const parseListingMetadata = (description) => {
+  if (!description) return { listingType: "Item", meta: {}, cleanDescription: "" };
+
+  const parseMetaBlock = (block) => {
+    const meta = {};
+    block.split("\n").forEach((line) => {
+      const colonIdx = line.indexOf(":");
+      if (colonIdx > 0) {
+        const key = line.substring(0, colonIdx).trim();
+        const value = line.substring(colonIdx + 1).trim();
+        if (key !== "Search Tags") meta[key] = value;
+      }
+    });
+    return meta;
+  };
+
+  // Case 1: has separator "---"
+  const separatorMarker = "\n\n---\n";
+  const sepIdx = description.indexOf(separatorMarker);
+  if (sepIdx !== -1) {
+    const cleanDescription = description.substring(0, sepIdx).trim();
+    const metaBlock = description.substring(sepIdx + separatorMarker.length);
+    const meta = parseMetaBlock(metaBlock);
+    return { listingType: meta["Listing Type"] || "Item", meta, cleanDescription };
+  }
+
+  // Case 2: no user description — metadata starts directly with "Listing Type:"
+  if (description.trimStart().startsWith("Listing Type:")) {
+    const meta = parseMetaBlock(description);
+    return { listingType: meta["Listing Type"] || "Item", meta, cleanDescription: "" };
+  }
+
+  return { listingType: "Item", meta: {}, cleanDescription: description };
+};
+
+// Category-specific labels for UI elements
+const getCategoryLabels = (listingType) => {
+  switch (listingType) {
+    case "Job":
+      return {
+        priceLabel: "Salary",
+        contactBtn: "Contact Employer",
+        sellerSection: "Employer Information",
+        conditionLabel: "Status",
+        detailsTitle: "Job Details",
+      };
+    case "House":
+      return {
+        priceLabel: "Price",
+        contactBtn: "Contact Agent",
+        sellerSection: "Agent / Landlord",
+        conditionLabel: "Offer",
+        detailsTitle: "Property Details",
+      };
+    case "Event":
+      return {
+        priceLabel: "Ticket Price",
+        contactBtn: "Contact Organizer",
+        sellerSection: "Organizer Information",
+        conditionLabel: "Status",
+        detailsTitle: "Event Details",
+      };
+    case "Service":
+      return {
+        priceLabel: "Rate",
+        contactBtn: "Contact Provider",
+        sellerSection: "Provider Information",
+        conditionLabel: "Availability",
+        detailsTitle: "Service Details",
+      };
+    default:
+      return {
+        priceLabel: null,
+        contactBtn: "Contact Seller",
+        sellerSection: "Seller Information",
+        conditionLabel: "Condition",
+        detailsTitle: "Product Details",
+      };
+  }
+};
+
+// Build the info items array for the category-specific grid
+const buildInfoItems = (listingType, meta, condition, location) => {
+  const items = [];
+
+  if (listingType === "House") {
+    if (meta["Property Type"])
+      items.push({ icon: "bi-house-door", label: "Property Type", value: meta["Property Type"] });
+    if (meta["Offer Type"] || condition)
+      items.push({ icon: "bi-tag", label: "Offer", value: meta["Offer Type"] || condition });
+    if (meta["Bedrooms"])
+      items.push({ icon: "bi-door-closed", label: "Bedrooms", value: meta["Bedrooms"] });
+    if (meta["Bathrooms"])
+      items.push({ icon: "bi-droplet", label: "Bathrooms", value: meta["Bathrooms"] });
+    if (meta["Furnished"])
+      items.push({ icon: "bi-lamp", label: "Furnished", value: meta["Furnished"] });
+    if (location)
+      items.push({ icon: "bi-geo-alt", label: "Location", value: location });
+  } else if (listingType === "Job") {
+    if (meta["Company"])
+      items.push({ icon: "bi-building", label: "Company", value: meta["Company"] });
+    if (meta["Job Type"])
+      items.push({ icon: "bi-briefcase", label: "Job Type", value: meta["Job Type"] });
+    if (meta["Work Mode"])
+      items.push({ icon: "bi-laptop", label: "Work Mode", value: meta["Work Mode"] });
+    if (meta["Experience Level"])
+      items.push({ icon: "bi-bar-chart-steps", label: "Experience", value: meta["Experience Level"] });
+    if (condition)
+      items.push({ icon: "bi-hourglass-split", label: "Status", value: condition });
+    if (location)
+      items.push({ icon: "bi-geo-alt", label: "Location", value: location });
+  } else if (listingType === "Event") {
+    if (meta["Event Date"])
+      items.push({ icon: "bi-calendar-event", label: "Date", value: meta["Event Date"] });
+    if (meta["Event Time"])
+      items.push({ icon: "bi-clock", label: "Time", value: meta["Event Time"] });
+    if (meta["Venue"])
+      items.push({ icon: "bi-pin-map", label: "Venue", value: meta["Venue"] });
+    if (meta["Organizer"])
+      items.push({ icon: "bi-person-badge", label: "Organizer", value: meta["Organizer"] });
+    if (meta["Ticket Type"])
+      items.push({ icon: "bi-ticket-perforated", label: "Ticket", value: meta["Ticket Type"] });
+    if (condition)
+      items.push({ icon: "bi-broadcast", label: "Status", value: condition });
+  } else if (listingType === "Service") {
+    if (meta["Service Type"])
+      items.push({ icon: "bi-tools", label: "Service Type", value: meta["Service Type"] });
+    if (meta["Experience"])
+      items.push({ icon: "bi-award", label: "Experience", value: meta["Experience"] });
+    if (meta["Availability"])
+      items.push({ icon: "bi-calendar-check", label: "Availability", value: meta["Availability"] });
+    if (condition)
+      items.push({ icon: "bi-circle-fill", label: "Status", value: condition });
+    if (location)
+      items.push({ icon: "bi-geo-alt", label: "Location", value: location });
+  }
+
+  return items;
+};
+
 const ProductDetail = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -41,7 +184,6 @@ const ProductDetail = () => {
   const [toastMessage, setToastMessage] = useState("");
   const [activeImgIndex, setActiveImgIndex] = useState(0);
 
-  // Keep the viewport at the top when switching between products.
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
     setActiveImgIndex(0);
@@ -50,7 +192,6 @@ const ProductDetail = () => {
   const { toggleWishlist, isInWishlist } = useWishlistContext();
   const { observe: observeImage } = useImageObserver(true);
 
-  // Fetch product details
   useEffect(() => {
     const fetchProduct = async () => {
       if (!productId) {
@@ -87,7 +228,6 @@ const ProductDetail = () => {
     fetchProduct();
   }, [productId]);
 
-  // Load related products
   const loadMoreRelatedProducts = useCallback(async () => {
     if (!product) return false;
 
@@ -134,7 +274,6 @@ const ProductDetail = () => {
 
   const handleContactSeller = () => {
     setShowSellerPhone(true);
-    setContactButtonLabel("Contact Seller");
   };
 
   const handleBack = () => {
@@ -179,15 +318,20 @@ const ProductDetail = () => {
   const activeImageUrl = imagePaths[activeImgIndex]
     ? getPublicUrlFromPath(imagePaths[activeImgIndex])
     : null;
+
+  const { listingType, meta, cleanDescription } = parseListingMetadata(product.description);
+  const labels = getCategoryLabels(listingType);
+  const infoItems = buildInfoItems(listingType, meta, product.condition, product.location);
+
   const fallbackIcon = (() => {
-    const desc = product.description || "";
-    if (desc.includes("Listing Type: House")) return "bi-house-door-fill";
-    if (desc.includes("Listing Type: Job")) return "bi-briefcase-fill";
-    if (desc.includes("Listing Type: Event")) return "bi-calendar-event-fill";
-    if (desc.includes("Listing Type: Service")) return "bi-tools";
+    if (listingType === "House") return "bi-house-door-fill";
+    if (listingType === "Job") return "bi-briefcase-fill";
+    if (listingType === "Event") return "bi-calendar-event-fill";
+    if (listingType === "Service") return "bi-tools";
     const cat = getCategoryIcon(product.category_id);
     return cat ? `bi-${cat}` : "bi-bag-fill";
   })();
+
   const sellerProfileUrl = getSellerProfileUrl(product.seller_profile_path);
   const categoryName = getCategoryName(product.category_id);
   const timePosted = formatDate(product.created_at);
@@ -200,6 +344,8 @@ const ProductDetail = () => {
       navigate(`/?category=${categoryId}`);
     }
   };
+
+  const isNonItem = listingType !== "Item";
 
   return (
     <AppLayout
@@ -220,7 +366,7 @@ const ProductDetail = () => {
               <i className="bi bi-arrow-left"></i> Back
             </Button>
             <div className="detail-topbar-meta">
-              <span className="detail-tag">{escapeHtml(categoryName)}</span>
+              <span className="detail-tag">{escapeHtml(listingType === "Item" ? categoryName : listingType)}</span>
               <span className="detail-tag detail-tag-muted">
                 <i className="bi bi-clock-history"></i> {escapeHtml(timePosted)}
               </span>
@@ -301,49 +447,97 @@ const ProductDetail = () => {
                 <div className="card-body">
                   <div className="price-row">
                     <div className="product-category">
-                      {escapeHtml(categoryName)}
+                      {escapeHtml(listingType === "Item" ? categoryName : listingType)}
                     </div>
                   </div>
-                  <div className="product-price">
-                    ₦{formatNumber(product.price)}
+
+                  <div className="product-price-row">
+                    {labels.priceLabel && (
+                      <span className="price-prefix-label">{labels.priceLabel}</span>
+                    )}
+                    <div className="product-price">
+                      ₦{formatNumber(product.price)}
+                      {listingType === "House" && meta["Offer Type"] === "For Rent" && (
+                        <span className="price-suffix">/yr</span>
+                      )}
+                      {listingType === "Service" && (
+                        <span className="price-suffix">/job</span>
+                      )}
+                    </div>
                   </div>
+
                   <h1 className="product-title">{escapeHtml(product.name)}</h1>
 
-                  <div className="meta-pills">
-                    <div className="product-location">
-                      <i className="bi bi-geo-alt-fill"></i>
-                      {escapeHtml(product.location)}
+                  {/* Location pill for non-category-specific items */}
+                  {!isNonItem && (
+                    <div className="meta-pills">
+                      <div className="product-location">
+                        <i className="bi bi-geo-alt-fill"></i>
+                        {escapeHtml(product.location)}
+                      </div>
+                      <div className="product-condition">
+                        <i className="bi bi-patch-check-fill"></i>
+                        {escapeHtml(product.condition)}
+                      </div>
                     </div>
-                    <div className="product-condition">
-                      <i className="bi bi-patch-check-fill"></i>
-                      {escapeHtml(product.condition)}
-                    </div>
-                  </div>
+                  )}
 
+                  {/* Category-specific info grid */}
+                  {isNonItem && infoItems.length > 0 && (
+                    <div className="listing-details-section">
+                      <h6 className="listing-details-title">
+                        <i className={`bi ${
+                          listingType === "House" ? "bi-house-door" :
+                          listingType === "Job" ? "bi-briefcase" :
+                          listingType === "Event" ? "bi-calendar-event" :
+                          "bi-tools"
+                        }`}></i>
+                        {labels.detailsTitle}
+                      </h6>
+                      <div className="listing-info-grid">
+                        {infoItems.map((item, idx) => (
+                          <div key={idx} className="listing-info-item">
+                            <div className="info-icon-wrap">
+                              <i className={`bi ${item.icon}`}></i>
+                            </div>
+                            <div className="info-text">
+                              <span className="info-label">{item.label}</span>
+                              <span className="info-value">{escapeHtml(item.value)}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Description */}
                   <div className="description-section">
                     <h6>Description</h6>
                     <p>
                       {escapeHtml(
-                        product.description || "No description available.",
+                        cleanDescription || product.description || "No description available.",
                       )}
                     </p>
                   </div>
 
-                  <div className="product-details">
-                    <h6>Product Details</h6>
-                    <div className="detail-row">
-                      <span className="detail-label">Condition:</span>
-                      <span>{escapeHtml(product.condition)}</span>
+                  {/* Standard details for regular items */}
+                  {!isNonItem && (
+                    <div className="product-details">
+                      <h6>Product Details</h6>
+                      <div className="detail-row">
+                        <span className="detail-label">Condition:</span>
+                        <span>{escapeHtml(product.condition)}</span>
+                      </div>
+                      <div className="detail-row">
+                        <span className="detail-label">Category:</span>
+                        <span>{escapeHtml(categoryName)}</span>
+                      </div>
+                      <div className="detail-row">
+                        <span className="detail-label">Posted:</span>
+                        <span>{escapeHtml(timePosted)}</span>
+                      </div>
                     </div>
-                    <div className="detail-row">
-                      <span className="detail-label">Category:</span>
-                      <span>{escapeHtml(categoryName)}</span>
-                    </div>
-                    <div className="detail-row">
-                      <span className="detail-label">Posted:</span>
-                      <span>{escapeHtml(timePosted)}</span>
-                    </div>
-                  </div>
+                  )}
 
                   <div className="action-buttons">
                     <Button
@@ -363,7 +557,7 @@ const ProductDetail = () => {
                       onClick={handleContactSeller}
                       className="flex-fill detail-action-btn"
                     >
-                      <i className="bi bi-telephone"></i> Contact Seller
+                      <i className="bi bi-telephone"></i> {labels.contactBtn}
                     </Button>
                   </div>
                 </div>
@@ -372,8 +566,8 @@ const ProductDetail = () => {
               <div className="seller-card">
                 <div className="card-body">
                   <div className="seller-card-head">
-                    <h4 className="card-title mb-0">Seller Information</h4>
-                    <span className="verified-badge" title="Verified Seller">
+                    <h4 className="card-title mb-0">{labels.sellerSection}</h4>
+                    <span className="verified-badge" title="Verified">
                       <i className="bi bi-patch-check me-1"></i>Verified
                     </span>
                   </div>
@@ -382,12 +576,12 @@ const ProductDetail = () => {
                     <SafeImage
                       src={sellerProfileUrl}
                       className="seller-avatar"
-                      alt="Seller Profile"
+                      alt="Profile"
                       fallbackSrc="/assets/profilepics.png"
                     />
                     <div className="seller-profile-main">
                       <div className="seller-name">
-                        {escapeHtml(product.seller_name || "Anonymous Seller")}
+                        {escapeHtml(product.seller_name || "Anonymous")}
                       </div>
                       <div className="seller-location">
                         <i className="bi bi-geo-alt-fill me-1 text-muted"></i>
@@ -410,7 +604,7 @@ const ProductDetail = () => {
                   {showSellerPhone && (
                     <div className="seller-phone show">
                       <i className="bi bi-chat-dots-fill me-2"></i>
-                      To get the seller&apos;s contact, reach out via the listing details.
+                      To get the contact, reach out via the listing details.
                     </div>
                   )}
                 </div>
@@ -449,14 +643,13 @@ const ProductDetail = () => {
           </div>
         </div>
 
-        {/* Related Products Section */}
         <div className="container px-3 related-products-section">
-          <h3 className="section-title">Related Products</h3>
+          <h3 className="section-title">Related Listings</h3>
           {relatedProducts.length === 0 && !relatedLoading ? (
             <EmptyState
               icon="bi-inbox"
-              title="No related products found"
-              message="Check back later for more products in this category."
+              title="No related listings found"
+              message="Check back later for more listings in this category."
             />
           ) : (
             <div className="row g-3" id="related-products-grid">

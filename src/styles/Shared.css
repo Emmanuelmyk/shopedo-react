@@ -50,22 +50,4 @@
   margin-right: 0.75rem;
 }
 
-/* ==========================================
-   OFFCANVAS ANIMATIONS
-   Used in: CategoryMenu, WishlistOffcanvas
-   ========================================== */
-.offcanvas {
-  transition: transform 0.3s ease;
-  transform: translateX(100%);
-  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
-}
-
-.offcanvas.show {
-  transform: translateX(0);
-}
-
-/* Backdrop fade */
-.offcanvas-backdrop.fade.show {
-  opacity: 0.5;
-}
 

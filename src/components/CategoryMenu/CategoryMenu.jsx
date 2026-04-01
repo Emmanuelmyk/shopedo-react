@@ -1,7 +1,7 @@
 // ==========================================
 // FILE: src/components/CategoryMenu/CategoryMenu.jsx
 // ==========================================
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { CATEGORIES } from "../../utils/categories";
 import { SECTION_SUB_FILTERS } from "../../utils/sectionFilters";
 import ReferralCard from "../ReferralCard/ReferralCard";
@@ -22,12 +22,19 @@ const CategoryMenu = ({
   // lock body scroll when open
   useEffect(() => {
     if (show) {
+      const sw = window.innerWidth - document.documentElement.clientWidth;
+      document.documentElement.style.setProperty("--scroll-lock-pad", `${sw}px`);
       document.body.style.overflow = "hidden";
+      document.body.style.paddingRight = `${sw}px`;
     } else {
+      document.documentElement.style.setProperty("--scroll-lock-pad", "0px");
       document.body.style.overflow = "";
+      document.body.style.paddingRight = "";
     }
     return () => {
+      document.documentElement.style.setProperty("--scroll-lock-pad", "0px");
       document.body.style.overflow = "";
+      document.body.style.paddingRight = "";
     };
   }, [show]);
 

@@ -205,10 +205,11 @@ export default function Login() {
     setMessage("");
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithOAuth({
+    const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
         redirectTo: `${window.location.origin}/admin/login`,
+        skipBrowserRedirect: true,
         queryParams: {
           access_type: "offline",
           prompt: "consent",
@@ -219,7 +220,34 @@ export default function Login() {
     if (error) {
       setMessage("Error: " + error.message);
       setLoading(false);
+      return;
     }
+
+    // Open Google auth in a small centered popup
+    const width = 480;
+    const height = 600;
+    const left = Math.round(window.screenX + (window.outerWidth - width) / 2);
+    const top = Math.round(window.screenY + (window.outerHeight - height) / 2);
+
+    const popup = window.open(
+      data.url,
+      "google-auth",
+      `width=${width},height=${height},left=${left},top=${top},toolbar=no,menubar=no,scrollbars=yes,resizable=yes`,
+    );
+
+    if (!popup) {
+      setMessage("Popup blocked. Please allow popups for this site and try again.");
+      setLoading(false);
+      return;
+    }
+
+    // Poll until the popup closes, then stop the loading spinner
+    const pollClosed = setInterval(() => {
+      if (popup.closed) {
+        clearInterval(pollClosed);
+        setLoading(false);
+      }
+    }, 500);
   };
 
   const handleGoogleProfileComplete = async (e) => {
@@ -256,7 +284,7 @@ export default function Login() {
   return (
     <>
       <div className="login-container">
-        <button className="back-button" onClick={() => navigate(-1)}>
+        <button className="back-button" onClick={() => navigate("/")}>
           <i className="bi bi-arrow-left"></i>
           Back
         </button>

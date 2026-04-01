@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import { useState, useCallback } from "react";
 import AppLayout from "../../components/AppLayout/AppLayout";
 import SearchBar from "../../components/SearchBar/SearchBar";
 import Sidebar from "../../components/Sidebar/Sidebar";
@@ -13,6 +13,7 @@ import { useWishlistContext } from "../../contexts/WishlistContext";
 import { useInfiniteScroll } from "../../hooks/useInfiniteScroll";
 import { useImageObserver } from "../../hooks/useImageObserver";
 import { useAds } from "../../hooks/useAds";
+import { useProductsRealtime } from "../../hooks/useProductsRealtime";
 import { LOCATIONS } from "../../utils/locations";
 import "./Jobs.css";
 
@@ -119,6 +120,8 @@ const Jobs = () => {
     setHasError(false);
     reset();
   };
+
+  useProductsRealtime("job", resetPagination);
 
   const handleSearch = (searchTerm) => {
     setCurrentSearchTerm(searchTerm);

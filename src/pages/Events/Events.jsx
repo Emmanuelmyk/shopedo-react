@@ -1,4 +1,5 @@
-import React, { useState, useCallback } from "react";
+import { useState, useCallback } from "react";
+import { useProductsRealtime } from "../../hooks/useProductsRealtime";
 import AppLayout from "../../components/AppLayout/AppLayout";
 import SearchBar from "../../components/SearchBar/SearchBar";
 import Sidebar from "../../components/Sidebar/Sidebar";
@@ -119,6 +120,8 @@ const Events = () => {
     setHasError(false);
     reset();
   };
+
+  useProductsRealtime("event", resetPagination);
 
   const handleSearch = (searchTerm) => {
     setCurrentSearchTerm(searchTerm);

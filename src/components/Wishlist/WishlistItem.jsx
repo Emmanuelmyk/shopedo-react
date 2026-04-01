@@ -1,76 +1,79 @@
-import React, { useRef } from "react";
+import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import SafeImage from "../SafeImage/SafeImage";
 import { escapeHtml, formatNumber } from "../../utils/formatUtils";
-import { getPublicUrlFromPath } from "../../utils/imageUtils";
+import { getPublicUrlFromPath, parseImgPaths } from "../../utils/imageUtils";
 import "./Wishlist.css";
 
 const WishlistItem = ({ item, onRemove, onShare }) => {
   const navigate = useNavigate();
   const itemRef = useRef(null);
-  const imgPublicUrl = item.img_path
-    ? getPublicUrlFromPath(item.img_path)
-    : "/assets/emptypics.png";
 
-  const handleProductClick = () => {
+  const imgPaths = parseImgPaths(item.img_path);
+  const imgUrl = imgPaths.length > 0
+    ? getPublicUrlFromPath(imgPaths[0])
+    : null;
+
+  const handleCardClick = () => {
     navigate(`/product-detail?id=${item.id}`);
   };
 
-  const handleRemove = () => {
+  const handleRemove = (e) => {
+    e.stopPropagation();
     if (itemRef.current) {
       itemRef.current.classList.add("removing");
-      setTimeout(() => {
-        onRemove(item.id);
-      }, 250);
+      setTimeout(() => onRemove(item.id), 230);
     }
   };
 
+  const handleShare = (e) => {
+    e.stopPropagation();
+    onShare(item.id, item.name, item.price);
+  };
+
   return (
-    <div className="wishlist-item position-relative" ref={itemRef}>
-      <div className="wishlist-thumb">
+    <div className="wl-item" ref={itemRef} onClick={handleCardClick}>
+      <div className="wl-item-img">
         <SafeImage
-          src={imgPublicUrl}
+          src={imgUrl}
           alt={escapeHtml(item.name)}
           loading="lazy"
+          fallbackSrc="/assets/emptypics.png"
         />
       </div>
 
-      <div className="wishlist-item-info">
-        <div className="wishlist-price">₦{formatNumber(item.price)}</div>
-        <h5>
-          <a
-            href="#"
-            onClick={(e) => {
-              e.preventDefault();
-              handleProductClick();
-            }}
-            className="text-decoration-none text-reset"
-          >
-            {escapeHtml(item.name)}
-          </a>
-        </h5>
-
-        <div className="location">
-          <i className="bi bi-geo-alt-fill me-1"></i>
-          <span>{escapeHtml(item.location)}</span>
+      <div className="wl-item-body">
+        <div>
+          <div className="wl-item-price">₦{formatNumber(item.price)}</div>
+          <div className="wl-item-name">{escapeHtml(item.name)}</div>
+        </div>
+        <div className="wl-item-foot">
+          {item.location && (
+            <span className="wl-item-location">
+              <i className="bi bi-geo-alt-fill" />
+              {escapeHtml(item.location)}
+            </span>
+          )}
+          {item.condition && (
+            <span className="wl-item-condition">{escapeHtml(item.condition)}</span>
+          )}
         </div>
       </div>
 
-      <div className="wishlist-actions">
+      <div className="wl-item-actions">
         <button
-          className="wishlist-action-btn wishlist-share-btn"
-          onClick={() => onShare(item.id, item.name, item.price)}
-          title="Share this product"
+          className="wl-action-btn"
+          onClick={handleShare}
+          title="Share"
         >
-          <i className="bi bi-share-fill"></i>
+          <i className="bi bi-share-fill" />
         </button>
-
         <button
-          className="wishlist-action-btn wishlist-remove-btn"
+          className="wl-action-btn wl-remove-btn"
           onClick={handleRemove}
-          title="Remove from saved"
+          title="Remove"
         >
-          <i className="bi bi-trash3-fill"></i>
+          <i className="bi bi-trash3" />
         </button>
       </div>
     </div>
