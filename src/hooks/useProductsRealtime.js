@@ -2,38 +2,66 @@ import { useEffect, useRef } from "react";
 import { supabase } from "../utils/supabaseClient";
 
 /**
- * Subscribes to Supabase Realtime INSERT events on the products table.
- * Calls onInsert() whenever a new product matching listingType is added.
+ * Polls the products table and calls onNewProduct() when the max id grows.
+ * Also fires immediately when the tab becomes visible again.
  *
- * Requires Supabase Realtime to be enabled for the products table.
+ * Uses the global max id (no listing_type filter) so it works regardless
+ * of whether listing_type is populated on existing rows.
  */
-export const useProductsRealtime = (listingType, onInsert) => {
-  // Keep a ref so the subscription never needs to be torn down just because
-  // the parent re-rendered with a new callback function reference.
-  const callbackRef = useRef(onInsert);
+export const useProductsRealtime = (_listingType, onNewProduct) => {
+  const callbackRef = useRef(onNewProduct);
   useEffect(() => {
-    callbackRef.current = onInsert;
+    callbackRef.current = onNewProduct;
   });
 
+  // Start at 0 — guaranteed to be less than any real id
+  const latestIdRef = useRef(0);
+
   useEffect(() => {
-    const channel = supabase
-      .channel(`products-inserts-${listingType}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "products",
-          filter: `listing_type=eq.${listingType}`,
-        },
-        () => {
+    let cancelled = false;
+
+    const check = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("products")
+          .select("id")
+          .order("id", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (cancelled || error || !data) return;
+
+        if (latestIdRef.current === 0) {
+          // First run — just record the baseline, don't refresh
+          latestIdRef.current = data.id;
+          return;
+        }
+
+        if (data.id > latestIdRef.current) {
+          latestIdRef.current = data.id;
           callbackRef.current?.();
-        },
-      )
-      .subscribe();
+        }
+      } catch (_) {
+        // silently ignore network errors
+      }
+    };
+
+    // Baseline check immediately on mount
+    check();
+
+    // Poll every 15 seconds
+    const interval = setInterval(check, 15_000);
+
+    // Also check when the tab becomes visible
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") check();
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
 
     return () => {
-      supabase.removeChannel(channel);
+      cancelled = true;
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", handleVisibility);
     };
-  }, [listingType]);
+  }, []);
 };

@@ -11,7 +11,6 @@ import { CATEGORIES } from "../../utils/categories";
 import { LOCATIONS } from "../../utils/locations";
 import {
   isPayPerPost,
-  hasPostsLeft,
   getPostFeeKobo,
   getPostFeeLabel,
 } from "../../utils/subscriptionUtils";
@@ -485,9 +484,21 @@ const AddProduct = () => {
           .from("user_subscriptions")
           .select("*")
           .eq("user_id", session.user.id)
+          .eq("status", "active")
           .maybeSingle();
 
-        if (!hasPostsLeft(sub)) {
+        // Count actual quota posts — exclude pay-per-post types, include nulls
+        const { count: actualCount } = await supabase
+          .from("products")
+          .select("id", { count: "exact", head: true })
+          .eq("seller_id", session.user.id)
+          .not("listing_type", "in", "(job,event,service)");
+
+        const postsUsed = actualCount ?? 0;
+        const postsLimit = sub?.posts_limit ?? 3;
+        const unlimited = sub?.posts_limit === -1;
+
+        if (!unlimited && postsUsed >= postsLimit) {
           setErrors({
             submit: "You've reached your plan's post limit. Upgrade your plan on the Billing page.",
           });
@@ -586,12 +597,24 @@ const AddProduct = () => {
           .from("user_subscriptions")
           .select("posts_used")
           .eq("user_id", session.user.id)
+          .eq("status", "active")
           .maybeSingle();
         if (sub) {
           await supabase
             .from("user_subscriptions")
             .update({ posts_used: (sub.posts_used ?? 0) + 1 })
-            .eq("user_id", session.user.id);
+            .eq("user_id", session.user.id)
+            .eq("status", "active");
+        } else {
+          // No subscription row exists yet — create the free plan row
+          // with posts_used already at 1 for this post
+          await supabase.from("user_subscriptions").insert({
+            user_id: session.user.id,
+            plan: "free",
+            status: "active",
+            posts_used: 1,
+            posts_limit: 3,
+          });
         }
       }
 

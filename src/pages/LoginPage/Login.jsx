@@ -176,6 +176,7 @@ export default function Login() {
           email,
           password,
           options: {
+            emailRedirectTo: `${window.location.origin}/admin/login`,
             data: {
               full_name: fullName,
               phone,
