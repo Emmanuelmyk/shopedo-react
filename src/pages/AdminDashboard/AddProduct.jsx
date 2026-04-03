@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Link } from "react-router-dom";
 import AdminLayout from "../../components/AdminLayout/AdminLayout";
+import CustomSelect from "../../components/CustomSelect/CustomSelect";
 import { supabase } from "../../utils/supabaseClient";
 import { uploadImage, compressImage } from "../../utils/uploadUtils";
 import { CATEGORIES } from "../../utils/categories";
@@ -15,6 +16,14 @@ import {
   getPostFeeLabel,
 } from "../../utils/subscriptionUtils";
 import "./ProductForm.css";
+
+const formatPriceDisplay = (raw) => {
+  if (raw === "" || raw == null) return "";
+  const str = String(raw).replace(/,/g, "");
+  const [integer, decimal] = str.split(".");
+  const formatted = integer === "" ? "" : Number(integer).toLocaleString("en-NG");
+  return decimal !== undefined ? `${formatted}.${decimal}` : formatted;
+};
 
 const LISTING_TYPES = {
   items: {
@@ -134,6 +143,20 @@ const CATEGORY_PRESETS = {
   },
 };
 
+const STEPS = [
+  { id: 1, label: "Listing Type",  icon: "bi-tag" },
+  { id: 2, label: "Basic Details", icon: "bi-pencil-square" },
+  { id: 3, label: "More Details",  icon: "bi-sliders" },
+  { id: 4, label: "Review & Post", icon: "bi-send-check" },
+];
+
+const ReviewRow = ({ label, value }) => (
+  <div className="review-row">
+    <span className="review-label">{label}</span>
+    <span className="review-value">{value || <em className="text-muted">—</em>}</span>
+  </div>
+);
+
 // Maps app listingType keys → DB listing_type values
 const DB_LISTING_TYPE = {
   items: "item",
@@ -212,6 +235,7 @@ const AddProduct = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [loading, setLoading] = useState(false);
+  const [currentStep, setCurrentStep] = useState(1);
   // imageSlots: array of 3, each null | { file: File, preview: string }
   const [imageSlots, setImageSlots] = useState([null, null, null]);
   const [errors, setErrors] = useState({});
@@ -266,6 +290,56 @@ const AddProduct = () => {
     }));
   }, [typeConfig]);
 
+  // items skips step 3 (no extra fields)
+  const getNextStep = (from) => {
+    if (from === 2 && listingType === "items") return 4;
+    return Math.min(from + 1, 4);
+  };
+  const getPrevStep = (from) => {
+    if (from === 4 && listingType === "items") return 2;
+    return Math.max(from - 1, 1);
+  };
+
+  const validateStep2 = () => {
+    const newErrors = {};
+    if (!formData.name.trim()) newErrors.name = `${typeConfig.nameLabel} is required`;
+    if (!formData.price || formData.price <= 0) newErrors.price = "Enter a valid amount";
+    if (!typeConfig.lockCategory && !formData.category_id) newErrors.category_id = "Category is required";
+    if (!formData.location.trim()) newErrors.location = "Location is required";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const validateStep3 = () => {
+    const newErrors = {};
+    if (listingType === "houses") {
+      if (!extraData.propertyType.trim()) newErrors.propertyType = "Property type is required";
+      if (!extraData.offerType.trim()) newErrors.offerType = "Offer type is required";
+    }
+    if (listingType === "jobs") {
+      if (!extraData.companyName.trim()) newErrors.companyName = "Company name is required";
+      if (!extraData.jobType.trim()) newErrors.jobType = "Job type is required";
+    }
+    if (listingType === "events") {
+      if (!extraData.eventDate) newErrors.eventDate = "Event date is required";
+      if (!extraData.venue.trim()) newErrors.venue = "Venue is required";
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleNext = () => {
+    if (currentStep === 2 && !validateStep2()) return;
+    if (currentStep === 3 && !validateStep3()) return;
+    setCurrentStep((s) => getNextStep(s));
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleBack = () => {
+    setCurrentStep((s) => getPrevStep(s));
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   const handleListingTypeChange = (type) => {
     setListingType(type);
     setErrors({});
@@ -276,11 +350,21 @@ const AddProduct = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    // Clear error for this field
-    if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: "" }));
-    }
+    const clean = name === "price" ? value.replace(/,/g, "") : value;
+    setFormData((prev) => ({ ...prev, [name]: clean }));
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
+  };
+
+  // Adapter so CustomSelect (value-only) can set formData fields
+  const makeFormSetter = (name) => (val) => {
+    setFormData((prev) => ({ ...prev, [name]: val }));
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
+  };
+
+  // Adapter for extraData fields
+  const makeExtraSetter = (name) => (val) => {
+    setExtraData((prev) => ({ ...prev, [name]: val }));
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
   const handleExtraChange = (e) => {
@@ -330,51 +414,6 @@ const AddProduct = () => {
       next[slotIndex] = null;
       return next;
     });
-  };
-
-  const validateForm = () => {
-    const newErrors = {};
-
-    if (!formData.name.trim())
-      newErrors.name = `${typeConfig.nameLabel} is required`;
-    if (!formData.price || formData.price <= 0)
-      newErrors.price = "Enter a valid amount";
-
-    if (!typeConfig.lockCategory && !formData.category_id) {
-      newErrors.category_id = "Category is required";
-    }
-
-    if (!formData.location.trim()) newErrors.location = "Location is required";
-
-    if (listingType === "houses") {
-      if (!extraData.propertyType.trim()) {
-        newErrors.propertyType = "Property type is required";
-      }
-      if (!extraData.offerType.trim()) {
-        newErrors.offerType = "Offer type is required";
-      }
-    }
-
-    if (listingType === "jobs") {
-      if (!extraData.companyName.trim()) {
-        newErrors.companyName = "Company name is required";
-      }
-      if (!extraData.jobType.trim()) {
-        newErrors.jobType = "Job type is required";
-      }
-    }
-
-    if (listingType === "events") {
-      if (!extraData.eventDate) {
-        newErrors.eventDate = "Event date is required";
-      }
-      if (!extraData.venue.trim()) {
-        newErrors.venue = "Venue is required";
-      }
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
   };
 
   const handlePaystackPayment = async () => {
@@ -449,7 +488,7 @@ const AddProduct = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!validateForm()) {
+    if (!validateStep2() || !validateStep3()) {
       return;
     }
 
@@ -500,7 +539,7 @@ const AddProduct = () => {
 
         if (!unlimited && postsUsed >= postsLimit) {
           setErrors({
-            submit: "You've reached your plan's post limit. Upgrade your plan on the Billing page.",
+            submit: "PLAN_LIMIT_REACHED",
           });
           setLoading(false);
           return;
@@ -640,683 +679,463 @@ const AddProduct = () => {
     }
   };
 
+  // Step status helper
+  const stepStatus = (stepId) => {
+    if (stepId === currentStep) return "active";
+    if (stepId < currentStep) return "completed";
+    // step 3 is skipped for items
+    if (stepId === 3 && listingType === "items") return "skipped";
+    return "";
+  };
+
   return (
-    <AdminLayout>
+    <AdminLayout pageTitle="Post Listing">
       <div className="product-form-container">
-        <div className="page-header">
-          <div>
-            <h1>Create Listing</h1>
-            <p className="text-muted">
-              Choose a listing type and fill in the details buyers need
-            </p>
-          </div>
+
+        {/* ── Wizard Bar ── */}
+        <div className="wizard-bar">
+          {STEPS.map((step, idx) => {
+            const status = stepStatus(step.id);
+            const isSkipped = status === "skipped";
+            return (
+              <div key={step.id} className="wizard-step-wrap">
+                {idx > 0 && (
+                  <div className={`wizard-connector${step.id <= currentStep && !isSkipped ? " wizard-connector--done" : ""}`} />
+                )}
+                <div className={`wizard-step wizard-step--${status || "pending"}`}>
+                  <div className="wizard-step-circle">
+                    {status === "completed"
+                      ? <i className="bi bi-check-lg"></i>
+                      : <i className={`bi ${step.icon}`}></i>}
+                  </div>
+                  <span className="wizard-step-label">{step.label}</span>
+                </div>
+              </div>
+            );
+          })}
         </div>
 
-        <section className="listing-type-section mb-4">
-          <div className="listing-type-head">
-            <h2>What do you want to post?</h2>
-            <p>Select a flow tailored for that listing category.</p>
-          </div>
-          <div className="listing-type-grid">
-            {Object.values(LISTING_TYPES).map((type) => (
-              <button
-                key={type.key}
-                type="button"
-                className={`listing-type-card${
-                  listingType === type.key ? " active" : ""
-                } ${type.key}-type`}
-                data-type={type.key}
-                onClick={() => handleListingTypeChange(type.key)}
-              >
-                <div className="listing-type-icon">
-                  <i className={`bi ${type.icon}`}></i>
+        <form onSubmit={handleSubmit}>
+          {/* ── Step 1: Listing Type ── */}
+          {currentStep === 1 && (
+            <div className="wizard-pane">
+              <section className="listing-type-section">
+                <div className="listing-type-head">
+                  <h2>What do you want to post?</h2>
+                  <p>Select a flow tailored for that listing category.</p>
                 </div>
-                <div className="listing-type-content">
-                  <h3>{type.title}</h3>
-                  <p>{type.subtitle}</p>
-                </div>
-              </button>
-            ))}
-          </div>
-        </section>
-
-        <div className="card">
-          <div className="card-body">
-            <form onSubmit={handleSubmit}>
-              {errors.submit && (
-                <div className="alert alert-danger" role="alert">
-                  {errors.submit}
-                </div>
-              )}
-
-              <div className="row g-4">
-                {/* Image Upload — up to 3 photos */}
-                <div className="col-12">
-                  <label className="form-label-txt">
-                    <i className="bi bi-images"></i>
-                    Product Photos
-                    <span className="form-label-hint">
-                      (up to 3 · first is the main photo)
-                    </span>
-                  </label>
-                  <div className="image-slots-grid">
-                    {imageSlots.map((slot, idx) => (
-                      <div
-                        key={idx}
-                        className={`image-slot ${slot ? "image-slot--filled" : "image-slot--empty"}`}
-                      >
-                        {slot ? (
-                          <>
-                            <img
-                              src={slot.preview}
-                              alt={`Photo ${idx + 1}`}
-                              className="image-slot-preview"
-                            />
-                            {idx === 0 && (
-                              <span className="image-slot-main-badge">
-                                Main
-                              </span>
-                            )}
-                            <button
-                              type="button"
-                              className="image-slot-remove"
-                              onClick={() => handleSlotRemove(idx)}
-                              aria-label="Remove photo"
-                            >
-                              <i className="bi bi-x-lg"></i>
-                            </button>
-                          </>
-                        ) : (
-                          <>
-                            <input
-                              type="file"
-                              id={`image-slot-${idx}`}
-                              accept="image/*"
-                              onChange={(e) => handleSlotAdd(e, idx)}
-                              className="d-none"
-                            />
-                            <label
-                              htmlFor={`image-slot-${idx}`}
-                              className="image-slot-add-label"
-                            >
-                              <i className="bi bi-plus-lg"></i>
-                              <span>
-                                {idx === 0 ? "Main photo" : "Add photo"}
-                              </span>
-                            </label>
-                          </>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                  {errors.image && (
-                    <div className="invalid-feedback d-block mt-2">
-                      {errors.image}
-                    </div>
-                  )}
-                  <p className="form-helper-text mt-2">
-                    <i className="bi bi-info-circle"></i>
-                    Max 5MB each · JPEG, PNG, or WebP
-                  </p>
-                </div>
-
-                {/* Product Name */}
-                <div className="col-md-6">
-                  <label htmlFor="name" className="form-label-txt">
-                    {typeConfig.nameLabel}{" "}
-                    <span className="text-danger">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    className={`form-control ${
-                      errors.name ? "is-invalid" : ""
-                    }`}
-                    placeholder={typeConfig.namePlaceholder}
-                  />
-                  {errors.name && (
-                    <div className="invalid-feedback">{errors.name}</div>
-                  )}
-                </div>
-
-                {/* Price */}
-                <div className="col-md-6">
-                  <label htmlFor="price" className="form-label-txt">
-                    {typeConfig.priceLabel}{" "}
-                    <span className="text-danger">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    id="price"
-                    name="price"
-                    value={formData.price}
-                    onChange={handleInputChange}
-                    className={`form-control ${
-                      errors.price ? "is-invalid" : ""
-                    }`}
-                    placeholder="e.g., 50000"
-                    min="0"
-                    step="0.01"
-                  />
-                  {errors.price && (
-                    <div className="invalid-feedback">{errors.price}</div>
-                  )}
-                </div>
-
-                {/* Category */}
-                <div className="col-md-6">
-                  <label htmlFor="category_id" className="form-label-txt">
-                    Category <span className="text-danger">*</span>
-                  </label>
-                  <select
-                    id="category_id"
-                    name="category_id"
-                    value={formData.category_id}
-                    onChange={handleInputChange}
-                    className={`form-select ${
-                      errors.category_id ? "is-invalid" : ""
-                    }`}
-                    disabled={typeConfig.lockCategory}
-                  >
-                    <option value="">Select a category</option>
-                    {CATEGORIES.map((cat) => (
-                      <option key={cat.id} value={cat.id}>
-                        {cat.name}
-                      </option>
-                    ))}
-                  </select>
-                  {errors.category_id && (
-                    <div className="invalid-feedback">{errors.category_id}</div>
-                  )}
-                </div>
-
-                {/* Condition */}
-                <div className="col-md-6">
-                  <label htmlFor="condition" className="form-label-txt">
-                    {typeConfig.conditionLabel}{" "}
-                    <span className="text-danger">*</span>
-                  </label>
-                  <select
-                    id="condition"
-                    name="condition"
-                    value={formData.condition}
-                    onChange={handleInputChange}
-                    className="form-select"
-                  >
-                    {typeConfig.conditionOptions.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Type-specific fields */}
-                {listingType === "houses" && (
-                  <>
-                    <div className="col-md-6">
-                      <label htmlFor="propertyType" className="form-label-txt">
-                        Property Type <span className="text-danger">*</span>
-                      </label>
-                      <select
-                        id="propertyType"
-                        name="propertyType"
-                        value={extraData.propertyType}
-                        onChange={handleExtraChange}
-                        className={`form-select ${errors.propertyType ? "is-invalid" : ""}`}
-                      >
-                        <option value="Apartment">Apartment</option>
-                        <option value="Self Contain">Self Contain</option>
-                        <option value="Duplex">Duplex</option>
-                        <option value="Bungalow">Bungalow</option>
-                        <option value="Land">Land</option>
-                        <option value="Office Space">Office Space</option>
-                      </select>
-                      {errors.propertyType && (
-                        <div className="invalid-feedback">
-                          {errors.propertyType}
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="col-md-6">
-                      <label htmlFor="offerType" className="form-label-txt">
-                        Offer Type <span className="text-danger">*</span>
-                      </label>
-                      <select
-                        id="offerType"
-                        name="offerType"
-                        value={extraData.offerType}
-                        onChange={handleExtraChange}
-                        className={`form-select ${errors.offerType ? "is-invalid" : ""}`}
-                      >
-                        <option value="For Rent">For Rent</option>
-                        <option value="For Sale">For Sale</option>
-                        <option value="Short Let">Short Let</option>
-                      </select>
-                      {errors.offerType && (
-                        <div className="invalid-feedback">
-                          {errors.offerType}
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="col-md-4">
-                      <label htmlFor="bedrooms" className="form-label-txt">
-                        Bedrooms
-                      </label>
-                      <input
-                        id="bedrooms"
-                        name="bedrooms"
-                        type="number"
-                        min="0"
-                        className="form-control"
-                        value={extraData.bedrooms}
-                        onChange={handleExtraChange}
-                        placeholder="e.g., 3"
-                      />
-                    </div>
-
-                    <div className="col-md-4">
-                      <label htmlFor="bathrooms" className="form-label-txt">
-                        Bathrooms
-                      </label>
-                      <input
-                        id="bathrooms"
-                        name="bathrooms"
-                        type="number"
-                        min="0"
-                        className="form-control"
-                        value={extraData.bathrooms}
-                        onChange={handleExtraChange}
-                        placeholder="e.g., 2"
-                      />
-                    </div>
-
-                    <div className="col-md-4">
-                      <label htmlFor="furnished" className="form-label-txt">
-                        Furnished
-                      </label>
-                      <select
-                        id="furnished"
-                        name="furnished"
-                        value={extraData.furnished}
-                        onChange={handleExtraChange}
-                        className="form-select"
-                      >
-                        <option value="Yes">Yes</option>
-                        <option value="No">No</option>
-                      </select>
-                    </div>
-                  </>
-                )}
-
-                {listingType === "jobs" && (
-                  <>
-                    <div className="col-md-6">
-                      <label htmlFor="companyName" className="form-label-txt">
-                        Company Name <span className="text-danger">*</span>
-                      </label>
-                      <input
-                        id="companyName"
-                        name="companyName"
-                        type="text"
-                        value={extraData.companyName}
-                        onChange={handleExtraChange}
-                        className={`form-control ${errors.companyName ? "is-invalid" : ""}`}
-                        placeholder="e.g., Edo Tech Ltd"
-                      />
-                      {errors.companyName && (
-                        <div className="invalid-feedback">
-                          {errors.companyName}
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="col-md-6">
-                      <label htmlFor="jobType" className="form-label-txt">
-                        Job Type <span className="text-danger">*</span>
-                      </label>
-                      <select
-                        id="jobType"
-                        name="jobType"
-                        value={extraData.jobType}
-                        onChange={handleExtraChange}
-                        className={`form-select ${errors.jobType ? "is-invalid" : ""}`}
-                      >
-                        <option value="Full-time">Full-time</option>
-                        <option value="Part-time">Part-time</option>
-                        <option value="Contract">Contract</option>
-                        <option value="Internship">Internship</option>
-                      </select>
-                      {errors.jobType && (
-                        <div className="invalid-feedback">{errors.jobType}</div>
-                      )}
-                    </div>
-
-                    <div className="col-md-6">
-                      <label htmlFor="workMode" className="form-label-txt">
-                        Work Mode
-                      </label>
-                      <select
-                        id="workMode"
-                        name="workMode"
-                        value={extraData.workMode}
-                        onChange={handleExtraChange}
-                        className="form-select"
-                      >
-                        <option value="On-site">On-site</option>
-                        <option value="Remote">Remote</option>
-                        <option value="Hybrid">Hybrid</option>
-                      </select>
-                    </div>
-
-                    <div className="col-md-6">
-                      <label
-                        htmlFor="experienceLevel"
-                        className="form-label-txt"
-                      >
-                        Experience Level
-                      </label>
-                      <select
-                        id="experienceLevel"
-                        name="experienceLevel"
-                        value={extraData.experienceLevel}
-                        onChange={handleExtraChange}
-                        className="form-select"
-                      >
-                        <option value="Entry">Entry</option>
-                        <option value="Mid">Mid</option>
-                        <option value="Senior">Senior</option>
-                      </select>
-                    </div>
-                  </>
-                )}
-
-                {listingType === "events" && (
-                  <>
-                    <div className="col-md-6">
-                      <label htmlFor="eventDate" className="form-label-txt">
-                        Event Date <span className="text-danger">*</span>
-                      </label>
-                      <input
-                        id="eventDate"
-                        name="eventDate"
-                        type="date"
-                        value={extraData.eventDate}
-                        onChange={handleExtraChange}
-                        className={`form-control ${errors.eventDate ? "is-invalid" : ""}`}
-                      />
-                      {errors.eventDate && (
-                        <div className="invalid-feedback">
-                          {errors.eventDate}
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="col-md-6">
-                      <label htmlFor="eventTime" className="form-label-txt">
-                        Event Time
-                      </label>
-                      <input
-                        id="eventTime"
-                        name="eventTime"
-                        type="time"
-                        value={extraData.eventTime}
-                        onChange={handleExtraChange}
-                        className="form-control"
-                      />
-                    </div>
-
-                    <div className="col-md-6">
-                      <label htmlFor="venue" className="form-label-txt">
-                        Venue <span className="text-danger">*</span>
-                      </label>
-                      <input
-                        id="venue"
-                        name="venue"
-                        type="text"
-                        value={extraData.venue}
-                        onChange={handleExtraChange}
-                        className={`form-control ${errors.venue ? "is-invalid" : ""}`}
-                        placeholder="e.g., Ring Road Hall"
-                      />
-                      {errors.venue && (
-                        <div className="invalid-feedback">{errors.venue}</div>
-                      )}
-                    </div>
-
-                    <div className="col-md-6">
-                      <label htmlFor="organizer" className="form-label-txt">
-                        Organizer
-                      </label>
-                      <input
-                        id="organizer"
-                        name="organizer"
-                        type="text"
-                        value={extraData.organizer}
-                        onChange={handleExtraChange}
-                        className="form-control"
-                        placeholder="e.g., Nearbuy Events"
-                      />
-                    </div>
-
-                    <div className="col-md-6">
-                      <label htmlFor="ticketType" className="form-label-txt">
-                        Ticket Type
-                      </label>
-                      <select
-                        id="ticketType"
-                        name="ticketType"
-                        value={extraData.ticketType}
-                        onChange={handleExtraChange}
-                        className="form-select"
-                      >
-                        <option value="Paid">Paid</option>
-                        <option value="Free">Free</option>
-                        <option value="Invite Only">Invite Only</option>
-                      </select>
-                    </div>
-                  </>
-                )}
-
-                {listingType === "services" && (
-                  <>
-                    <div className="col-md-6">
-                      <label htmlFor="serviceType" className="form-label-txt">
-                        Service Type
-                      </label>
-                      <select
-                        id="serviceType"
-                        name="serviceType"
-                        value={extraData.serviceType}
-                        onChange={handleExtraChange}
-                        className="form-select"
-                      >
-                        <option value="Plumbing">Plumbing</option>
-                        <option value="Electrical">Electrical</option>
-                        <option value="Cleaning">Cleaning</option>
-                        <option value="Carpentry">Carpentry</option>
-                        <option value="Painting">Painting</option>
-                        <option value="Catering">Catering</option>
-                        <option value="Photography">Photography</option>
-                        <option value="Security">Security</option>
-                        <option value="Laundry">Laundry</option>
-                        <option value="Tutoring">Tutoring</option>
-                        <option value="Other">Other</option>
-                      </select>
-                    </div>
-
-                    <div className="col-md-6">
-                      <label htmlFor="experience" className="form-label-txt">
-                        Experience
-                      </label>
-                      <select
-                        id="experience"
-                        name="experience"
-                        value={extraData.experience}
-                        onChange={handleExtraChange}
-                        className="form-select"
-                      >
-                        <option value="Under 1 year">Under 1 year</option>
-                        <option value="1-3 years">1-3 years</option>
-                        <option value="3-5 years">3-5 years</option>
-                        <option value="5+ years">5+ years</option>
-                      </select>
-                    </div>
-
-                    <div className="col-md-6">
-                      <label htmlFor="availability" className="form-label-txt">
-                        Availability
-                      </label>
-                      <select
-                        id="availability"
-                        name="availability"
-                        value={extraData.availability}
-                        onChange={handleExtraChange}
-                        className="form-select"
-                      >
-                        <option value="Weekdays">Weekdays</option>
-                        <option value="Weekends">Weekends</option>
-                        <option value="Both">Both</option>
-                        <option value="24/7">24/7</option>
-                      </select>
-                    </div>
-                  </>
-                )}
-
-                {/* Location */}
-                <div className="col-md-6">
-                  <label htmlFor="location" className="form-label-txt">
-                    Location <span className="text-danger">*</span>
-                  </label>
-                  <select
-                    id="location"
-                    name="location"
-                    value={formData.location}
-                    onChange={handleInputChange}
-                    className={`form-select ${
-                      errors.location ? "is-invalid" : ""
-                    }`}
-                  >
-                    <option value="">Select a location</option>
-                    {LOCATIONS.map((location) => (
-                      <option key={location} value={location}>
-                        {location}
-                      </option>
-                    ))}
-                  </select>
-                  {errors.location && (
-                    <div className="invalid-feedback">{errors.location}</div>
-                  )}
-                </div>
-
-                {/* Description */}
-                <div className="col-12">
-                  <label htmlFor="description" className="form-label-txt">
-                    Description
-                  </label>
-                  <textarea
-                    id="description"
-                    name="description"
-                    value={formData.description}
-                    onChange={handleInputChange}
-                    className="form-control"
-                    rows="4"
-                    placeholder={typeConfig.descriptionPlaceholder}
-                  ></textarea>
-                </div>
-
-                {/* Pay-Per-Post Payment Banner */}
-                {isPayPerPost(listingType) && (
-                  <div className="col-12">
-                    {paidPostRef ? (
-                      <div className="alert alert-success d-flex align-items-center gap-2 mb-0">
-                        <i className="bi bi-check-circle-fill"></i>
-                        <span>
-                          Payment confirmed ({getPostFeeLabel(listingType)}). You can now submit your listing.
-                        </span>
-                      </div>
-                    ) : (
-                      <div className="pay-banner">
-                        <div className="pay-banner-info">
-                          <i className="bi bi-credit-card-fill"></i>
-                          <div>
-                            <strong>Payment required to post</strong>
-                            <p className="mb-0">
-                              {listingType.charAt(0).toUpperCase() + listingType.slice(1)} listings
-                              cost <strong>{getPostFeeLabel(listingType)}</strong> per post.{" "}
-                              <Link to="/admin/billing" className="pay-banner-link">
-                                View plans
-                              </Link>
-                            </p>
-                          </div>
-                        </div>
-                        <button
-                          type="button"
-                          className="btn btn-warning pay-banner-btn"
-                          onClick={handlePaystackPayment}
-                          disabled={paymentLoading}
-                        >
-                          {paymentLoading ? (
-                            <>
-                              <span className="spinner-border spinner-border-sm me-1" role="status"></span>
-                              Processing…
-                            </>
-                          ) : (
-                            <>
-                              <i className="bi bi-lock-fill me-1"></i>
-                              Pay {getPostFeeLabel(listingType)}
-                            </>
-                          )}
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Submit Buttons */}
-                <div className="col-12">
-                  <div className="d-flex gap-3">
+                <div className="listing-type-grid">
+                  {Object.values(LISTING_TYPES).map((type) => (
                     <button
-                      type="submit"
-                      className="btn btn-success"
-                      disabled={loading || (isPayPerPost(listingType) && !paidPostRef)}
-                    >
-                      {loading ? (
-                        <>
-                          <span
-                            className="spinner-border spinner-border-sm"
-                            role="status"
-                            aria-hidden="true"
-                          ></span>
-                          Adding Product...
-                        </>
-                      ) : (
-                        <>
-                          <i className="bi bi-check-circle"></i>
-                          {typeConfig.buttonLabel}
-                        </>
-                      )}
-                    </button>
-                    <button
+                      key={type.key}
                       type="button"
-                      className="btn btn-outline-secondary"
-                      onClick={() => navigate("/admin/products")}
-                      disabled={loading}
+                      className={`listing-type-card${listingType === type.key ? " active" : ""} ${type.key}-type`}
+                      data-type={type.key}
+                      onClick={() => handleListingTypeChange(type.key)}
                     >
-                      <i className="bi bi-x-circle"></i>
-                      Cancel
+                      <div className="listing-type-icon">
+                        <i className={`bi ${type.icon}`}></i>
+                      </div>
+                      <div className="listing-type-content">
+                        <h3>{type.title}</h3>
+                        <p>{type.subtitle}</p>
+                      </div>
                     </button>
+                  ))}
+                </div>
+              </section>
+            </div>
+          )}
+
+          {/* ── Step 2: Basic Details ── */}
+          {currentStep === 2 && (
+            <div className="wizard-pane">
+              <div className="card">
+                <div className="card-body">
+                  <div className="row g-4">
+                    {/* Image Upload */}
+                    <div className="col-12">
+                      <label className="form-label-txt">
+                        <i className="bi bi-images"></i>
+                        Product Photos
+                        <span className="form-label-hint">(up to 3 · first is the main photo)</span>
+                      </label>
+                      <div className="image-slots-grid">
+                        {imageSlots.map((slot, idx) => (
+                          <div key={idx} className={`image-slot ${slot ? "image-slot--filled" : "image-slot--empty"}`}>
+                            {slot ? (
+                              <>
+                                <img src={slot.preview} alt={`Photo ${idx + 1}`} className="image-slot-preview" />
+                                {idx === 0 && <span className="image-slot-main-badge">Main</span>}
+                                <button type="button" className="image-slot-remove" onClick={() => handleSlotRemove(idx)} aria-label="Remove photo">
+                                  <i className="bi bi-x-lg"></i>
+                                </button>
+                              </>
+                            ) : (
+                              <>
+                                <input type="file" id={`image-slot-${idx}`} accept="image/*" onChange={(e) => handleSlotAdd(e, idx)} className="d-none" />
+                                <label htmlFor={`image-slot-${idx}`} className="image-slot-add-label">
+                                  <i className="bi bi-plus-lg"></i>
+                                  <span>{idx === 0 ? "Main photo" : "Add photo"}</span>
+                                </label>
+                              </>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                      {errors.image && <div className="invalid-feedback d-block mt-2">{errors.image}</div>}
+                      <p className="form-helper-text mt-2">
+                        <i className="bi bi-info-circle"></i> Max 5MB each · JPEG, PNG, or WebP
+                      </p>
+                    </div>
+
+                    {/* Name */}
+                    <div className="col-md-6">
+                      <label htmlFor="name" className="form-label-txt">
+                        {typeConfig.nameLabel} <span className="text-danger">*</span>
+                      </label>
+                      <input type="text" id="name" name="name" value={formData.name} onChange={handleInputChange}
+                        className={`form-control ${errors.name ? "is-invalid" : ""}`} placeholder={typeConfig.namePlaceholder} />
+                      {errors.name && <div className="invalid-feedback">{errors.name}</div>}
+                    </div>
+
+                    {/* Price */}
+                    <div className="col-md-6">
+                      <label htmlFor="price" className="form-label-txt">
+                        {typeConfig.priceLabel} <span className="text-danger">*</span>
+                      </label>
+                      <div className="price-input-wrap">
+                        <span className="price-input-prefix">₦</span>
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          id="price"
+                          name="price"
+                          value={formatPriceDisplay(formData.price)}
+                          onChange={handleInputChange}
+                          className={`form-control price-input ${errors.price ? "is-invalid" : ""}`}
+                          placeholder="e.g., 50,000"
+                        />
+                      </div>
+                      {errors.price && <div className="invalid-feedback d-block">{errors.price}</div>}
+                    </div>
+
+                    {/* Category */}
+                    <div className="col-md-6">
+                      <label className="form-label-txt">
+                        Category <span className="text-danger">*</span>
+                      </label>
+                      <CustomSelect
+                        value={String(formData.category_id)}
+                        onChange={makeFormSetter("category_id")}
+                        icon="bi-grid"
+                        options={[
+                          { value: "", label: "Select a category" },
+                          ...CATEGORIES.map((c) => ({ value: String(c.id), label: c.name })),
+                        ]}
+                      />
+                      {errors.category_id && <div className="invalid-feedback d-block">{errors.category_id}</div>}
+                    </div>
+
+                    {/* Condition */}
+                    <div className="col-md-6">
+                      <label className="form-label-txt">
+                        {typeConfig.conditionLabel} <span className="text-danger">*</span>
+                      </label>
+                      <CustomSelect
+                        value={formData.condition}
+                        onChange={makeFormSetter("condition")}
+                        icon="bi-tag"
+                        options={typeConfig.conditionOptions.map((o) => ({ value: o, label: o }))}
+                      />
+                    </div>
+
+                    {/* Location */}
+                    <div className="col-md-6">
+                      <label className="form-label-txt">
+                        Location <span className="text-danger">*</span>
+                      </label>
+                      <CustomSelect
+                        value={formData.location}
+                        onChange={makeFormSetter("location")}
+                        icon="bi-geo-alt"
+                        options={[
+                          { value: "", label: "Select a location" },
+                          ...LOCATIONS.map((l) => ({ value: l, label: l })),
+                        ]}
+                      />
+                      {errors.location && <div className="invalid-feedback d-block">{errors.location}</div>}
+                    </div>
+
+                    {/* Description */}
+                    <div className="col-12">
+                      <label htmlFor="description" className="form-label-txt">Description</label>
+                      <textarea id="description" name="description" value={formData.description} onChange={handleInputChange}
+                        className="form-control" rows="4" placeholder={typeConfig.descriptionPlaceholder}></textarea>
+                    </div>
                   </div>
                 </div>
               </div>
-            </form>
+            </div>
+          )}
+
+          {/* ── Step 3: More Details (skipped for items) ── */}
+          {currentStep === 3 && listingType !== "items" && (
+            <div className="wizard-pane">
+              <div className="card">
+                <div className="card-body">
+                  <div className="row g-4">
+                    {listingType === "houses" && (
+                      <>
+                        <div className="col-md-6">
+                          <label className="form-label-txt">Property Type <span className="text-danger">*</span></label>
+                          <CustomSelect value={extraData.propertyType} onChange={makeExtraSetter("propertyType")} icon="bi-building"
+                            options={["Apartment","Self Contain","Duplex","Bungalow","Land","Office Space"].map((o) => ({ value: o, label: o }))} />
+                          {errors.propertyType && <div className="invalid-feedback d-block">{errors.propertyType}</div>}
+                        </div>
+                        <div className="col-md-6">
+                          <label className="form-label-txt">Offer Type <span className="text-danger">*</span></label>
+                          <CustomSelect value={extraData.offerType} onChange={makeExtraSetter("offerType")} icon="bi-house-check"
+                            options={["For Rent","For Sale","Short Let"].map((o) => ({ value: o, label: o }))} />
+                          {errors.offerType && <div className="invalid-feedback d-block">{errors.offerType}</div>}
+                        </div>
+                        <div className="col-md-4">
+                          <label htmlFor="bedrooms" className="form-label-txt">Bedrooms</label>
+                          <input id="bedrooms" name="bedrooms" type="number" min="0" className="form-control" value={extraData.bedrooms} onChange={handleExtraChange} placeholder="e.g., 3" />
+                        </div>
+                        <div className="col-md-4">
+                          <label htmlFor="bathrooms" className="form-label-txt">Bathrooms</label>
+                          <input id="bathrooms" name="bathrooms" type="number" min="0" className="form-control" value={extraData.bathrooms} onChange={handleExtraChange} placeholder="e.g., 2" />
+                        </div>
+                        <div className="col-md-4">
+                          <label className="form-label-txt">Furnished</label>
+                          <CustomSelect value={extraData.furnished} onChange={makeExtraSetter("furnished")} icon="bi-house-gear"
+                            options={["Yes","No"].map((o) => ({ value: o, label: o }))} />
+                        </div>
+                      </>
+                    )}
+
+                    {listingType === "jobs" && (
+                      <>
+                        <div className="col-md-6">
+                          <label htmlFor="companyName" className="form-label-txt">Company Name <span className="text-danger">*</span></label>
+                          <input id="companyName" name="companyName" type="text" value={extraData.companyName} onChange={handleExtraChange}
+                            className={`form-control ${errors.companyName ? "is-invalid" : ""}`} placeholder="e.g., Edo Tech Ltd" />
+                          {errors.companyName && <div className="invalid-feedback">{errors.companyName}</div>}
+                        </div>
+                        <div className="col-md-6">
+                          <label className="form-label-txt">Job Type <span className="text-danger">*</span></label>
+                          <CustomSelect value={extraData.jobType} onChange={makeExtraSetter("jobType")} icon="bi-briefcase"
+                            options={["Full-time","Part-time","Contract","Internship"].map((o) => ({ value: o, label: o }))} />
+                          {errors.jobType && <div className="invalid-feedback d-block">{errors.jobType}</div>}
+                        </div>
+                        <div className="col-md-6">
+                          <label className="form-label-txt">Work Mode</label>
+                          <CustomSelect value={extraData.workMode} onChange={makeExtraSetter("workMode")} icon="bi-laptop"
+                            options={["On-site","Remote","Hybrid"].map((o) => ({ value: o, label: o }))} />
+                        </div>
+                        <div className="col-md-6">
+                          <label className="form-label-txt">Experience Level</label>
+                          <CustomSelect value={extraData.experienceLevel} onChange={makeExtraSetter("experienceLevel")} icon="bi-bar-chart"
+                            options={["Entry","Mid","Senior"].map((o) => ({ value: o, label: o }))} />
+                        </div>
+                      </>
+                    )}
+
+                    {listingType === "events" && (
+                      <>
+                        <div className="col-md-6">
+                          <label htmlFor="eventDate" className="form-label-txt">Event Date <span className="text-danger">*</span></label>
+                          <input id="eventDate" name="eventDate" type="date" value={extraData.eventDate} onChange={handleExtraChange}
+                            className={`form-control ${errors.eventDate ? "is-invalid" : ""}`} />
+                          {errors.eventDate && <div className="invalid-feedback">{errors.eventDate}</div>}
+                        </div>
+                        <div className="col-md-6">
+                          <label htmlFor="eventTime" className="form-label-txt">Event Time</label>
+                          <input id="eventTime" name="eventTime" type="time" value={extraData.eventTime} onChange={handleExtraChange} className="form-control" />
+                        </div>
+                        <div className="col-md-6">
+                          <label htmlFor="venue" className="form-label-txt">Venue <span className="text-danger">*</span></label>
+                          <input id="venue" name="venue" type="text" value={extraData.venue} onChange={handleExtraChange}
+                            className={`form-control ${errors.venue ? "is-invalid" : ""}`} placeholder="e.g., Ring Road Hall" />
+                          {errors.venue && <div className="invalid-feedback">{errors.venue}</div>}
+                        </div>
+                        <div className="col-md-6">
+                          <label htmlFor="organizer" className="form-label-txt">Organizer</label>
+                          <input id="organizer" name="organizer" type="text" value={extraData.organizer} onChange={handleExtraChange} className="form-control" placeholder="e.g., Nearbuy Events" />
+                        </div>
+                        <div className="col-md-6">
+                          <label className="form-label-txt">Ticket Type</label>
+                          <CustomSelect value={extraData.ticketType} onChange={makeExtraSetter("ticketType")} icon="bi-ticket-perforated"
+                            options={["Paid","Free","Invite Only"].map((o) => ({ value: o, label: o }))} />
+                        </div>
+                      </>
+                    )}
+
+                    {listingType === "services" && (
+                      <>
+                        <div className="col-md-6">
+                          <label className="form-label-txt">Service Type</label>
+                          <CustomSelect value={extraData.serviceType} onChange={makeExtraSetter("serviceType")} icon="bi-tools"
+                            options={["Plumbing","Electrical","Cleaning","Carpentry","Painting","Catering","Photography","Security","Laundry","Tutoring","Other"].map((o) => ({ value: o, label: o }))} />
+                        </div>
+                        <div className="col-md-6">
+                          <label className="form-label-txt">Experience</label>
+                          <CustomSelect value={extraData.experience} onChange={makeExtraSetter("experience")} icon="bi-clock-history"
+                            options={["Under 1 year","1-3 years","3-5 years","5+ years"].map((o) => ({ value: o, label: o }))} />
+                        </div>
+                        <div className="col-md-6">
+                          <label className="form-label-txt">Availability</label>
+                          <CustomSelect value={extraData.availability} onChange={makeExtraSetter("availability")} icon="bi-calendar-check"
+                            options={["Weekdays","Weekends","Both","24/7"].map((o) => ({ value: o, label: o }))} />
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ── Step 4: Review & Post ── */}
+          {currentStep === 4 && (
+            <div className="wizard-pane">
+              <div className="review-card">
+                <div className="review-header">
+                  <i className={`bi ${typeConfig.icon}`}></i>
+                  <div>
+                    <h3>{typeConfig.title} Listing</h3>
+                    <p>Review your details before submitting</p>
+                  </div>
+                </div>
+                <div className="review-grid">
+                  <ReviewRow label="Title" value={formData.name} />
+                  <ReviewRow label={typeConfig.priceLabel} value={formData.price ? `₦${Number(formData.price).toLocaleString()}` : ""} />
+                  <ReviewRow label={typeConfig.conditionLabel} value={formData.condition} />
+                  <ReviewRow label="Location" value={formData.location} />
+                  {formData.description && <ReviewRow label="Description" value={formData.description} />}
+
+                  {listingType === "houses" && (
+                    <>
+                      <ReviewRow label="Property Type" value={extraData.propertyType} />
+                      <ReviewRow label="Offer Type" value={extraData.offerType} />
+                      {extraData.bedrooms && <ReviewRow label="Bedrooms" value={extraData.bedrooms} />}
+                      {extraData.bathrooms && <ReviewRow label="Bathrooms" value={extraData.bathrooms} />}
+                      <ReviewRow label="Furnished" value={extraData.furnished} />
+                    </>
+                  )}
+                  {listingType === "jobs" && (
+                    <>
+                      <ReviewRow label="Company" value={extraData.companyName} />
+                      <ReviewRow label="Job Type" value={extraData.jobType} />
+                      <ReviewRow label="Work Mode" value={extraData.workMode} />
+                      <ReviewRow label="Experience Level" value={extraData.experienceLevel} />
+                    </>
+                  )}
+                  {listingType === "events" && (
+                    <>
+                      <ReviewRow label="Event Date" value={extraData.eventDate} />
+                      <ReviewRow label="Event Time" value={extraData.eventTime} />
+                      <ReviewRow label="Venue" value={extraData.venue} />
+                      <ReviewRow label="Organizer" value={extraData.organizer} />
+                      <ReviewRow label="Ticket Type" value={extraData.ticketType} />
+                    </>
+                  )}
+                  {listingType === "services" && (
+                    <>
+                      <ReviewRow label="Service Type" value={extraData.serviceType} />
+                      <ReviewRow label="Experience" value={extraData.experience} />
+                      <ReviewRow label="Availability" value={extraData.availability} />
+                    </>
+                  )}
+                </div>
+
+                {/* Image previews */}
+                {imageSlots.some(Boolean) && (
+                  <div className="review-photos">
+                    {imageSlots.map((slot, idx) =>
+                      slot ? <img key={idx} src={slot.preview} alt={`Photo ${idx + 1}`} className="review-thumb" /> : null
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Pay-per-post banner */}
+              {isPayPerPost(listingType) && (
+                <div className="mt-3">
+                  {paidPostRef ? (
+                    <div className="alert alert-success d-flex align-items-center gap-2 mb-0">
+                      <i className="bi bi-check-circle-fill"></i>
+                      <span>Payment confirmed ({getPostFeeLabel(listingType)}). You can now submit your listing.</span>
+                    </div>
+                  ) : (
+                    <div className="pay-banner">
+                      <div className="pay-banner-info">
+                        <i className="bi bi-credit-card-fill"></i>
+                        <div>
+                          <strong>Payment required to post</strong>
+                          <p className="mb-0">
+                            {listingType.charAt(0).toUpperCase() + listingType.slice(1)} listings cost{" "}
+                            <strong>{getPostFeeLabel(listingType)}</strong> per post.{" "}
+                            <Link to="/admin/billing" className="pay-banner-link">View plans</Link>
+                          </p>
+                        </div>
+                      </div>
+                      <button type="button" className="btn btn-warning pay-banner-btn" onClick={handlePaystackPayment} disabled={paymentLoading}>
+                        {paymentLoading ? (
+                          <><span className="spinner-border spinner-border-sm me-1" role="status"></span>Processing…</>
+                        ) : (
+                          <><i className="bi bi-lock-fill me-1"></i>Pay {getPostFeeLabel(listingType)}</>
+                        )}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {errors.submit && (
+                <div className="alert alert-danger mt-3" role="alert">
+                  {errors.submit === "PLAN_LIMIT_REACHED" ? (
+                    <>
+                      You&apos;ve reached your plan&apos;s post limit.{" "}
+                      <Link to="/admin/billing" className="alert-link">
+                        Upgrade your plan
+                      </Link>{" "}
+                      to keep listing.
+                    </>
+                  ) : errors.submit}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── Wizard Nav ── */}
+          <div className="wizard-nav">
+            {currentStep > 1 ? (
+              <button type="button" className="wizard-btn-back" onClick={handleBack} disabled={loading}>
+                <i className="bi bi-arrow-left me-1"></i> Back
+              </button>
+            ) : (
+              <button type="button" className="wizard-btn-back" onClick={() => navigate("/admin/products")} disabled={loading}>
+                <i className="bi bi-x me-1"></i> Cancel
+              </button>
+            )}
+
+            {currentStep < 4 ? (
+              <button type="button" className="wizard-btn-next" onClick={handleNext}>
+                Next <i className="bi bi-arrow-right ms-1"></i>
+              </button>
+            ) : (
+              <button type="submit" className="wizard-btn-submit" disabled={loading || (isPayPerPost(listingType) && !paidPostRef)}>
+                {loading ? (
+                  <><span className="spinner-border spinner-border-sm me-1" role="status"></span>Submitting…</>
+                ) : (
+                  <><i className="bi bi-check-circle me-1"></i>{typeConfig.buttonLabel}</>
+                )}
+              </button>
+            )}
           </div>
-        </div>
+        </form>
       </div>
     </AdminLayout>
   );

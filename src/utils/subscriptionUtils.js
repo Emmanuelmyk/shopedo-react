@@ -2,9 +2,26 @@
 // FILE: src/utils/subscriptionUtils.js
 // ==========================================
 
+// plan_id integers as stored in user_subscriptions.plan_id
+export const PLAN_ID = {
+  free:    1,
+  basic:   2,
+  pro:     3,
+  premium: 4,
+};
+
+// Reverse: plan_id integer → plan key string
+export const PLAN_KEY_FROM_ID = {
+  1: "free",
+  2: "basic",
+  3: "pro",
+  4: "premium",
+};
+
 export const PLANS = {
   free: {
     key: "free",
+    planId: 1,
     name: "Free",
     price: 0,
     limit: 3,
@@ -14,6 +31,7 @@ export const PLANS = {
   },
   basic: {
     key: "basic",
+    planId: 2,
     name: "Basic",
     price: 300000, // kobo
     limit: 15,
@@ -23,6 +41,7 @@ export const PLANS = {
   },
   pro: {
     key: "pro",
+    planId: 3,
     name: "Pro",
     price: 700000, // kobo
     limit: 50,
@@ -32,6 +51,7 @@ export const PLANS = {
   },
   premium: {
     key: "premium",
+    planId: 4,
     name: "Premium",
     price: 1500000, // kobo
     limit: -1,

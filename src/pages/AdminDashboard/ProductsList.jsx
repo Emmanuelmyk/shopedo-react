@@ -96,58 +96,71 @@ const ProductsList = () => {
 
   if (loading) {
     return (
-      <AdminLayout>
+      <AdminLayout pageTitle="My Listings">
         <SkeletonProductsList />
       </AdminLayout>
     );
   }
 
   return (
-    <AdminLayout>
+    <AdminLayout pageTitle="My Listings">
       <div className="products-list-container">
-        <div className="page-header">
-          <div>
-            <h1>Products</h1>
-            <p className="text-muted">Manage all your products</p>
+
+        {/* Header */}
+        <div className="pl-header">
+          <div className="pl-header-left">
+            <div className="pl-header-icon">
+              <i className="bi bi-box-seam"></i>
+            </div>
+            <div>
+              <h1 className="pl-title">My Listings</h1>
+              <p className="pl-subtitle">{products.length} listing{products.length !== 1 ? "s" : ""} in your account</p>
+            </div>
           </div>
-          <Link to="/admin/products/add" className="btn btn-success">
+          <Link to="/admin/products/add" className="pl-add-btn">
             <i className="bi bi-plus-circle me-2"></i>
-            Add Product
+            New Listing
           </Link>
         </div>
 
-        {/* Search Bar */}
-        <div className="search-section mb-4">
-          <div className="search-box">
-            <i className="bi bi-search"></i>
+        {/* Search toolbar */}
+        <div className="pl-toolbar">
+          <div className="pl-search-wrap">
+            <i className="bi bi-search pl-search-icon"></i>
             <input
               type="text"
-              placeholder="Search products..."
+              placeholder="Search listings…"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="form-control"
+              className="pl-search-input"
             />
+            {searchTerm && (
+              <button className="pl-search-clear" onClick={() => setSearchTerm("")} aria-label="Clear search">
+                <i className="bi bi-x-lg"></i>
+              </button>
+            )}
           </div>
+          {searchTerm && (
+            <span className="pl-result-count">{filteredProducts.length} result{filteredProducts.length !== 1 ? "s" : ""}</span>
+          )}
         </div>
 
         {/* Products Table */}
         <div className="card">
-          <div className="card-body">
+          <div className="card-body p-0">
             {filteredProducts.length === 0 ? (
-              <div className="text-center py-5">
+              <div className="text-center py-5 px-3">
                 <i className="bi bi-inbox display-1 text-muted"></i>
-                <h4 className="mt-3">No products found</h4>
+                <h4 className="mt-3">No listings found</h4>
                 <p className="text-muted">
-                  {searchTerm
-                    ? "Try a different search term"
-                    : "Add your first product to get started"}
+                  {searchTerm ? "Try a different search term" : "Add your first listing to get started"}
                 </p>
               </div>
             ) : (
               <>
                 {/* Desktop Table View */}
                 <div className="table-responsive d-none d-md-block">
-                  <table className="table table-hover">
+                  <table className="pl-table">
                     <thead>
                       <tr>
                         <th>Image</th>
@@ -167,11 +180,7 @@ const ProductsList = () => {
                             <img
                               src={
                                 product.img_path
-                                  ? `${
-                                      import.meta.env.VITE_SUPABASE_URL
-                                    }/storage/v1/object/public/products/${
-                                      product.img_path
-                                    }`
+                                  ? `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/products/${product.img_path}`
                                   : "/assets/emptypics.png"
                               }
                               alt={product.name}
@@ -181,31 +190,15 @@ const ProductsList = () => {
                           <td className="fw-semibold">{product.name}</td>
                           <td>{getCategoryName(product.category_id)}</td>
                           <td>₦{formatNumber(product.price)}</td>
-                          <td>
-                            <span className="product-condition">
-                              {product.condition}
-                            </span>
-                          </td>
+                          <td><span className="pl-condition-badge">{product.condition}</span></td>
                           <td>{product.location}</td>
-                          <td>
-                            {new Date(product.created_at).toLocaleDateString()}
-                          </td>
+                          <td>{new Date(product.created_at).toLocaleDateString()}</td>
                           <td>
                             <div className="action-buttons">
-                              <Link
-                                to={`/admin/products/edit/${product.id}`}
-                                className="btn btn-sm btn-outline-success"
-                                title="Edit"
-                              >
+                              <Link to={`/admin/products/edit/${product.id}`} className="btn btn-sm btn-outline-success" title="Edit">
                                 <i className="bi bi-pencil"></i>
                               </Link>
-                              <button
-                                onClick={() =>
-                                  setDeleteModal({ show: true, product })
-                                }
-                                className="btn btn-sm btn-outline-danger"
-                                title="Delete"
-                              >
+                              <button onClick={() => setDeleteModal({ show: true, product })} className="btn btn-sm btn-outline-danger" title="Delete">
                                 <i className="bi bi-trash"></i>
                               </button>
                             </div>
@@ -285,32 +278,21 @@ const ProductsList = () => {
 
       {/* Delete Confirmation Modal */}
       {deleteModal.show && (
-        <div
-          className="modal-overlay"
-          onClick={() =>
-            !deleting && setDeleteModal({ show: false, product: null })
-          }
-        >
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h5>Delete Product</h5>
-            <p>
-              Are you sure you want to delete "{deleteModal.product?.name}"?
-              This action cannot be undone.
+        <div className="modal-overlay" onClick={() => !deleting && setDeleteModal({ show: false, product: null })}>
+          <div className="pl-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="pl-modal-icon-wrap">
+              <i className="bi bi-trash3-fill"></i>
+            </div>
+            <h5 className="pl-modal-title">Delete Listing?</h5>
+            <p className="pl-modal-body">
+              <strong>"{deleteModal.product?.name}"</strong> will be permanently removed. This cannot be undone.
             </p>
-            <div className="modal-actions">
-              <button
-                onClick={() => setDeleteModal({ show: false, product: null })}
-                className="btn btn-secondary"
-                disabled={deleting}
-              >
+            <div className="pl-modal-footer">
+              <button onClick={() => setDeleteModal({ show: false, product: null })} className="pl-modal-cancel" disabled={deleting}>
                 Cancel
               </button>
-              <button
-                onClick={handleDelete}
-                className="btn btn-danger"
-                disabled={deleting}
-              >
-                {deleting ? "Deleting..." : "Delete"}
+              <button onClick={handleDelete} className="pl-modal-delete" disabled={deleting}>
+                {deleting ? <><span className="spinner-border spinner-border-sm me-1" role="status"></span>Deleting…</> : <><i className="bi bi-trash me-1"></i>Delete</>}
               </button>
             </div>
           </div>

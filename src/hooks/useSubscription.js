@@ -3,7 +3,7 @@
 // ==========================================
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "../utils/supabaseClient";
-
+import { PLAN_KEY_FROM_ID, PLANS, PLAN_ID } from "../utils/subscriptionUtils";
 
 export const useSubscription = () => {
   const [subscription, setSubscription] = useState(null);
@@ -13,29 +13,22 @@ export const useSubscription = () => {
   const fetchSubscription = useCallback(async () => {
     setLoading(true);
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) {
-        setLoading(false);
-        return;
-      }
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { setLoading(false); return; }
 
       setUserId(user.id);
 
       // Get the active subscription row
       const { data, error } = await supabase
         .from("user_subscriptions")
-        .select("*")
+        .select("id, user_id, plan_id, status, paystack_reference, start_date, end_date, created_at, updated_at")
         .eq("user_id", user.id)
         .eq("status", "active")
         .maybeSingle();
 
       if (error) throw error;
 
-      // Count actual quota posts — exclude pay-per-post types (job/event/service).
-      // Nulls (old products without listing_type) are included intentionally.
+      // Count actual quota posts from DB (source of truth)
       const { count: actualCount } = await supabase
         .from("products")
         .select("id", { count: "exact", head: true })
@@ -45,30 +38,37 @@ export const useSubscription = () => {
       const postsUsed = actualCount ?? 0;
 
       if (data) {
-        // Sync posts_used with the real count if it drifted
-        if (data.posts_used !== postsUsed) {
-          await supabase
-            .from("user_subscriptions")
-            .update({ posts_used: postsUsed })
-            .eq("user_id", user.id)
-            .eq("status", "active");
-        }
-        setSubscription({ ...data, posts_used: postsUsed });
+        // Map plan_id → plan key → limit
+        const planKey = PLAN_KEY_FROM_ID[data.plan_id] ?? "free";
+        const planConfig = PLANS[planKey];
+        setSubscription({
+          ...data,
+          plan: planKey,
+          posts_used: postsUsed,
+          posts_limit: planConfig.limit,
+        });
       } else {
-        // No row yet — create the free plan row with the real count
-        const { data: created, error: createError } = await supabase
+        // No row yet — insert free plan row
+        const { error: insertErr } = await supabase
           .from("user_subscriptions")
           .insert({
             user_id: user.id,
-            plan: "free",
+            plan_id: PLAN_ID.free,
             status: "active",
-            posts_used: postsUsed,
-            posts_limit: 3,
-          })
-          .select()
-          .single();
+          });
 
-        if (!createError) setSubscription(created);
+        if (insertErr) {
+          console.warn("Could not create subscription row:", insertErr.message);
+        }
+
+        setSubscription({
+          user_id: user.id,
+          plan_id: PLAN_ID.free,
+          plan: "free",
+          status: "active",
+          posts_used: postsUsed,
+          posts_limit: 3,
+        });
       }
     } catch (err) {
       console.error("useSubscription error:", err);

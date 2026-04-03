@@ -15,8 +15,9 @@ const NAV_LINKS = [
   { to: "/admin/edit-info",    icon: "bi-pencil-square", label: "Edit Info" },
 ];
 
-const AdminLayout = ({ children }) => {
+const AdminLayout = ({ children, pageTitle }) => {
   const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 992);
+  const [collapsed, setCollapsed]     = useState(false);
   const [isMobile, setIsMobile]       = useState(window.innerWidth < 992);
   const [userEmail, setUserEmail]     = useState("");
   const navigate  = useNavigate();
@@ -32,7 +33,6 @@ const AdminLayout = ({ children }) => {
     const onResize = () => {
       const mobile = window.innerWidth < 992;
       setIsMobile(mobile);
-      // auto-open on desktop, auto-close on mobile when resizing
       if (!mobile) setSidebarOpen(true);
       else setSidebarOpen(false);
     };
@@ -40,7 +40,10 @@ const AdminLayout = ({ children }) => {
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
-  const toggle = () => setSidebarOpen((v) => !v);
+  const toggle = () => {
+    if (isMobile) setSidebarOpen((v) => !v);
+    else setCollapsed((v) => !v);
+  };
 
   const closeOnMobile = () => {
     if (isMobile) setSidebarOpen(false);
@@ -53,8 +56,14 @@ const AdminLayout = ({ children }) => {
 
   const isActive = (path) => location.pathname === path;
 
+  const rootClass = [
+    "al-root",
+    sidebarOpen ? "al-sidebar-open" : "al-sidebar-closed",
+    !isMobile && collapsed ? "al-sidebar-collapsed" : "",
+  ].filter(Boolean).join(" ");
+
   return (
-    <div className={`al-root ${sidebarOpen ? "al-sidebar-open" : "al-sidebar-closed"}`}>
+    <div className={rootClass}>
 
       {/* ── Overlay (mobile only) ── */}
       {isMobile && sidebarOpen && (
@@ -65,8 +74,17 @@ const AdminLayout = ({ children }) => {
       <aside className={`al-sidebar ${sidebarOpen ? "open" : ""}`}>
         <div className="al-sidebar-brand">
           <img src="/assets/logo.png" alt="Nearbuy" className="al-brand-logo" />
-          <button className="al-sidebar-close" onClick={toggle} aria-label="Close menu">
+          {/* Mobile: X close button */}
+          <button className="al-sidebar-close" onClick={closeOnMobile} aria-label="Close menu">
             <i className="bi bi-x-lg"></i>
+          </button>
+          {/* Desktop: collapse chevron */}
+          <button
+            className="al-sidebar-toggle-collapse"
+            onClick={() => setCollapsed((v) => !v)}
+            aria-label="Collapse sidebar"
+          >
+            <i className="bi bi-chevron-left"></i>
           </button>
         </div>
 
@@ -81,6 +99,7 @@ const AdminLayout = ({ children }) => {
         </div>
 
         <nav className="al-nav">
+          <span className="al-nav-section-label">Main</span>
           {NAV_LINKS.map(({ to, icon, label }) => (
             <Link
               key={to}
@@ -89,10 +108,11 @@ const AdminLayout = ({ children }) => {
               onClick={closeOnMobile}
             >
               <i className={`bi ${icon}`}></i>
-              <span>{label}</span>
+              <span className="al-nav-label">{label}</span>
             </Link>
           ))}
 
+          <span className="al-nav-section-label">Account</span>
           <Link
             to="/"
             className="al-nav-item"
@@ -101,26 +121,32 @@ const AdminLayout = ({ children }) => {
             onClick={closeOnMobile}
           >
             <i className="bi bi-globe"></i>
-            <span>View Marketplace</span>
+            <span className="al-nav-label">View Marketplace</span>
           </Link>
         </nav>
 
         <button className="al-logout-btn" onClick={handleLogout}>
           <i className="bi bi-box-arrow-right"></i>
-          <span>Logout</span>
+          <span className="al-nav-label">Logout</span>
         </button>
       </aside>
 
       {/* ── Main ── */}
       <div className="al-main">
         <header className="al-topbar">
-          <button className="al-hamburger" onClick={toggle} aria-label="Toggle menu">
-            <span></span>
-            <span></span>
-            <span></span>
-          </button>
+          <div className="al-topbar-left">
+            <button className="al-hamburger" onClick={toggle} aria-label="Toggle menu">
+              <i className="bi bi-list"></i>
+            </button>
+            {pageTitle && (
+              <span className="al-topbar-page-title">{pageTitle}</span>
+            )}
+          </div>
 
           <div className="al-topbar-right">
+            <button className="al-topbar-bell" aria-label="Notifications">
+              <i className="bi bi-bell"></i>
+            </button>
             <div className="al-topbar-user">
               <div className="al-topbar-avatar">
                 <i className="bi bi-person-fill"></i>

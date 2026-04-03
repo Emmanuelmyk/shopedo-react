@@ -606,3 +606,69 @@
   .history-table th,
   .history-table td { padding: 0.7rem 0.85rem; }
 }
+
+/* ==========================================
+   BILLING ADDITIONS
+   ========================================== */
+
+/* Usage percent label inside fill bar */
+.hero-usage-pct {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #fff;
+  pointer-events: none;
+  line-height: 1;
+}
+
+.hero-usage-fill { position: relative; }
+
+/* Plan tile one-time note */
+.plan-tile-annual-note {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  font-weight: 500;
+  margin-top: -0.3rem;
+  margin-bottom: 0.4rem;
+}
+
+/* History ref copy button */
+.history-ref-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.history-copy-btn {
+  background: none;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  color: #64748b;
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.75rem;
+  transition: background 0.18s, color 0.18s, border-color 0.18s;
+  flex-shrink: 0;
+}
+.history-copy-btn:hover { background: #f1f5f9; color: #0f172a; border-color: #cbd5e1; }
+
+.billing-cancel-payment {
+  display: block;
+  width: 100%;
+  margin-top: 0.4rem;
+  background: none;
+  border: none;
+  font-size: 0.78rem;
+  color: #94a3b8;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0.1rem 0;
+}
+.billing-cancel-payment:hover { color: #ef4444; }

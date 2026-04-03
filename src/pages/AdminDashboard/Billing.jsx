@@ -1,7 +1,7 @@
 // ==========================================
 // FILE: src/pages/AdminDashboard/Billing.jsx
 // ==========================================
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import AdminLayout from "../../components/AdminLayout/AdminLayout";
 import { supabase } from "../../utils/supabaseClient";
 import { useSubscription } from "../../hooks/useSubscription";
@@ -34,11 +34,25 @@ const Billing = () => {
   const [payments, setPayments] = useState([]);
   const [paymentsLoading, setPaymentsLoading] = useState(true);
   const [upgrading, setUpgrading] = useState(null);
+  const [upgradeError, setUpgradeError] = useState("");
   const [userEmail, setUserEmail] = useState("");
+  const [emailReady, setEmailReady] = useState(false);
+  const [copiedRef, setCopiedRef] = useState(null);
+  const safetyTimer = useRef(null);
+
+  const handleCopyRef = useCallback((ref) => {
+    navigator.clipboard.writeText(ref).then(() => {
+      setCopiedRef(ref);
+      setTimeout(() => setCopiedRef(null), 2000);
+    });
+  }, []);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) setUserEmail(user.email);
+      if (user) {
+        setUserEmail(user.email);
+        setEmailReady(true);
+      }
     });
   }, []);
 
@@ -58,52 +72,112 @@ const Billing = () => {
     fetchPayments();
   }, [userId]);
 
+  const clearSafetyTimer = () => {
+    if (safetyTimer.current) {
+      clearTimeout(safetyTimer.current);
+      safetyTimer.current = null;
+    }
+  };
+
+  const applyPlanUpgrade = async (planKey, paystackRef) => {
+    const plan = PLANS[planKey];
+
+    // Check if an active row exists
+    const { data: existing, error: fetchErr } = await supabase
+      .from("user_subscriptions")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("status", "active")
+      .maybeSingle();
+
+    if (fetchErr) throw new Error(`Fetch failed: ${fetchErr.message}`);
+
+    if (existing) {
+      // Update using real column names
+      const { error: updateErr } = await supabase
+        .from("user_subscriptions")
+        .update({
+          plan_id: plan.planId,
+          paystack_reference: paystackRef,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", existing.id);
+
+      if (updateErr) throw new Error(`Update failed: ${updateErr.message}`);
+    } else {
+      // Insert a new row
+      const { error: insertErr } = await supabase
+        .from("user_subscriptions")
+        .insert({
+          user_id: userId,
+          plan_id: plan.planId,
+          status: "active",
+          paystack_reference: paystackRef,
+        });
+
+      if (insertErr) throw new Error(`Insert failed: ${insertErr.message}`);
+    }
+  };
+
   const handleUpgrade = (planKey) => {
     const plan = PLANS[planKey];
     if (plan.price === 0) return;
-    if (!window.PaystackPop) {
-      alert("Payment system is loading. Please try again in a moment.");
+
+    if (!emailReady || !userEmail) {
+      setUpgradeError("Still loading your account details. Please wait a moment and try again.");
       return;
     }
 
+    if (!window.PaystackPop) {
+      setUpgradeError("Payment system is still loading. Please refresh the page and try again.");
+      return;
+    }
+
+    setUpgradeError("");
     setUpgrading(planKey);
 
-    const handler = window.PaystackPop.setup({
-      key: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY,
-      email: userEmail,
-      amount: plan.price,
-      currency: "NGN",
-      ref: `sub_${planKey}_${Date.now()}`,
-      metadata: { type: "subscription", plan: planKey, user_id: userId },
-      callback: async (response) => {
-        try {
-          const { error } = await supabase
-            .from("user_subscriptions")
-            .update({
-              plan: planKey,
-              status: "active",
-              posts_limit: plan.limit,
-              paystack_ref: response.reference,
-              updated_at: new Date().toISOString(),
+    // Safety timeout — if Paystack closes without firing callback/onClose
+    clearSafetyTimer();
+    safetyTimer.current = setTimeout(() => {
+      setUpgrading(null);
+      setUpgradeError("Payment window closed unexpectedly. If you completed payment, please refresh the page to check your plan.");
+    }, 90_000);
+
+    let handler;
+    try {
+      handler = window.PaystackPop.setup({
+        key: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY,
+        email: userEmail,
+        amount: plan.price,
+        currency: "NGN",
+        ref: `sub_${planKey}_${Date.now()}`,
+        metadata: { type: "subscription", plan: planKey, user_id: userId },
+        callback: function(response) {
+          clearSafetyTimer();
+          applyPlanUpgrade(planKey, response.reference)
+            .then(() => refresh())
+            .then(() => setUpgradeError(""))
+            .catch((err) => {
+              console.error("Plan upgrade DB error:", err);
+              setUpgradeError(
+                `Payment received (ref: ${response.reference}) but plan update failed. ` +
+                `Please refresh the page — your plan may already be active. If not, contact support with that reference.`
+              );
             })
-            .eq("user_id", userId)
-            .eq("status", "active");
-
-          if (error) {
-            alert("Payment received but failed to update plan. Contact support with ref: " + response.reference);
-          } else {
-            await refresh();
-          }
-        } catch (err) {
-          console.error("Upgrade error:", err);
-        } finally {
+            .finally(() => setUpgrading(null));
+        },
+        onClose: () => {
+          clearSafetyTimer();
           setUpgrading(null);
-        }
-      },
-      onClose: () => setUpgrading(null),
-    });
-
-    handler.openIframe();
+        },
+      });
+      handler.openIframe();
+    } catch (err) {
+      clearSafetyTimer();
+      setUpgrading(null);
+      setUpgradeError("Could not open payment window. Please try again.");
+      console.error("Paystack setup error:", err);
+    }
   };
 
   const currentPlan   = PLANS[subscription?.plan ?? "free"];
@@ -133,7 +207,7 @@ const Billing = () => {
 
   if (loading) {
     return (
-      <AdminLayout>
+      <AdminLayout pageTitle="Billing &amp; Plans">
         <div className="billing-wrap">
           <div className="billing-skeleton-hero"></div>
           <div className="billing-skeleton-grid">
@@ -145,7 +219,7 @@ const Billing = () => {
   }
 
   return (
-    <AdminLayout>
+    <AdminLayout pageTitle="Billing &amp; Plans">
       <div className="billing-wrap">
 
         {/* ── Page Header ── */}
@@ -186,7 +260,11 @@ const Billing = () => {
                 <div
                   className="hero-usage-fill"
                   style={{ width: `${usagePercent}%`, background: usageColor }}
-                ></div>
+                >
+                  {usagePercent >= 20 && (
+                    <span className="hero-usage-pct">{usagePercent}%</span>
+                  )}
+                </div>
               </div>
               {!isUnlimited(subscription) && postsUsed >= postsLimit && (
                 <p className="hero-usage-warning">
@@ -202,6 +280,14 @@ const Billing = () => {
         <div className="billing-section-head">
           <h2 className="billing-section-title">Choose a Plan</h2>
         </div>
+
+        {upgradeError && (
+          <div className="alert alert-danger d-flex align-items-start gap-2 mb-3" role="alert">
+            <i className="bi bi-exclamation-triangle-fill flex-shrink-0 mt-1"></i>
+            <span>{upgradeError}</span>
+            <button type="button" className="btn-close ms-auto" aria-label="Close" onClick={() => setUpgradeError("")}></button>
+          </div>
+        )}
 
         <div className="plan-grid">
           {PLAN_ORDER.map((key) => {
@@ -228,6 +314,9 @@ const Billing = () => {
                 </div>
                 <div className="plan-tile-name">{plan.name}</div>
                 <div className="plan-tile-price">{plan.label}</div>
+                {plan.price > 0 && (
+                  <div className="plan-tile-annual-note">One-time · No expiry</div>
+                )}
                 <div className="plan-tile-limit">
                   <i className="bi bi-layers-fill me-1"></i>
                   {getPlanLimitLabel(key)}
@@ -244,19 +333,30 @@ const Billing = () => {
                     {isCurrent ? "Current Plan" : "Free"}
                   </button>
                 ) : (
-                  <button
-                    className={`plan-tile-btn ${isDowngrade ? "plan-tile-btn--outline" : "plan-tile-btn--primary"}`}
-                    onClick={() => handleUpgrade(key)}
-                    disabled={upgrading !== null}
-                  >
-                    {upgrading === key ? (
-                      <><span className="spinner-border spinner-border-sm me-1" role="status"></span>Processing…</>
-                    ) : isDowngrade ? (
-                      `Switch to ${plan.name}`
-                    ) : (
-                      `Upgrade · ${plan.label}`
+                  <>
+                    <button
+                      className={`plan-tile-btn ${isDowngrade ? "plan-tile-btn--outline" : "plan-tile-btn--primary"}`}
+                      onClick={() => handleUpgrade(key)}
+                      disabled={upgrading !== null || !emailReady}
+                    >
+                      {upgrading === key ? (
+                        <><span className="spinner-border spinner-border-sm me-1" role="status"></span>Processing…</>
+                      ) : isDowngrade ? (
+                        `Switch to ${plan.name}`
+                      ) : (
+                        `Upgrade · ${plan.label}`
+                      )}
+                    </button>
+                    {upgrading === key && (
+                      <button
+                        type="button"
+                        className="billing-cancel-payment"
+                        onClick={() => { clearSafetyTimer(); setUpgrading(null); }}
+                      >
+                        Cancel
+                      </button>
                     )}
-                  </button>
+                  </>
                 )}
               </div>
             );
@@ -327,7 +427,20 @@ const Billing = () => {
                         </span>
                       </td>
                       <td className="history-amount">₦{((p.amount ?? 0) / 100).toLocaleString()}</td>
-                      <td><code className="history-ref">{p.paystack_ref ?? "—"}</code></td>
+                      <td>
+                        <div className="history-ref-wrap">
+                          <code className="history-ref">{p.paystack_ref ?? "—"}</code>
+                          {p.paystack_ref && (
+                            <button
+                              className="history-copy-btn"
+                              onClick={() => handleCopyRef(p.paystack_ref)}
+                              title="Copy reference"
+                            >
+                              <i className={`bi ${copiedRef === p.paystack_ref ? "bi-check2" : "bi-copy"}`}></i>
+                            </button>
+                          )}
+                        </div>
+                      </td>
                       <td>{getStatusBadge(p.status)}</td>
                     </tr>
                   ))}

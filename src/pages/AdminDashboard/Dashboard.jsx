@@ -114,18 +114,21 @@ const Dashboard = () => {
 
   if (stats.loading) {
     return (
-      <AdminLayout>
+      <AdminLayout pageTitle="Dashboard">
         <SkeletonDashboard />
       </AdminLayout>
     );
   }
 
   return (
-    <AdminLayout>
+    <AdminLayout pageTitle="Dashboard">
       <div className="dashboard-container">
         {/* Welcome Header */}
         <div className="dashboard-welcome">
           <div className="welcome-content">
+            <span className="dash-welcome-eyebrow">
+              {new Date().toLocaleDateString("en-GB", { weekday: "long", month: "long", day: "numeric" })}
+            </span>
             <h1>
               <i className="bi bi-shop me-2"></i>
               Welcome back, {sellerName}!
@@ -135,13 +138,10 @@ const Dashboard = () => {
             </p>
           </div>
           <div className="welcome-actions">
-            <Link
-              to="/admin/products/add"
-              className="btn btn-success btn-add-product"
-            >
+            <Link to="/admin/products/add" className="dash-welcome-cta">
               <i className="bi bi-plus-circle me-2"></i>
-              <span className="d-none d-sm-inline">Add New Product</span>
-              <span className="d-inline d-sm-none">Add Product</span>
+              <span className="d-none d-sm-inline">Add New Listing</span>
+              <span className="d-inline d-sm-none">Add Listing</span>
             </Link>
           </div>
         </div>
@@ -178,7 +178,7 @@ const Dashboard = () => {
 
         {/* Stats Grid */}
         <div className="stats-grid">
-          <div className="stat-card stat-card-primary">
+          <div className="stat-card stat-card-primary dash-stat-card--green">
             <div className="stat-card-header">
               <div className="stat-icon">
                 <i className="bi bi-box-seam"></i>
@@ -196,7 +196,7 @@ const Dashboard = () => {
             </div>
           </div>
 
-          <div className="stat-card stat-card-success">
+          <div className="stat-card stat-card-success dash-stat-card--cyan">
             <div className="stat-card-header">
               <div className="stat-icon">
                 <i className="bi bi-grid-3x3-gap"></i>
@@ -215,7 +215,7 @@ const Dashboard = () => {
             </div>
           </div>
 
-          <div className="stat-card stat-card-warning">
+          <div className="stat-card stat-card-warning dash-stat-card--amber">
             <div className="stat-card-header">
               <div className="stat-icon">
                 <i className="bi bi-eye"></i>
@@ -231,7 +231,7 @@ const Dashboard = () => {
             </div>
           </div>
 
-          <div className="stat-card stat-card-info">
+          <div className="stat-card stat-card-info dash-stat-card--blue">
             <div className="stat-card-header">
               <div className="stat-icon">
                 <i className="bi bi-heart"></i>
@@ -248,39 +248,28 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Quick Actions Grid */}
-        <div className="quick-actions-grid">
-          <Link to="/admin/products" className="action-card">
-            <div className="action-icon action-icon-primary">
+        {/* Quick Actions */}
+        <div className="dash-actions-row">
+          <Link to="/admin/products" className="dash-action-item">
+            <div className="dash-action-icon dash-action-icon--green">
               <i className="bi bi-box-seam"></i>
             </div>
-            <div className="action-content">
-              <h3>Manage Products</h3>
-              <p>View, edit, and delete your products</p>
-            </div>
-            <i className="bi bi-arrow-right action-arrow"></i>
+            <span className="dash-action-label">My Listings</span>
+            <i className="bi bi-arrow-right dash-action-arrow"></i>
           </Link>
-
-          <Link to="/admin/products/add" className="action-card">
-            <div className="action-icon action-icon-success">
+          <Link to="/admin/products/add" className="dash-action-item">
+            <div className="dash-action-icon dash-action-icon--cyan">
               <i className="bi bi-plus-circle"></i>
             </div>
-            <div className="action-content">
-              <h3>Add Product</h3>
-              <p>List a new product for sale</p>
-            </div>
-            <i className="bi bi-arrow-right action-arrow"></i>
+            <span className="dash-action-label">Post Listing</span>
+            <i className="bi bi-arrow-right dash-action-arrow"></i>
           </Link>
-
-          <Link to="/" target="_blank" className="action-card">
-            <div className="action-icon action-icon-info">
+          <Link to="/" target="_blank" className="dash-action-item">
+            <div className="dash-action-icon dash-action-icon--blue">
               <i className="bi bi-shop-window"></i>
             </div>
-            <div className="action-content">
-              <h3>View Marketplace</h3>
-              <p>See how your products appear to buyers</p>
-            </div>
-            <i className="bi bi-arrow-right action-arrow"></i>
+            <span className="dash-action-label">View Marketplace</span>
+            <i className="bi bi-arrow-right dash-action-arrow"></i>
           </Link>
         </div>
 

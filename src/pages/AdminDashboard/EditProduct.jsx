@@ -4,6 +4,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import AdminLayout from "../../components/AdminLayout/AdminLayout";
+import CustomSelect from "../../components/CustomSelect/CustomSelect";
 import { supabase } from "../../utils/supabaseClient";
 import {
   uploadImage,
@@ -16,6 +17,14 @@ import { LOCATIONS } from "../../utils/locations";
 import { SkeletonProductForm } from "../../components/Skeleton/Skeleton";
 import NotFound from "../NotFound/NotFound";
 import "./ProductForm.css";
+
+const formatPriceDisplay = (raw) => {
+  if (raw === "" || raw == null) return "";
+  const str = String(raw).replace(/,/g, "");
+  const [integer, decimal] = str.split(".");
+  const formatted = integer === "" ? "" : Number(integer).toLocaleString("en-NG");
+  return decimal !== undefined ? `${formatted}.${decimal}` : formatted;
+};
 
 const EditProduct = () => {
   const { id } = useParams();
@@ -117,10 +126,14 @@ const EditProduct = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: "" }));
-    }
+    const clean = name === "price" ? value.replace(/,/g, "") : value;
+    setFormData((prev) => ({ ...prev, [name]: clean }));
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
+  };
+
+  const makeFormSetter = (name) => (val) => {
+    setFormData((prev) => ({ ...prev, [name]: val }));
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
   const handleSlotAdd = (e, slotIndex) => {
@@ -382,93 +395,72 @@ const EditProduct = () => {
                   <label htmlFor="price" className="form-label-txt">
                     Price (₦) <span className="text-danger">*</span>
                   </label>
-                  <input
-                    type="number"
-                    id="price"
-                    name="price"
-                    value={formData.price}
-                    onChange={handleInputChange}
-                    className={`form-control ${
-                      errors.price ? "is-invalid" : ""
-                    }`}
-                    placeholder="e.g., 50000"
-                    min="0"
-                    step="0.01"
-                  />
+                  <div className="price-input-wrap">
+                    <span className="price-input-prefix">₦</span>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      id="price"
+                      name="price"
+                      value={formatPriceDisplay(formData.price)}
+                      onChange={handleInputChange}
+                      className={`form-control price-input ${errors.price ? "is-invalid" : ""}`}
+                      placeholder="e.g., 50,000"
+                    />
+                  </div>
                   {errors.price && (
-                    <div className="invalid-feedback">{errors.price}</div>
+                    <div className="invalid-feedback d-block">{errors.price}</div>
                   )}
                 </div>
 
                 {/* Category */}
                 <div className="col-md-6">
-                  <label htmlFor="category_id" className="form-label-txt">
+                  <label className="form-label-txt">
                     Category <span className="text-danger">*</span>
                   </label>
-                  <select
-                    id="category_id"
-                    name="category_id"
-                    value={formData.category_id}
-                    onChange={handleInputChange}
-                    className={`form-select ${
-                      errors.category_id ? "is-invalid" : ""
-                    }`}
-                  >
-                    <option value="">Select a category</option>
-                    {CATEGORIES.map((cat) => (
-                      <option key={cat.id} value={cat.id}>
-                        {cat.name}
-                      </option>
-                    ))}
-                  </select>
+                  <CustomSelect
+                    value={String(formData.category_id)}
+                    onChange={makeFormSetter("category_id")}
+                    icon="bi-grid"
+                    options={[
+                      { value: "", label: "Select a category" },
+                      ...CATEGORIES.map((c) => ({ value: String(c.id), label: c.name })),
+                    ]}
+                  />
                   {errors.category_id && (
-                    <div className="invalid-feedback">{errors.category_id}</div>
+                    <div className="invalid-feedback d-block">{errors.category_id}</div>
                   )}
                 </div>
 
                 {/* Condition */}
                 <div className="col-md-6">
-                  <label htmlFor="condition" className="form-label-txt">
+                  <label className="form-label-txt">
                     Condition <span className="text-danger">*</span>
                   </label>
-                  <select
-                    id="condition"
-                    name="condition"
+                  <CustomSelect
                     value={formData.condition}
-                    onChange={handleInputChange}
-                    className="form-select"
-                  >
-                    <option value="Brand New">Brand New</option>
-                    <option value="Used - Excellent">Used - Excellent</option>
-                    <option value="Used - Good">Used - Good</option>
-                    <option value="Used - Fair">Used - Fair</option>
-                    <option value="Refurbished">Refurbished</option>
-                  </select>
+                    onChange={makeFormSetter("condition")}
+                    icon="bi-tag"
+                    options={["Brand New","Used - Excellent","Used - Good","Used - Fair","Refurbished"].map((o) => ({ value: o, label: o }))}
+                  />
                 </div>
 
                 {/* Location */}
                 <div className="col-md-6">
-                  <label htmlFor="location" className="form-label-txt">
+                  <label className="form-label-txt">
                     Location <span className="text-danger">*</span>
                   </label>
-                  <select
-                    id="location"
-                    name="location"
+                  <CustomSelect
                     value={formData.location}
-                    onChange={handleInputChange}
-                    className={`form-select ${
-                      errors.location ? "is-invalid" : ""
-                    }`}
-                  >
-                    <option value="">Select a location</option>
-                    {LOCATIONS.map((location) => (
-                      <option key={location} value={location}>
-                        {location}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={makeFormSetter("location")}
+                    icon="bi-geo-alt"
+                    options={[
+                      { value: "", label: "Select a location" },
+                      ...LOCATIONS.map((l) => ({ value: l, label: l })),
+                    ]}
+                  />
                   {errors.location && (
-                    <div className="invalid-feedback">{errors.location}</div>
+                    <div className="invalid-feedback d-block">{errors.location}</div>
                   )}
                 </div>
 

@@ -366,6 +366,127 @@
 /* ── Keep old class names working (used by Dashboard.css etc.) ── */
 .admin-content { padding: 0; }
 
+/* ── Collapsed sidebar (desktop icon-only mode) ── */
+:root { --al-sidebar-collapsed-w: 68px; }
+
+@media (min-width: 992px) {
+  .al-sidebar-open.al-sidebar-collapsed .al-main {
+    margin-left: var(--al-sidebar-collapsed-w);
+  }
+  .al-sidebar-collapsed .al-sidebar { width: var(--al-sidebar-collapsed-w); }
+  .al-sidebar-close { display: none; }
+  .al-sidebar-toggle-collapse { display: flex; }
+}
+
+@media (max-width: 991px) {
+  .al-sidebar-toggle-collapse { display: none !important; }
+}
+
+.al-sidebar-collapsed .al-nav-label,
+.al-sidebar-collapsed .al-user-info,
+.al-sidebar-collapsed .al-brand-logo,
+.al-sidebar-collapsed .al-nav-section-label { display: none; }
+
+.al-sidebar-collapsed .al-sidebar-brand {
+  justify-content: center;
+  padding: 1.1rem 0.5rem;
+}
+.al-sidebar-collapsed .al-nav-item {
+  justify-content: center;
+  padding: 0.72rem;
+  margin: 0 0.4rem;
+}
+.al-sidebar-collapsed .al-nav-item::before { display: none; }
+.al-sidebar-collapsed .al-user-block {
+  justify-content: center;
+  padding: 1.1rem 0.5rem;
+}
+.al-sidebar-collapsed .al-logout-btn {
+  justify-content: center;
+  padding: 0.72rem;
+  margin: 0.5rem 0.4rem 1.25rem;
+  width: calc(100% - 0.8rem);
+}
+
+/* ── Nav section labels ── */
+.al-nav-section-label {
+  display: block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--al-text-muted);
+  padding: 0.6rem 1.25rem 0.25rem;
+  margin-top: 0.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+/* ── Topbar left slot ── */
+.al-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.al-topbar-page-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Bell button ── */
+.al-topbar-bell {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  border: 1px solid #e8ecf0;
+  background: #f8fafc;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.05rem;
+  transition: background 0.18s, color 0.18s;
+  flex-shrink: 0;
+}
+.al-topbar-bell:hover { background: #f1f5f9; color: #0f172a; }
+
+/* ── Sidebar collapse chevron (desktop) ── */
+.al-sidebar-toggle-collapse {
+  background: rgba(255,255,255,0.07);
+  border: none;
+  color: var(--al-text-soft);
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  transition: background 0.2s, color 0.2s;
+  flex-shrink: 0;
+}
+.al-sidebar-toggle-collapse:hover { background: rgba(255,255,255,0.14); color: #fff; }
+.al-sidebar-toggle-collapse i { transition: transform 0.3s ease; }
+.al-sidebar-collapsed .al-sidebar-toggle-collapse i { transform: rotate(180deg); }
+
+/* ── Hamburger — icon variant ── */
+.al-hamburger {
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  font-size: 1.4rem;
+  color: #0f172a;
+}
+
 /* ==========================================
    INACTIVITY WARNING BANNER (legacy alias)
    ========================================== */
